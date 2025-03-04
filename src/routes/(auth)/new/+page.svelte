@@ -1,14 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Group, FileStream, type ID, Account } from 'jazz-tools';
-	import * as faceapi from 'face-api.js';
-	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData, Person } from '$lib/schema';
+	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData } from '$lib/schema';
 	import { useCoState } from 'jazz-svelte';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	import { imageDataToFile } from '$lib/utils/imageData';
 	import ImagePlus from 'lucide-svelte/icons/image-plus';
 	import Autocomplete from '$lib/components/Autocomplete.svelte';
+	import { goto } from '$app/navigation';
+	import {
+		initFaceDetection,
+		processImageForFaces,
+		blurFaces,
+		createImageBlob,
+		type FaceData
+	} from '$lib/utils/faceDetection';
+	import { extractAllPeople } from '$lib/utils/profileUtils';
 
+	// Get global data for people and photos
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
 			people: [],
@@ -16,246 +25,136 @@
 		})
 	);
 
-	let listOfPeople = $derived.by(() => {
-		const allPeople = [];
-		if (globalData?.current?.people) {
-			for (const [_, entries] of Object.entries(globalData?.current?.people)) {
-				for (const entry of entries.all) {
-					allPeople.push(entry);
-				}
-			}
-		}
+	// Extract list of people from global data
+	let listOfPeople = $derived(extractAllPeople(globalData));
 
-		return allPeople;
-	});
-
+	// Canvas state management
 	let canvases: {
 		dom: HTMLCanvasElement | null;
 		original: HTMLCanvasElement | null;
 		offscreen: HTMLCanvasElement | null;
 	} = $state({
-		dom: null, // This canvas is the canvas on which the image is displayed to the user
-		original: null, // This canvas holds the original full image
-		offscreen: null // This canvas holds a full size version of the DOM canvas
+		dom: null, // Canvas displayed to the user
+		original: null, // Holds the original full image
+		offscreen: null // Holds a full size version of the DOM canvas
 	});
 
-	let faceList: {
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-		originalImageData: ImageData;
-		person: ID<Person> | null;
-	}[] = $state([]);
+	// Face detection results
 
-	let ready: {
-		img: boolean;
-		faceapi: boolean;
-		preview: 'working' | 'ready' | 'no image';
-	} = $state({
+	let faceList: FaceData[] = $state([]);
+
+	// Component state
+	let ready = $state({
 		img: false,
 		faceapi: false,
 		preview: 'no image'
 	});
+
+	// Process uploaded image and detect faces
 	const renderPreview = async (e: Event & { currentTarget: HTMLInputElement }) => {
 		ready.preview = 'working';
 		const input = e.currentTarget;
-		if (!input.files || !input.files[0]) return; // TODO: Throw an error here
-		const img = await faceapi.bufferToImage(input.files[0]);
-		const displaySize = { width: img.width, height: img.height };
-		canvases.original = document.createElement('canvas');
-		canvases.original.width = displaySize.width;
-		canvases.original.height = displaySize.height;
-		const originalCtx = canvases.original.getContext('2d');
-		if (!originalCtx) return; // TODO: throw an error here
-		originalCtx.drawImage(img, 0, 0, displaySize.width, displaySize.height);
-
-		if (canvases.dom) {
-			canvases.dom.width = displaySize.width;
-			canvases.dom.height = displaySize.height;
-			const domCtx = canvases.dom.getContext('2d');
-			if (!domCtx) return; // TODO: throw an error here
-			domCtx.drawImage(img, 0, 0, displaySize.width, displaySize.height);
+		if (!input.files || !input.files[0]) {
+			ready.preview = 'no image';
+			return;
 		}
 
-		const detections = await faceapi.detectAllFaces(
-			img,
-			new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.4 })
-		);
-
-		faceList = [];
-		detections.forEach((detection) => {
-			const { x, y, width, height } = detection.box;
-			const faceData = getFaceData(x, y, width, height);
-			if (!faceData) return;
-			faceList = [...faceList, faceData];
-		});
-		blurFaces();
+		try {
+			const { faceList: detectedFaces } = await processImageForFaces(input.files[0], canvases);
+			faceList = detectedFaces;
+			blurFaces(canvases, faceList);
+			ready.preview = 'ready';
+		} catch (error) {
+			console.error('Error processing image:', error);
+			ready.preview = 'no image';
+		}
 	};
 
+	// Handle form submission
 	const submitHandler = async (e: Event) => {
+		e.preventDefault();
 		if (!canvases.offscreen) return;
-		const file: Blob = await new Promise((resolve) =>
-			canvases.offscreen?.toBlob((blob) => {
-				if (!blob) throw new Error();
-				resolve(blob);
-			}, 'image/jpeg')
-		);
 
-		if (!file) return;
 		try {
+			// Create blob from the offscreen canvas
+			const file = await createImageBlob(canvases.offscreen);
+
+			// Create public group for photo access
 			const publicGroup = Group.create();
 			publicGroup.addMember('everyone', 'reader');
+
+			// Create list of face slices
 			const listOfFaceSlices = ListOfFaceSlices.create([], publicGroup);
-			for (let i = 0; i < faceList.length; i++) {
-				const face = faceList[i];
-				if (!face.person) return;
-				const person = listOfPeople?.find((person) => person.value.id === face.person);
-				if (!person) return;
-				const parentGroup = person.value._owner.castAs(Group) as Group;
-				const childGroup = Group.create();
-				// TODO: Once I can work out how to remove the 'everyone' member and extend the group, I can use group extension here
+			// Process each detected face
+			for (const face of faceList) {
+				if (!face.person) continue;
+
+				const profile = listOfPeople?.find((profile) => profile.value.id === face.person.id);
+				if (!profile) continue;
+
+				// Setup access groups
+				const parentGroup = profile.value._owner.castAs(Group) as Group;
+				const fileGroup = Group.create();
+				const sliceGroup = Group.create();
+				sliceGroup.addMember('everyone', 'reader');
+
+				// Copy access permissions from parent group
 				parentGroup.members.forEach(async (member) => {
-					if (member.id !== 'everyone') {
-						const userToAdd = await Account.load(member.id, []);
-						if (userToAdd) {
-							childGroup.addMember(userToAdd, member.role);
-						}
-					} else {
-						console.log('everyone', member);
+					// 'everyone' does not get iterated over as part of the members array
+					const userToAdd = await Account.load(member.id, []);
+					if (userToAdd) {
+						fileGroup.addMember(userToAdd, member.role);
 					}
 				});
 
-				const file = await imageDataToFile(face.originalImageData);
-				const fileStream = await FileStream.createFromBlob(file, { owner: childGroup });
+				// Create file from face image data
+				const faceFile = await imageDataToFile(face.originalImageData);
+				const fileStream = await FileStream.createFromBlob(faceFile, { owner: fileGroup });
 
+				// Create face slice
 				const faceSlice = FaceSlice.create(
 					{
 						...face,
 						file: fileStream,
-						person: person
+						person: profile.value
 					},
-					{ owner: childGroup }
+					{ owner: sliceGroup }
 				);
 				listOfFaceSlices.push(faceSlice);
 			}
 
+			// Create the main photo
 			const image = await FileStream.createFromBlob(file, {
 				owner: publicGroup
 			});
+
 			const photo = Photo.create(
 				{
 					file: image,
-					faceSlices: listOfFaceSlices,
-					width: canvases.original.width,
-					height: canvases.original.height
+					faceSlices: listOfFaceSlices
 				},
 				{
 					owner: publicGroup
 				}
 			);
+
+			// Add photo to global data
 			globalData.current?.photos.push(photo);
-			console.log('Added photo to stream');
+			goto('/');
 		} catch (e) {
-			console.error(e);
+			console.error('Error submitting photo:', e);
 		}
 	};
 
-	function getFaceData(x: number, y: number, width: number, height: number) {
-		if (!canvases.original) return; // TODO: Throw error here
-		const ctx = canvases.original.getContext('2d');
-		if (!ctx) return;
-		const blurX = Math.max(x, 0);
-		const blurY = Math.max(y, 0);
-		const blurWidth = Math.min(width, canvases.original.width - blurX);
-		const blurHeight = Math.min(height, canvases.original.height - blurY);
-
-		return {
-			x: blurX,
-			y: blurY,
-			width: blurWidth,
-			height: blurHeight,
-			originalImageData: ctx.getImageData(blurX, blurY, blurWidth, blurHeight),
-			person: null
-		};
-	}
-
-	const blurFaces = async () => {
-		if (!canvases.original || !canvases.dom) return; // TODO: Throw error here
-		const ctx = canvases.dom.getContext('2d');
-		if (!ctx) return; // TODO: Throw error here
-		if (!canvases.offscreen) {
-			canvases.offscreen = document.createElement('canvas');
-			canvases.offscreen.width = canvases.original.width;
-			canvases.offscreen.height = canvases.original.height;
-		}
-		const offscreenCtx = canvases.offscreen.getContext('2d', { willReadFrequently: true });
-		if (!offscreenCtx) return;
-		offscreenCtx.drawImage(
-			canvases.original,
-			0,
-			0,
-			canvases.offscreen.width,
-			canvases.offscreen.height
-		);
-
-		faceList.forEach((faceData) => {
-			const { x, y, width, height } = faceData;
-			const smallCanvas = document.createElement('canvas');
-			const smallCtx = smallCanvas.getContext('2d');
-			if (!smallCtx) return;
-			const smallWidth = 6;
-			const smallHeight = Math.ceil(6 * (width / height));
-			smallCanvas.width = smallWidth;
-			smallCanvas.height = smallHeight;
-			// Draw the face onto the small canvas
-			if (!canvases.offscreen) return;
-			smallCtx.drawImage(canvases.offscreen, x, y, width, height, 0, 0, smallWidth, smallHeight);
-			offscreenCtx.imageSmoothingEnabled = false;
-			offscreenCtx.drawImage(smallCanvas, 0, 0, smallWidth, smallHeight, x, y, width, height);
-			offscreenCtx.imageSmoothingEnabled = true;
-		});
-
-		canvases.dom.width = canvases.original.width;
-		canvases.dom.height = canvases.original.height;
-
-		ctx.clearRect(0, 0, canvases.dom.width, canvases.dom.height);
-		ctx.drawImage(
-			canvases.offscreen,
-			0,
-			0,
-			canvases.offscreen.width,
-			canvases.offscreen.height,
-			0,
-			0,
-			canvases.dom.width,
-			canvases.dom.height
-		);
-		faceList.forEach((faceData) => {
-			const { x, y, width, height } = faceData;
-			ctx.lineWidth = width / 24;
-			ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue(
-				'--color-primary'
-			);
-			ctx.beginPath();
-			ctx.roundRect(x, y, width, height, width / 24);
-			ctx.stroke();
-		});
-		ready.preview = 'ready';
-	};
-
-	onMount(() => {
-		faceapi.nets.tinyFaceDetector
-			.loadFromUri('/models')
-			.then(() => (ready.faceapi = true))
-			.catch((e) => console.error(e));
-	}); // Load the FaceAPI models when the component is mounted
-
-	$inspect(listOfPeople);
+	// Initialize face detection on component mount
+	onMount(async () => {
+		ready.faceapi = await initFaceDetection();
+	});
 </script>
 
 {#if ready.faceapi}
-	<form onsubmit={submitHandler}>
+	<form onsubmit={submitHandler} class="mb-24">
+		<!-- mb-24 is needed to ensure the dock doesn't cover the submit button -->
 		{#if ready.preview !== 'ready'}
 			<label for="picture" class="cursor-pointer p-4">
 				<div class="grid w-full items-center gap-1.5">
@@ -288,7 +187,7 @@
 			></canvas>
 		</div>
 
-		{#if ready.preview}
+		{#if ready.preview === 'ready'}
 			<small class="text-muted-foreground">Draw on the picture to add an area to blur</small>
 
 			<ul class="list bg-base-100 rounded-box shadow-md">
@@ -308,16 +207,16 @@
 						<div>
 							{#if listOfPeople && listOfPeople.length > 0}
 								<Autocomplete
-									bind:selectedItem={faceList[i].person}
+									bind:selectedItem={faceList[i].person.id}
 									imageData={face.originalImageData}
 									{listOfPeople}
 									people={globalData.current?.people}
-									items={listOfPeople.map((person) => {
-										return {
-											value: person.value.id,
-											label: person.value.name
-										};
-									})}
+									items={listOfPeople
+										.filter((profile) => !!profile.value)
+										.map((profile) => ({
+											value: profile.value.id,
+											label: profile.value.name
+										}))}
 									placeholder="Who is this?"
 								/>
 							{/if}
@@ -327,7 +226,7 @@
 							class="btn btn-neutral"
 							onclick={() => {
 								faceList.splice(i, 1);
-								blurFaces();
+								blurFaces(canvases, faceList);
 							}}
 						>
 							Don't blur
@@ -338,4 +237,5 @@
 		{/if}
 
 		<button class="btn btn-primary mt-4" type="submit">Submit</button>
-	</form>{/if}
+	</form>
+{/if}

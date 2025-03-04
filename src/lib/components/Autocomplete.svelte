@@ -1,21 +1,18 @@
 <script lang="ts">
 	import { Group, type ID } from 'jazz-tools';
-	import { GlobalData, Person } from '$lib/schema';
+	import { BrightBlurProfile } from '$lib/schema';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
 	import { imageDataToFile } from '$lib/utils/imageData';
-	import { useCoState } from 'jazz-svelte';
-	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	let {
 		selectedItem = $bindable(),
 		placeholder = '',
 		items = [],
 		imageData,
-		listOfPeople,
 		people
 	}: {
-		selectedItem: ID<Person> | null;
+		selectedItem: ID<BrightBlurProfile> | null;
 		placeholder: string;
-		items: { label: string; value: ID<Person> }[];
+		items: { label: string; value: ID<BrightBlurProfile> }[];
 		imageData: ImageData;
 		listOfPeople: any;
 		people: any;
@@ -30,11 +27,11 @@
 	const createNewPerson = () => {
 		const personOwnershipGroup = Group.create();
 		personOwnershipGroup.addMember('everyone', 'reader');
-		const newPerson = Person.create({
+		const newProfile = BrightBlurProfile.create({
 			name: newPersonName
 		});
-		people.push(newPerson); // Should never be the case that listOfPeople is null
-		console.log(Object.values(listOfPeople));
+		people.push(newProfile);
+		selectedItem = newProfile.id;
 	};
 </script>
 
@@ -98,7 +95,7 @@
 			</div>
 		</div>
 		<p class="py-4 text-sm opacity-60">
-			When you tag a new person, you will be given the access to manage that person as an admin.
+			When you tag a new person, you will be given the access to manage that profile as an admin.
 			Once that person creates an account, you can transfer the profile to that person.
 		</p>
 		<div class="modal-action">
@@ -113,7 +110,7 @@
 					onclick={() => {
 						createNewPerson();
 						newPersonName = '';
-					}}>Add This Person</button
+					}}>Add This Profile</button
 				>
 			</form>
 		</div>

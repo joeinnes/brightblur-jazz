@@ -1,0 +1,33 @@
+<script lang="ts">
+	import type { Photo } from '$lib/schema';
+
+	import Image from './Image.svelte';
+
+	import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
+
+	let {
+		photos,
+		emptyHint = 'Nothing to see here'
+	}: {
+		photos?: CoFeedEntry<Photo>[];
+		emptyHint?: string;
+	} = $props();
+
+	// Get all photos sorted by date
+
+	// Filter photos uploaded by this profile
+
+	// Filter photos that contain this person
+</script>
+
+<div class="grid grid-cols-3 gap-4">
+	{#if photos && photos.length}
+		{#each photos as photo, i (photo?.value?.id || i)}
+			{#if photo?.value?.id}
+				<Image id={photo.value.id} containerStyles="aspect-square overflow-hidden" />
+			{/if}
+		{/each}
+	{:else}
+		<div class="col-span-3">{emptyHint}</div>
+	{/if}
+</div>

@@ -7,17 +7,19 @@
 </script>
 
 <script lang="ts">
-	import type { SyncConfig } from 'jazz-tools';
 	import '../app.css';
+	import type { SyncConfig } from 'jazz-tools';
 
 	import { JazzProvider } from 'jazz-svelte';
+	import { BrightBlurAccount } from '$lib/schema';
+
 	import Auth from '$lib/components/Auth.svelte';
 
 	let { children } = $props();
-	import { BrightBlurAccount } from '$lib/schema';
+
 	let sync: SyncConfig = {
-		peer: 'wss://cloud.jazz.tools/?key=brightblur@joeinn.es',
-		when: 'never'
+		peer: 'ws://localhost:4200',
+		when: 'signedUp'
 	};
 	let AccountSchema = BrightBlurAccount;
 </script>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { usePasskeyAuth } from 'jazz-svelte';
+	import { useAccount, usePasskeyAuth } from 'jazz-svelte';
 
 	let { children }: { children?: Snippet } = $props();
 
@@ -8,7 +8,7 @@
 
 	let error = $state<string | undefined>(undefined);
 
-	function signUp(e: Event) {
+	async function signUp(e: Event) {
 		const formData = new FormData(e.currentTarget as HTMLFormElement);
 		const name = formData.get('name') as string;
 
@@ -18,9 +18,20 @@
 		}
 		e.preventDefault();
 		error = undefined;
-		auth.current.signUp(name).catch((e) => {
-			error = e.message;
-		});
+		auth.current
+			.signUp(name)
+			.then(async () => {
+				const { me } = useAccount();
+				await me.ensureLoaded({
+					profile: {}
+				});
+				if (me?.profile) {
+					me.profile.name = name;
+				}
+			})
+			.catch((e) => {
+				error = e.message;
+			});
 	}
 
 	function logIn(e: Event) {
