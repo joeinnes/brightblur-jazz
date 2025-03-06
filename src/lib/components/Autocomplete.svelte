@@ -84,9 +84,11 @@
 	<div class="modal-box">
 		<h3 class="text-lg font-bold">Who is this?</h3>
 		<div class="flex items-center gap-2">
-			{#await imageDataToFile(imageData) then imageFile}<img
+			{#await imageDataToFile(imageData) then imageFile}
+				{@const url = URL.createObjectURL(imageFile)}<img
 					class="rounded-box size-20"
-					src={URL.createObjectURL(imageFile)}
+					src={url}
+					onload={() => URL.revokeObjectURL(url)}
 					alt="Face of {newPersonName}"
 				/>{/await}
 			<div class="flex flex-1 flex-col">

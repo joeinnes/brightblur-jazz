@@ -52,7 +52,7 @@
 	const photoArray = $derived(extractSortedPhotos(globalData));
 
 	const uploadedPhotos: CoFeedEntry<Photo>[] = $derived(
-		filterPhotosByUploader(photoArray, profileId)
+		filterPhotosByUploader(photoArray, profile?.current?.user?.id)
 	);
 	const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));
 </script>

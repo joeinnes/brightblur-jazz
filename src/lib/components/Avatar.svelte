@@ -18,8 +18,10 @@
 {#if id}
 	{#await FileStream.loadAsBlob(id) then blob}
 		{#if blob}
+			{@const url = URL.createObjectURL(blob)}
 			<img
-				src={URL.createObjectURL(blob)}
+				src={url}
+				onload={() => URL.revokeObjectURL(url)}
 				alt="Profile"
 				class="border-primary {style} rounded-full border-2 object-cover"
 			/>

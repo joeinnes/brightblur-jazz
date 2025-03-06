@@ -25,7 +25,7 @@
 	--color-warning: oklch(82% 0.189 84.429);
 	--color-warning-content: oklch(41% 0.112 45.904);
 	--color-error: oklch(55% 0.25 15);
-	--color-error-content: oklch(20% 0.13 10);
+	--color-error-content: oklch(100% 0.05 15);
 	--radius-selector: 0.25rem;
 	--radius-field: 0.5rem;
 	--radius-box: 0.5rem;
@@ -69,4 +69,9 @@
 	--border: 1px;
 	--depth: 1;
 	--noise: 0;
+}
+
+html {
+	scrollbar-gutter: stable;
+	overflow-x: hidden;
 }

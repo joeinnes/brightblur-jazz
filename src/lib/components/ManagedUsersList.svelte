@@ -13,10 +13,12 @@
 						{#if person.value.avatar}
 							{#await FileStream.loadAsBlob(person.value.avatar.id) then blob}
 								{#if blob}
+									{@const url = URL.createObjectURL(blob)}
 									<img
-										src={URL.createObjectURL(blob)}
+										src={url}
 										alt="Profile"
 										class="border-primary size-10 rounded-full border-2 object-cover"
+										onload={() => URL.revokeObjectURL(url)}
 									/>
 								{/if}
 							{/await}
