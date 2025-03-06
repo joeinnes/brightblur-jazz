@@ -16,7 +16,9 @@
 	);
 
 	let countAdmins = $derived(
-		profile.current?._owner?.castAs?.(Group)?.members.filter((member) => member.role === 'admin')
+		profile.current?._owner
+			?.castAs?.(Group)
+			?.members.filter((member: { role: 'admin' | 'reader' | 'writer' }) => member.role === 'admin')
 			.length
 	);
 </script>

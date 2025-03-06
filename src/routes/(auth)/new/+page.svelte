@@ -198,10 +198,12 @@
 							{#await imageDataToFile(face.originalImageData)}
 								<img class="{imgSize} rounded-box skeleton" alt="loading..." />
 							{:then imageFile}
+								{@const url = URL.createObjectURL(imageFile)}
 								<img
 									class="{imgSize} rounded-box"
-									src={URL.createObjectURL(imageFile)}
+									src={url}
 									alt="Face {i + 1}"
+									onload={() => URL.revokeObjectURL(url)}
 								/>{/await}
 						</div>
 						<div>

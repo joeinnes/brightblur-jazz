@@ -1,4 +1,4 @@
-import type { ID } from 'jazz-tools';
+import type { Account, ID } from 'jazz-tools';
 import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
 
 import type { FaceSlice, GlobalData, BrightBlurProfile, Photo } from '$lib/schema';
@@ -70,7 +70,11 @@ export function filterPhotosOfPerson(
 /**
  * Filters photos uploaded by the specified person
  */
-export function filterPhotosByUploader(photoArray: CoFeedEntry<Photo>[], uploaderId: string) {
+export function filterPhotosByUploader(
+	photoArray: CoFeedEntry<Photo>[],
+	uploaderId: ID<Account> | undefined
+) {
+	if (!uploaderId) return [];
 	return photoArray.filter((p) => p.by?.id === uploaderId);
 }
 

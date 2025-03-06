@@ -1,0 +1,10 @@
+- [ ] Delete photos
+- [ ] Delete FaceSlices
+- [ ] Admin to invite as admin
+- [ ] Take ownership of account (e.g. child coming of age)
+- [ ] Toast system for errors and warnings
+- [ ] Favicon
+- [ ] More work on unauthenticated experience
+- [ ] Request queues ('can I please look at X's profile?')
+- [ ] One off shares
+- [ ] Share sheet integration
