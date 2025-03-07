@@ -29,12 +29,14 @@
 	{/await}
 {:else}
 	<div
-		class="border-primary bg-secondary text-secondary-content grid {style} place-items-center rounded-full border-2"
+		class="border-primary bg-secondary text-secondary-content {style} avatar avatar-placeholder flex w-full items-center justify-center rounded-full border-2"
 		style={`font-size: ${fontSize}`}
 	>
-		{name
-			.split(' ')
-			.map((el: string) => el[0])
-			.join('')}
+		<div class="flex h-full w-full items-center justify-center text-center leading-none">
+			{name
+				.split(' ')
+				.map((el: string) => el[0])
+				.join('')}
+		</div>
 	</div>
 {/if}

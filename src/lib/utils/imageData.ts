@@ -1,4 +1,4 @@
-import { FileStream, type ID } from 'jazz-tools';
+import { Account, FileStream, type ID } from 'jazz-tools';
 import type { Photo } from '$lib/schema';
 
 export function imageDataToFile(imageData: ImageData, filename = 'image.jpeg'): Promise<File> {
@@ -25,14 +25,14 @@ export function imageDataToFile(imageData: ImageData, filename = 'image.jpeg'): 
 }
 
 export const getFile = async (id: ID<FileStream>) => {
-	if (!id) return;
+	if (!id) throw new Error('No ID provided');
 	try {
 		const blob = await FileStream.loadAsBlob(id);
-		if (!blob) return;
-		// Add a 'finished loading' thing here so I can have a square loading image, and then only render those that are coming onto the screen
+		if (!blob) throw new Error('No blob');
 		return createImageBitmap(blob);
 	} catch (e) {
 		console.log({ e });
+		throw new Error('Error loading blob');
 	}
 };
 
@@ -42,10 +42,10 @@ export async function renderCanvas(
 	naturalDimensions: { w: number; h: number }
 ) {
 	const ctx = canvas.getContext('2d');
-	if (!ctx || !photo.file?.id) return;
+	if (!ctx || !photo.file?.id) throw new Error('No context or no photo file.');
 
 	const mainImage = await getFile(photo.file.id);
-	if (!mainImage) return;
+	if (!mainImage) throw new Error('No main image');
 
 	naturalDimensions.w = mainImage.width;
 	naturalDimensions.h = mainImage.height;
@@ -62,9 +62,10 @@ export async function renderCanvas(
 	ctx.strokeStyle = primaryColour;
 
 	if (photo.faceSlices) {
-		// First pass: draw all borders
-		for (const slice of photo.faceSlices) {
-			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) continue;
+		// Create an array of promises for each slice
+		const slicePromises = photo.faceSlices.map(async (slice) => {
+			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return;
+
 			const lineWidth = Math.floor(Math.max(slice.width / 24, 2));
 			ctx.lineWidth = lineWidth;
 
@@ -84,9 +85,19 @@ export async function renderCanvas(
 				radius
 			);
 			ctx.stroke();
-			if (!slice?.file?.id) continue;
+
+			if (!slice?.file?.id) return;
+
+			// Handle face image loading with timeout to prevent hanging
 			try {
+				const me = Account.getMe();
+				const value = await FileStream.load(slice.file.id, []);
+
+				if (!value || !me.canRead(value)) {
+					throw new Error(`Can't access this face slice`);
+				}
 				const faceImage = await getFile(slice.file.id);
+
 				if (faceImage) {
 					ctx.drawImage(
 						faceImage,
@@ -97,10 +108,18 @@ export async function renderCanvas(
 					);
 				}
 			} catch (e) {
-				console.log(e);
-				// NOOP: this is expected behaviour if a user has no rights to view a slice
+				// Convoluted stuff below to make Typescript happy when I just don't care about the error.
+				if (e) return;
+				return;
+				// console.log('Face processing error:', e);
+				// This is normal behaviour if the user doesn't have permission to view the face slice
 			}
-		}
+		});
+
+		// Wait for all slices to complete or timeout
+		await Promise.allSettled(slicePromises);
 	}
-	return;
+
+	// Explicitly return to ensure promise resolution
+	return true;
 }

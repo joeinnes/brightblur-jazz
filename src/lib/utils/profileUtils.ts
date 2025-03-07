@@ -17,7 +17,7 @@ export function extractAllPeople(globalData: { current?: GlobalData | null }) {
 			}
 		}
 	}
-	return people;
+	return people.sort((a, b) => a.value.name.localeCompare(b.value.name));
 }
 
 /**
