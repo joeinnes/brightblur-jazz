@@ -1,21 +1,19 @@
 <script lang="ts">
 	import { useAccount, useCoState } from 'jazz-svelte';
-	import { Group, type ID } from 'jazz-tools';
-	import { BrightBlurAccount, GlobalData } from '$lib/schema';
+	import { Account, Group, type ID } from 'jazz-tools';
+	import { BrightBlurAccount, BrightBlurProfile, GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
+	import { extractAllPeople } from '$lib/utils/profileUtils';
 
 	// Props
 	let {
 		profile,
 		onInviteSuccess = () => {}
 	}: {
-		profile: any;
+		profile: { current: BrightBlurProfile };
 		onInviteSuccess?: () => void;
 	} = $props();
-
-	// Get current user account
-	const { me } = useAccount();
 
 	// State variables
 	let searchValue = $state('');
@@ -30,19 +28,21 @@
 		})
 	);
 
-	let listOfPeople = $derived.by(() => {
-		const allPeople = [];
-		if (globalData?.current?.people) {
-			for (const [_, entries] of Object.entries(globalData?.current?.people)) {
-				for (const entry of entries.all) {
-					allPeople.push(entry);
-				}
-			}
-		}
-		return allPeople;
-	});
+	let listOfPeople = $derived(extractAllPeople(globalData));
+	let eligibleViewers = $derived(
+		listOfPeople
+			.filter(
+				(el) =>
+					!profile.current._owner
+						.castAs(Group)
+						.members.find((member) => member.id === el.value?.user?.id) &&
+					el?.value?.user &&
+					el?.value?.name.toLowerCase().includes(searchValue.toLowerCase())
+			)
+			.slice(0, searchValue.length < 3 ? 10 : Infinity)
+	);
 	// Add user to profile's access group
-	const addUserAccess = async (account: BrightBlurAccount) => {
+	const addUserAccess = async (accountId: ID<BrightBlurAccount>) => {
 		if (!profile?.current?._owner) {
 			errorMessage = 'Cannot add access: profile owner not available';
 			console.log('error');
@@ -51,8 +51,9 @@
 
 		try {
 			const ownerGroup = profile.current._owner.castAs(Group);
+			const account = await Account.load(accountId, {});
+			if (!account) throw new Error('Account not found');
 			ownerGroup.addMember(account, 'reader');
-			console.log(profile.current, ownerGroup);
 
 			// Clear search after successful add
 			searchValue = '';
@@ -82,7 +83,10 @@
 
 <dialog class="modal" bind:this={inviteModal}>
 	<div class="modal-box">
-		<h3 class="mb-4 text-lg font-bold">Invite People to View Your Profile</h3>
+		<h3 class="text-lg font-bold">Invite Viewer</h3>
+		<p class="mb-4 opacity-60">
+			Currently, invitations do <strong>not</strong> work retroactively.
+		</p>
 
 		<div class="form-control">
 			<div class="input-group">
@@ -99,17 +103,15 @@
 						tabindex="0"
 						class="dropdown-content menu bg-base-100 rounded-box z-1 max-h-80 w-full flex-nowrap overflow-auto p-2 shadow"
 					>
-						{#each listOfPeople.filter((el) => el?.value?.name
-								.toLowerCase()
-								.includes(searchValue.toLowerCase())) as item}
+						{#each eligibleViewers as item}
 							<li>
 								<button
 									type="button"
 									onclick={() => {
 										if (!item.value.user?.id) return;
-										console.log('Adding');
-										addUserAccess(item.value.user);
+										addUserAccess(item.value.user.id);
 										(document.activeElement as HTMLElement).blur();
+										inviteModal?.close();
 									}}
 								>
 									{item.value.name}

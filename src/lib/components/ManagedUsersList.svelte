@@ -37,7 +37,7 @@
 				</a>
 			</li>
 		{:else}
-			<li>You don't administer any other users.</li>
+			<li class="list-row">You don't administer any other users.</li>
 		{/each}
 	</ul>
 </div>

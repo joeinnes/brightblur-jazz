@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Group } from 'jazz-tools';
-	import { useCoState } from 'jazz-svelte';
+	import { Account, Group } from 'jazz-tools';
+	import { useAccount, useCoState } from 'jazz-svelte';
 	import { BrightBlurAccount, BrightBlurProfile } from '$lib/schema';
 	import { formatRole } from '$lib/utils/profileUtils';
 	import UserRoundX from 'lucide-svelte/icons/user-round-minus';
@@ -16,16 +16,17 @@
 	);
 
 	let countAdmins = $derived(
-		profile.current?._owner
+		currentlyViewing?.current?._owner
 			?.castAs?.(Group)
-			?.members.filter((member: { role: 'admin' | 'reader' | 'writer' }) => member.role === 'admin')
-			.length
+			?.members.filter((member) => member.role === 'admin').length || 0
 	);
+
+	let { me } = useAccount();
 </script>
 
 <div class="tab-content p-4">
 	<ul class="list bg-base-100 rounded-box shadow-md">
-		{#each profile.current?._owner?.castAs?.(Group)?.members || [] as member}
+		{#each currentlyViewing.current?._owner?.castAs?.(Group)?.members || [] as member}
 			{#await BrightBlurAccount.load(member.id, { profile: { avatar: [] } }) then person}
 				{#if person}
 					<li>
@@ -49,11 +50,18 @@
 							>
 								<button
 									class="btn btn-square btn-ghost"
-									disabled={member.id === currentlyViewing.current?.user?.id ||
-										(countAdmins < 2 && member.role === 'admin')}
-									onclick={(e) => {
+									disabled={member.id !== me?.id && member.role === 'admin'}
+									onclick={async (e) => {
+										e.preventDefault();
 										e.stopPropagation();
-										profile.current?._owner?.castAs?.(Group).removeMember(member.account);
+
+										try {
+											const account = await Account.load(member.account.id, {});
+											if (!account) throw new Error("Couldn't find the account");
+											await currentlyViewing.current?._owner?.castAs?.(Group).removeMember(account);
+										} catch (e) {
+											console.log(`That didn't work`, e);
+										}
 									}}
 								>
 									<UserRoundX />
@@ -61,13 +69,13 @@
 								{#if member.role === 'admin'}
 									<button
 										class="btn btn-square btn-ghost"
-										disabled={member.id === currentlyViewing.current?.user?.id || countAdmins < 2}
-										onclick={(e) => {
+										disabled={true}
+										onclick={async (e) => {
+											e.preventDefault();
 											e.stopPropagation();
-											const group = profile.current?._owner?.castAs?.(Group);
+											const group = currentlyViewing.current?._owner?.castAs?.(Group);
 											if (!group) return;
-											group.removeMember(member.account);
-											group.addMember(member.account, 'reader');
+											await group.removeMember(member.account);
 										}}
 									>
 										<ShieldOff />
@@ -76,12 +84,18 @@
 									<button
 										class="btn btn-square btn-ghost"
 										disabled={member.id === currentlyViewing.current?.user?.id}
-										onclick={(e) => {
-											e.stopPropagation();
-											const group = profile.current?._owner?.castAs?.(Group);
-											if (!group) return;
-											group.removeMember(member.account);
-											group.addMember(member.account, 'admin');
+										onclick={async (e) => {
+											try {
+												e.preventDefault();
+												e.stopPropagation();
+												const group = currentlyViewing.current?._owner?.castAs?.(Group);
+												if (!group) return;
+												const account = await Account.load(member.account.id, {});
+												if (!account) throw new Error("Couldn't find account.");
+												group.addMember(account, 'admin');
+											} catch (e) {
+												console.log("That didn't work", e);
+											}
 										}}
 									>
 										<ShieldPlus />

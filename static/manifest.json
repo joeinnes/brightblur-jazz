@@ -12,7 +12,6 @@
 	],
 	"orientation": "portrait",
 	"display": "standalone",
-	"dir": "left",
 	"lang": "en-GB",
 	"name": "BrightBlur",
 	"short_name": "BrightBlur",

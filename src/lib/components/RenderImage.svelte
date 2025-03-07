@@ -14,7 +14,8 @@
 			? useCoState(Photo, photoProp.value.id, {
 					faceSlices: [
 						{
-							file: []
+							file: [],
+							person: {}
 						}
 					]
 				})

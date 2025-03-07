@@ -75,7 +75,7 @@
 <div class="flex min-h-screen flex-col">
 	<NavBar />
 
-	<main class="container mx-auto flex-1">
+	<main class="container mx-auto max-w-xl flex-1">
 		{@render children()}
 	</main>
 

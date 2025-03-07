@@ -9,7 +9,7 @@
 
 	const {
 		id,
-		containerStyles = 'aspect-square w-full',
+		containerStyles = '',
 		shouldLoad = true
 	}: {
 		id: ID<Photo>;
@@ -35,10 +35,16 @@
 				(entries) => {
 					entries.forEach((entry) => {
 						if (entry.isIntersecting && canvas && photo.current) {
-							renderCanvas(canvas, photo.current, naturalDimensions).finally(() => {
-								loading = false;
-							});
-							observer.unobserve(entry.target);
+							renderCanvas(canvas, photo.current, naturalDimensions)
+								.then(() => {
+									loading = false;
+									observer.unobserve(entry.target);
+								})
+								.catch((e) => {
+									console.error('Render failed:', e);
+									loading = false;
+									observer.unobserve(entry.target);
+								});
 						}
 					});
 				},
@@ -65,7 +71,7 @@
 	>
 		<canvas
 			bind:this={canvas}
-			class="h-auto max-w-full object-contain object-center shadow-md"
+			class="h-auto w-full object-contain object-center shadow-md"
 			style="display: {loading ? 'none' : 'block'};"
 		></canvas>
 		{#if loading}

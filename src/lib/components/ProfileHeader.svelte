@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FileStream, Group } from 'jazz-tools';
 
-	import Cropper, { type Point } from 'svelte-easy-crop';
+	import Cropper from 'svelte-easy-crop';
 
 	import Camera from 'lucide-svelte/icons/camera';
 
@@ -142,7 +142,7 @@
 				<h1 class="text-3xl font-bold">{profile.current.name}</h1>
 			{/if}
 
-			{#if isOwnProfile}
+			{#if isOwnProfile || canAdminProfile}
 				<div>
 					<!-- Keep this div to avoid the modal trigger being block-width -->
 					<InviteViewerModal {profile} onInviteSuccess={() => {}} />
