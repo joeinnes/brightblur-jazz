@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { useAccount, useCoState } from 'jazz-svelte';
+	import { useCoState } from 'jazz-svelte';
 	import { Account, Group, type ID } from 'jazz-tools';
+	import toast from '@natoune/svelte-daisyui-toast';
+
 	import { BrightBlurAccount, BrightBlurProfile, GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
@@ -9,7 +11,9 @@
 	// Props
 	let {
 		profile,
-		onInviteSuccess = () => {}
+		onInviteSuccess = () => {
+			toast.success('Added successfully!');
+		}
 	}: {
 		profile: { current: BrightBlurProfile };
 		onInviteSuccess?: () => void;
@@ -43,13 +47,8 @@
 	);
 	// Add user to profile's access group
 	const addUserAccess = async (accountId: ID<BrightBlurAccount>) => {
-		if (!profile?.current?._owner) {
-			errorMessage = 'Cannot add access: profile owner not available';
-			console.log('error');
-			return;
-		}
-
 		try {
+			if (!profile?.current?._owner) throw new Error("Couldn't find owner.");
 			const ownerGroup = profile.current._owner.castAs(Group);
 			const account = await Account.load(accountId, {});
 			if (!account) throw new Error('Account not found');
@@ -61,9 +60,10 @@
 
 			// Notify parent component
 			onInviteSuccess();
-		} catch (error) {
+		} catch (error: any) {
+			toast.error(error.message, { duration: 3000 });
+
 			console.error('Error adding user access:', error);
-			errorMessage = 'Failed to add user access';
 		}
 	};
 
@@ -108,10 +108,15 @@
 								<button
 									type="button"
 									onclick={() => {
-										if (!item.value.user?.id) return;
-										addUserAccess(item.value.user.id);
-										(document.activeElement as HTMLElement).blur();
-										inviteModal?.close();
+										try {
+											if (!item.value.user?.id) throw new Error('Something went wrong.');
+
+											addUserAccess(item.value.user.id);
+											(document.activeElement as HTMLElement).blur();
+											inviteModal?.close();
+										} catch (e: any) {
+											toast.error(e.message, { duration: 3000 });
+										}
 									}}
 								>
 									{item.value.name}

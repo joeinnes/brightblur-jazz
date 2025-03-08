@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { FileStream, Group, type ID } from 'jazz-tools';
 	import { useAccount, useCoState } from 'jazz-svelte';
+	import toast from '@natoune/svelte-daisyui-toast';
 	import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
 	import User from 'lucide-svelte/icons/user';
 	import Image from './Image.svelte';
@@ -77,38 +78,44 @@
 				<li>
 					<button
 						onclick={async () => {
-							if (!photo.current?.file?.id) return;
-							const blob = await FileStream.loadAsBlob(photo.current.file.id);
-							if (!blob) return;
-							const fileName = crypto.randomUUID() + '.jpg';
-							if (navigator && navigator.canShare()) {
-								const img = new File([blob], fileName, { type: 'image/jpeg' });
-								navigator.share({
-									title: 'BrightBlur Photo',
-									text: 'Check out this photo on BrightBlur!',
-									files: [img]
-								});
-								return;
-							}
-							const url = URL.createObjectURL(blob);
-							const a = document.createElement('a');
+							try {
+								if (!photo.current?.file?.id) throw new Error('No photo selected.');
+								const blob = await FileStream.loadAsBlob(photo.current.file.id);
+								if (!blob) throw new Error('Could not read file.');
 
-							a.download = fileName;
-							a.href = url;
-							a.target = '_blank';
-							document.body.appendChild(a);
-							a.dispatchEvent(
-								new MouseEvent('click', {
-									bubbles: true,
-									cancelable: true,
-									view: window
-								})
-							);
-							document.body.removeChild(a);
-							setTimeout(() => {
-								URL.revokeObjectURL(url);
-								a.remove();
-							}, 100);
+								const fileName = crypto.randomUUID() + '.jpg';
+								if (!blob) throw new Error('Could not read file.');
+								if (navigator && navigator.canShare()) {
+									const img = new File([blob], fileName, { type: 'image/jpeg' });
+									navigator.share({
+										title: 'BrightBlur Photo',
+										text: 'Check out this photo on BrightBlur!',
+										files: [img]
+									});
+									return null;
+								}
+								const url = URL.createObjectURL(blob);
+								const a = document.createElement('a');
+
+								a.download = fileName;
+								a.href = url;
+								a.target = '_blank';
+								document.body.appendChild(a);
+								a.dispatchEvent(
+									new MouseEvent('click', {
+										bubbles: true,
+										cancelable: true,
+										view: window
+									})
+								);
+								document.body.removeChild(a);
+								setTimeout(() => {
+									URL.revokeObjectURL(url);
+									a.remove();
+								}, 100);
+							} catch (e: any) {
+								toast.error(e.message, { duration: 3000 });
+							}
 						}}
 					>
 						Download Blurred Photo</button
@@ -117,46 +124,50 @@
 				<li>
 					<button
 						onclick={async () => {
-							if (!photo.current?.file?.id) return;
-							const blob = await FileStream.loadAsBlob(photo.current.file.id);
-							if (!blob) return;
-							const fileName = crypto.randomUUID() + '.jpg';
-							const bitmap = await createImageBitmap(blob);
-							const { width, height } = bitmap;
-							bitmap.close();
-							const canvas = document.createElement('canvas');
-							await renderCanvas(canvas, photo.current, { w: width, h: height });
-							if (navigator && navigator.canShare()) {
-								const blob = canvas.toBlob((blob) => {
-									if (!blob) return;
-									const img = new File([blob], fileName, { type: 'image/jpeg' });
-									navigator.share({
-										title: 'BrightBlur Photo',
-										text: 'Check out this photo on BrightBlur!',
-										files: [img]
-									});
-								});
+							try {
+								if (!photo.current?.file?.id) throw new Error('No photo selected.');
 
-								return;
+								const blob = await FileStream.loadAsBlob(photo.current.file.id);
+								if (!blob) throw new Error('Could not read file.');
+								const fileName = crypto.randomUUID() + '.jpg';
+								const bitmap = await createImageBitmap(blob);
+								const { width, height } = bitmap;
+								bitmap.close();
+								const canvas = document.createElement('canvas');
+								await renderCanvas(canvas, photo.current, { w: width, h: height });
+								if (navigator && navigator.canShare()) {
+									const blob = canvas.toBlob((blob) => {
+										if (!blob) throw new Error('Could not read file.');
+										const img = new File([blob], fileName, { type: 'image/jpeg' });
+										navigator.share({
+											title: 'BrightBlur Photo',
+											text: 'Check out this photo on BrightBlur!',
+											files: [img]
+										});
+									});
+									return null;
+								}
+								const url = canvas.toDataURL('image/jpeg', 1.0);
+								const a = document.createElement('a');
+								a.download = fileName;
+								a.href = url;
+								a.target = '_blank';
+								document.body.appendChild(a);
+								a.dispatchEvent(
+									new MouseEvent('click', {
+										bubbles: true,
+										cancelable: true,
+										view: window
+									})
+								);
+								document.body.removeChild(a);
+								setTimeout(() => {
+									URL.revokeObjectURL(url);
+									a.remove();
+								}, 100);
+							} catch (e: any) {
+								toast.error(e.message, { duration: 3000 });
 							}
-							const url = canvas.toDataURL('image/jpeg', 1.0);
-							const a = document.createElement('a');
-							a.download = fileName;
-							a.href = url;
-							a.target = '_blank';
-							document.body.appendChild(a);
-							a.dispatchEvent(
-								new MouseEvent('click', {
-									bubbles: true,
-									cancelable: true,
-									view: window
-								})
-							);
-							document.body.removeChild(a);
-							setTimeout(() => {
-								URL.revokeObjectURL(url);
-								a.remove();
-							}, 100);
 						}}
 					>
 						Download Unblurred Photo</button
@@ -168,11 +179,16 @@
 						<button
 							class="btn btn-error btn-sm"
 							onclick={() => {
-								const owningGroup = photo.current?._owner.castAs(Group);
-								if (!owningGroup) return;
-								owningGroup.members.forEach((member) => {
-									owningGroup.removeMember(member.account);
-								});
+								try {
+									const owningGroup = photo.current?._owner.castAs(Group);
+									if (!owningGroup)
+										throw new Error("Couldn't work out who owns this. Maybe it was deleted?");
+									owningGroup.members.forEach((member) => {
+										owningGroup.removeMember(member.account);
+									});
+								} catch (e: any) {
+									toast.error(e.message, { duration: 3000 });
+								}
 							}}>Delete Photo</button
 						>
 					</li>

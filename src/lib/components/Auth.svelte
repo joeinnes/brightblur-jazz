@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { useAccount, usePasskeyAuth } from 'jazz-svelte';
+	import toast from '@natoune/svelte-daisyui-toast';
 
 	let { children }: { children?: Snippet } = $props();
 
@@ -14,7 +15,8 @@
 
 		if (!name) {
 			error = 'Name is required';
-			return;
+			toast.error('You did not provide a name', { duration: 3000 });
+			return null;
 		}
 		e.preventDefault();
 		error = undefined;
@@ -30,7 +32,9 @@
 				}
 			})
 			.catch((e) => {
+				console.error(e);
 				error = e.message;
+				toast.error('There was an issue creating your account.', { duration: 3000 });
 			});
 	}
 
@@ -39,7 +43,9 @@
 		e.preventDefault();
 		e.stopPropagation();
 		auth.current.logIn().catch((e) => {
+			console.error(e);
 			error = e.message;
+			toast.error('There was an error when trying to log you in.', { duration: 3000 });
 		});
 	}
 </script>
@@ -57,7 +63,7 @@
 				<div class="max-w-xl lg:max-w-3xl">
 					<a class="text-primary-600 block" href="/">
 						<span class="sr-only">Home</span>
-						<img class="size-24" src="/favicon.svg" />
+						<img class="size-24" src="/favicon.svg" alt="Logo" />
 					</a>
 
 					<h1 class="mt-6 text-2xl font-black sm:text-3xl md:text-4xl">Welcome to BrightBlur</h1>
