@@ -42,5 +42,8 @@
 		"typescript-eslint": "^8.20.0",
 		"vite": "^6.0.0",
 		"vite-plugin-pwa": "^0.21.1"
+	},
+	"dependencies": {
+		"@natoune/svelte-daisyui-toast": "^1.1.1"
 	}
 }

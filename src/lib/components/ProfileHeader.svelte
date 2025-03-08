@@ -7,6 +7,7 @@
 
 	import InviteViewerModal from '$lib/components/InviteViewerModal.svelte';
 	import Avatar from './Avatar.svelte';
+	import toast from '@natoune/svelte-daisyui-toast';
 	let avatarCropperModal: HTMLDialogElement | undefined = $state();
 
 	let { profile, isOwnProfile, canAdminProfile } = $props();
@@ -22,7 +23,10 @@
 	let cropInstance: Cropper | undefined = $state();
 
 	const updateProfile = async () => {
-		if (!canAdminProfile) return;
+		if (!canAdminProfile) {
+			toast.error('You do not have permission to update this profile.', { duration: 3000 });
+			throw new Error('You do not have permission to update this profile.');
+		}
 		if (avatarFile && avatarFile[0]) {
 			const avatarGroup = Group.create();
 			avatarGroup.addMember('everyone', 'reader');
@@ -53,39 +57,46 @@
 		width: number;
 		height: number;
 	}) => {
-		if (!avatarFile?.[0]) return;
+		try {
+			if (!avatarFile?.[0]) {
+				throw new Error('No file selected');
+			}
 
-		const image = new Image();
-		const url = URL.createObjectURL(avatarFile[0]);
-		image.src = url;
-		image.onload = () => {
-			URL.revokeObjectURL(url);
-			const canvas = document.createElement('canvas');
-			const ctx = canvas.getContext('2d');
+			const image = new Image();
+			const url = URL.createObjectURL(avatarFile[0]);
+			image.src = url;
+			image.onload = () => {
+				URL.revokeObjectURL(url);
+				const canvas = document.createElement('canvas');
+				const ctx = canvas.getContext('2d');
 
-			canvas.width = croppedAreaPixels.width;
-			canvas.height = croppedAreaPixels.height;
+				canvas.width = croppedAreaPixels.width;
+				canvas.height = croppedAreaPixels.height;
 
-			ctx?.drawImage(
-				image,
-				croppedAreaPixels.x,
-				croppedAreaPixels.y,
-				croppedAreaPixels.width,
-				croppedAreaPixels.height,
-				0,
-				0,
-				croppedAreaPixels.width,
-				croppedAreaPixels.height
-			);
+				ctx?.drawImage(
+					image,
+					croppedAreaPixels.x,
+					croppedAreaPixels.y,
+					croppedAreaPixels.width,
+					croppedAreaPixels.height,
+					0,
+					0,
+					croppedAreaPixels.width,
+					croppedAreaPixels.height
+				);
 
-			canvas.toBlob(
-				(blob) => {
-					if (blob) handleCroppedImage(blob);
-				},
-				'image/jpeg',
-				0.9
-			);
-		};
+				canvas.toBlob(
+					(blob) => {
+						if (blob) handleCroppedImage(blob);
+					},
+					'image/jpeg',
+					0.9
+				);
+			};
+		} catch (e: any) {
+			console.error(e);
+			toast.error(e.message, { duration: 3000 });
+		}
 	};
 </script>
 

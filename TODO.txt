@@ -6,6 +6,7 @@
 - [ ] 'Communities' rather than global stream
 - [ ] Toast system for errors and warnings
 - [/] Favicon
+  - It's looking good except the main one?
 - [ ] More work on unauthenticated experience
 - [ ] Request queues ('can I please look at X's profile?')
 - [X] One off shares

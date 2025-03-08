@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Account, Group } from 'jazz-tools';
 	import { useAccount, useCoState } from 'jazz-svelte';
+	import toast from '@natoune/svelte-daisyui-toast';
+
 	import { BrightBlurAccount, BrightBlurProfile } from '$lib/schema';
 	import { formatRole } from '$lib/utils/profileUtils';
 	import UserRoundX from 'lucide-svelte/icons/user-round-minus';
@@ -57,7 +59,7 @@
 
 										try {
 											const account = await Account.load(member.account.id, {});
-											if (!account) throw new Error("Couldn't find the account");
+											if (!account) throw new Error("Couldn't find account.");
 											await currentlyViewing.current?._owner?.castAs?.(Group).removeMember(account);
 										} catch (e) {
 											console.log(`That didn't work`, e);
@@ -74,7 +76,10 @@
 											e.preventDefault();
 											e.stopPropagation();
 											const group = currentlyViewing.current?._owner?.castAs?.(Group);
-											if (!group) return;
+											if (!group) {
+												toast.error('Something went wrong.', { duration: 3000 });
+												throw new Error("Couldn't find group.");
+											}
 											await group.removeMember(member.account);
 										}}
 									>
@@ -89,9 +94,15 @@
 												e.preventDefault();
 												e.stopPropagation();
 												const group = currentlyViewing.current?._owner?.castAs?.(Group);
-												if (!group) return;
+												if (!group) {
+													toast.error('Something went wrong.', { duration: 3000 });
+													throw new Error("Couldn't find group.");
+												}
 												const account = await Account.load(member.account.id, {});
-												if (!account) throw new Error("Couldn't find account.");
+												if (!account) {
+													toast.error('Something went wrong.', { duration: 3000 });
+													throw new Error("Couldn't find account.");
+												}
 												group.addMember(account, 'admin');
 											} catch (e) {
 												console.log("That didn't work", e);

@@ -7,6 +7,8 @@
 </script>
 
 <script lang="ts">
+	import { Toaster } from '@natoune/svelte-daisyui-toast';
+
 	import '../app.css';
 	import type { SyncConfig } from 'jazz-tools';
 
@@ -32,3 +34,4 @@
 		{@render children()}
 	</Auth>
 </JazzProvider>
+<Toaster />
