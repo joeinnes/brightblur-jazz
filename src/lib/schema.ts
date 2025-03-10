@@ -3,7 +3,6 @@ import { Account, Profile, co, FileStream, CoMap, CoList, Group, CoFeed } from '
 export class BrightBlurProfile extends Profile {
 	name = co.string;
 	avatar = co.optional.ref(FileStream);
-	faceSlices = co.optional.ref(ListOfFaceSlices);
 	user = co.optional.ref(Account);
 }
 

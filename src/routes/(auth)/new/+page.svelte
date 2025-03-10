@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
+	import { createImage } from 'jazz-browser-media-images';
 	import { Group, FileStream, type ID, Account } from 'jazz-tools';
 	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData } from '$lib/schema';
 	import { useCoState } from 'jazz-svelte';
@@ -20,6 +20,7 @@
 	import { extractAllPeople } from '$lib/utils/profileUtils';
 	import Cropper from 'svelte-easy-crop';
 	import { cropImage, type CroppedAreaPixels } from '$lib/utils/cropUtils';
+	import toast from '@natoune/svelte-daisyui-toast';
 
 	// Get global data for people and photos
 	const globalData = $derived(
@@ -130,6 +131,7 @@
 	// Handle form submission
 	const submitHandler = async (e: Event) => {
 		e.preventDefault();
+		const me = await Account.getMe();
 		if (!canvases.offscreen) return;
 
 		try {
@@ -197,6 +199,9 @@
 
 			// Add photo to global data
 			globalData.current?.photos.push(photo);
+			toast.success('Photo uploaded successfully!', {
+				duration: 3000
+			});
 			goto('/');
 		} catch (e) {
 			console.error('Error submitting photo:', e);
@@ -212,11 +217,11 @@
 	let isDrawing = $state(false);
 	let drawStart = $state({ x: 0, y: 0 });
 	let drawCurrent = $state({ x: 0, y: 0 });
-	let drawingMode = $state(false);
+	let drawingMode = $state(true); // Always enabled by default
 
 	// Function to handle drawing on canvas
 	const startDrawing = (e: MouseEvent | TouchEvent) => {
-		if (!drawingMode || !canvases.dom) return;
+		if (!canvases.dom) return;
 
 		isDrawing = true;
 		const rect = canvases.dom.getBoundingClientRect();
@@ -351,7 +356,7 @@
 		</div>
 
 		{#if ready.preview === 'ready'}
-			<small class="text-muted-foreground">Draw on the picture to add an area to blur</small>
+			<small class="opacity-60">Draw on the picture to add an area to blur</small>
 
 			<ul class="list bg-base-100 rounded-box shadow-md">
 				{#each faceList as face, i}
@@ -363,7 +368,7 @@
 							{:then imageFile}
 								{@const url = URL.createObjectURL(imageFile)}
 								<img
-									class="{imgSize} rounded-box"
+									class="{imgSize} rounded-box object-cover"
 									src={url}
 									alt="Face {i + 1}"
 									onload={() => URL.revokeObjectURL(url)}
