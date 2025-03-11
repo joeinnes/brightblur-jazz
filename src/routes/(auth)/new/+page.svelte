@@ -35,13 +35,13 @@
 
 	// Canvas state management
 	let canvases: {
-		dom: HTMLCanvasElement | null;
-		original: HTMLCanvasElement | null;
-		offscreen: HTMLCanvasElement | null;
+		dom: HTMLCanvasElement | undefined;
+		original: HTMLCanvasElement | undefined;
+		offscreen: OffscreenCanvas | undefined;
 	} = $state({
-		dom: null, // Canvas displayed to the user
-		original: null, // Holds the original full image
-		offscreen: null // Holds a full size version of the DOM canvas
+		dom: undefined, // Canvas displayed to the user
+		original: undefined, // Holds the original full image
+		offscreen: undefined // Holds a full size version of the DOM canvas
 	});
 
 	// Face detection results
@@ -82,7 +82,7 @@
 		img.onload = () => {
 			imageAspect = img.width / img.height;
 			URL.revokeObjectURL(url);
-			cropperModal?.show();
+			cropperModal?.showModal();
 		};
 
 		img.onerror = () => {
@@ -104,12 +104,16 @@
 				type: 'image/jpeg'
 			});
 
+			if (canvases.offscreen === null) throw new Error('Something went wrong.');
 			const { faceList: detectedFaces } = await processImageForFaces(croppedFile, canvases);
 			faceList = detectedFaces;
 			blurFaces(canvases, faceList);
 			ready.preview = 'ready';
-		} catch (error) {
+		} catch (error: unknown) {
 			console.error('Error processing image:', error);
+			if (error instanceof Error) {
+				toast.error(error.message, { duration: 3000 });
+			}
 			ready.preview = 'no image';
 		}
 	};
@@ -131,12 +135,12 @@
 	// Handle form submission
 	const submitHandler = async (e: Event) => {
 		e.preventDefault();
-		const me = await Account.getMe();
-		if (!canvases.offscreen) return;
 
 		try {
+			if (!canvases.offscreen) throw new Error('Something went wrong.');
+
 			// Create blob from the offscreen canvas
-			const file = await createImageBlob(canvases.offscreen);
+			const file = await canvases.offscreen.convertToBlob();
 
 			// Create public group for photo access
 			const publicGroup = Group.create();
@@ -203,8 +207,11 @@
 				duration: 3000
 			});
 			goto('/');
-		} catch (e) {
+		} catch (e: unknown) {
 			console.error('Error submitting photo:', e);
+			if (e instanceof Error) {
+				toast.error(e.message, { duration: 3000 });
+			}
 		}
 	};
 
@@ -217,7 +224,6 @@
 	let isDrawing = $state(false);
 	let drawStart = $state({ x: 0, y: 0 });
 	let drawCurrent = $state({ x: 0, y: 0 });
-	let drawingMode = $state(true); // Always enabled by default
 
 	// Function to handle drawing on canvas
 	const startDrawing = (e: MouseEvent | TouchEvent) => {
@@ -412,8 +418,9 @@
 
 <!-- Cropper Modal -->
 <dialog class="modal w-full" bind:this={cropperModal}>
-	<div class="modal-box flex h-[100dvh] w-full max-w-full flex-col items-center p-0">
-		<div class="relative h-full w-5/6 flex-1">
+	<div class="modal-box flex flex-col items-center">
+		<!-- flex h-[100dvh] w-full max-w-full flex-col items-center rounded-none p-0">-->
+		<div class="relative w-full flex-1" style="aspect-ratio: {imageAspect}">
 			<Cropper
 				bind:this={cropInstance}
 				image={originalFile ? URL.createObjectURL(originalFile) : undefined}
@@ -421,7 +428,7 @@
 				oncropcomplete={(e) => (croppedAreaPixels = e.pixels)}
 			/>
 		</div>
-		<div class="flex gap-2 py-4">
+		<div class="flex gap-2 bg-transparent py-4">
 			<button class="btn btn-primary" onclick={handleCropComplete}> Crop </button>
 			<button
 				class="btn btn-error"
