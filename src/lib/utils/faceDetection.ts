@@ -1,6 +1,6 @@
 import type { BrightBlurProfile } from '$lib/schema';
+import toast from '@natoune/svelte-daisyui-toast';
 import * as faceapi from 'face-api.js';
-// import { imageDataToFile } from './imageData';
 
 type Canvas = HTMLCanvasElement | null;
 export type FaceData = {
@@ -13,9 +13,9 @@ export type FaceData = {
 };
 
 type CanvasSet = {
-	dom: Canvas;
-	original: Canvas;
-	offscreen: Canvas;
+	dom: Canvas | undefined;
+	original: Canvas | undefined;
+	offscreen: OffscreenCanvas | undefined;
 };
 
 /**
@@ -68,8 +68,10 @@ export async function processImageForFaces(
 	const faceList: FaceData[] = [];
 	detections.forEach((detection) => {
 		const { x, y, width, height } = detection.box;
-		const faceData = extractFaceData(x, y, width, height, canvases.original);
-		if (faceData) faceList.push(faceData);
+		if (canvases.original) {
+			const faceData = extractFaceData(x, y, width, height, canvases.original);
+			if (faceData) faceList.push(faceData);
+		}
 	});
 
 	return { faceList, displaySize };
@@ -110,78 +112,88 @@ export function extractFaceData(
  * Apply blur effect to faces in the image
  */
 export function blurFaces(canvases: CanvasSet, faceList: FaceData[]): void {
-	if (!canvases.original || !canvases.dom) return;
-	const ctx = canvases.dom.getContext('2d');
-	if (!ctx) return;
+	try {
+		if (!canvases.original || !canvases.dom) throw new Error('Something went wrong.');
+		const ctx = canvases.dom.getContext('2d');
+		if (!ctx) throw new Error('Something went wrong.');
 
-	// Initialize offscreen canvas if needed
-	if (!canvases.offscreen) {
-		canvases.offscreen = document.createElement('canvas');
-		canvases.offscreen.width = canvases.original.width;
-		canvases.offscreen.height = canvases.original.height;
-	}
+		// Initialize offscreen canvas if needed
+		if (!canvases.offscreen) {
+			canvases.offscreen = new OffscreenCanvas(canvases.original.width, canvases.original.height);
+		}
 
-	const offscreenCtx = canvases.offscreen.getContext('2d', { willReadFrequently: true });
-	if (!offscreenCtx) return;
+		const offscreenCtx = canvases.offscreen.getContext('2d', { willReadFrequently: true });
+		if (!offscreenCtx) throw new Error('Something went wrong.');
 
-	// Draw original image to offscreen canvas
-	offscreenCtx.drawImage(
-		canvases.original,
-		0,
-		0,
-		canvases.offscreen.width,
-		canvases.offscreen.height
-	);
-
-	// Apply pixelation to each face
-	faceList.forEach((faceData) => {
-		const { x, y, width, height } = faceData;
-		const smallCanvas = document.createElement('canvas');
-		const smallCtx = smallCanvas.getContext('2d');
-		if (!smallCtx || !canvases.offscreen) return;
-
-		// Create small canvas for pixelation effect
-		const smallWidth = 6;
-		const smallHeight = Math.ceil(6 * (width / height));
-		smallCanvas.width = smallWidth;
-		smallCanvas.height = smallHeight;
-
-		// Draw the face onto the small canvas
-		smallCtx.drawImage(canvases.offscreen, x, y, width, height, 0, 0, smallWidth, smallHeight);
-
-		// Draw the small canvas back to the offscreen canvas (pixelated)
-		offscreenCtx.imageSmoothingEnabled = false;
-		offscreenCtx.drawImage(smallCanvas, 0, 0, smallWidth, smallHeight, x, y, width, height);
-		offscreenCtx.imageSmoothingEnabled = true;
-	});
-
-	// Update the DOM canvas with the blurred image
-	canvases.dom.width = canvases.original.width;
-	canvases.dom.height = canvases.original.height;
-	ctx.clearRect(0, 0, canvases.dom.width, canvases.dom.height);
-	ctx.drawImage(
-		canvases.offscreen,
-		0,
-		0,
-		canvases.offscreen.width,
-		canvases.offscreen.height,
-		0,
-		0,
-		canvases.dom.width,
-		canvases.dom.height
-	);
-
-	// Draw rectangles around faces
-	faceList.forEach((faceData) => {
-		const { x, y, width, height } = faceData;
-		ctx.lineWidth = width / 24;
-		ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue(
-			'--color-primary'
+		// Draw original image to offscreen canvas
+		offscreenCtx.drawImage(
+			canvases.original,
+			0,
+			0,
+			canvases.offscreen.width,
+			canvases.offscreen.height
 		);
-		ctx.beginPath();
-		ctx.roundRect(x, y, width, height, width / 24);
-		ctx.stroke();
-	});
+
+		// Apply pixelation to each face
+		faceList.forEach((faceData) => {
+			try {
+				const { x, y, width, height } = faceData;
+				const smallWidth = 6;
+				const smallHeight = Math.ceil(6 * (width / height));
+				const smallCanvas = new OffscreenCanvas(smallWidth, smallHeight);
+				const smallCtx = smallCanvas.getContext('2d');
+				if (!smallCtx || !canvases.offscreen) throw new Error('Something went wrong.');
+
+				// Draw the face onto the small canvas
+				smallCtx.drawImage(canvases.offscreen, x, y, width, height, 0, 0, smallWidth, smallHeight);
+
+				// Draw the small canvas back to the offscreen canvas (pixelated)
+				offscreenCtx.imageSmoothingEnabled = false;
+				offscreenCtx.drawImage(smallCanvas, 0, 0, smallWidth, smallHeight, x, y, width, height);
+				offscreenCtx.imageSmoothingEnabled = true;
+			} catch (e: unknown) {
+				console.error(e);
+				if (e instanceof Error) {
+					toast.error(e.message, { duration: 3000 });
+				}
+			}
+		});
+
+		// Update the DOM canvas with the blurred image
+		canvases.dom.width = canvases.original.width;
+		canvases.dom.height = canvases.original.height;
+		ctx.clearRect(0, 0, canvases.dom.width, canvases.dom.height);
+		ctx.drawImage(
+			canvases.offscreen,
+			0,
+			0,
+			canvases.offscreen.width,
+			canvases.offscreen.height,
+			0,
+			0,
+			canvases.dom.width,
+			canvases.dom.height
+		);
+
+		// Draw rectangles around faces
+		faceList.forEach((faceData) => {
+			const { x, y, width, height } = faceData;
+			ctx.lineWidth = width / 24;
+			ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue(
+				'--color-primary'
+			);
+			ctx.beginPath();
+			ctx.roundRect(x, y, width, height, width / 24);
+			ctx.stroke();
+		});
+	} catch (e: unknown) {
+		console.log(e);
+		if (e instanceof Error) {
+			toast.error(e.message, {
+				duration: 3000
+			});
+		}
+	}
 }
 
 /**
