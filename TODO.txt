@@ -4,7 +4,7 @@
 - [x] Take ownership of account (e.g. child coming of age)
   - No simple flow for this, just add the user as an admin
 - [ ] 'Communities' rather than global stream
-- [ ] Toast system for errors and warnings
+- [x] Toast system for errors and warnings
 - [/] Favicon
   - It's looking good except the main one?
 - [ ] More work on unauthenticated experience

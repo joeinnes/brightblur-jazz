@@ -20,7 +20,7 @@
 	// Filter photos that contain this person
 </script>
 
-<div class="grid grid-cols-3 gap-4">
+<div class="grid grid-cols-2 gap-2 md:grid-cols-3">
 	{#if photos && photos.length}
 		{#each photos as photo, i (photo?.value?.id || i)}
 			{#if photo?.value?.id}
