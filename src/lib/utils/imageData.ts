@@ -1,6 +1,6 @@
 import { Account, FileStream, type ID } from 'jazz-tools';
 import type { Photo } from '$lib/schema';
-
+import Pica from 'pica';
 export function imageDataToFile(imageData: ImageData, filename = 'image.jpeg'): Promise<File> {
 	// Create a temporary canvas to draw the image data
 	const canvas = document.createElement('canvas');
@@ -9,6 +9,8 @@ export function imageDataToFile(imageData: ImageData, filename = 'image.jpeg'): 
 	const ctx = canvas.getContext('2d');
 
 	if (!ctx) throw new Error('No context'); // TODO: throw an error
+	ctx.imageSmoothingEnabled = true;
+	ctx.imageSmoothingQuality = 'high';
 	ctx.putImageData(imageData, 0, 0);
 
 	return new Promise((resolve, reject) => {
@@ -41,19 +43,27 @@ export async function renderCanvas(
 	photo: Photo,
 	naturalDimensions: { w: number; h: number }
 ) {
-	const ctx = canvas.getContext('2d');
+	const offscreen = document.createElement('canvas');
+	const dpr = window?.devicePixelRatio || 1;
+
+	const ctx = offscreen.getContext('2d');
 	if (!ctx || !photo.file?.id) throw new Error('No context or no photo file.');
+
+	// Set rendering quality
+	ctx.imageSmoothingEnabled = true;
+	ctx.imageSmoothingQuality = 'high';
 
 	const mainImage = await getFile(photo.file.id);
 	if (!mainImage) throw new Error('No main image');
 
 	naturalDimensions.w = mainImage.width;
 	naturalDimensions.h = mainImage.height;
-	canvas.width = mainImage.width;
-	canvas.height = mainImage.height;
+	offscreen.width = mainImage.width;
+	offscreen.height = mainImage.height;
+	canvas.height = canvas.width * (naturalDimensions.h / naturalDimensions.w);
 
 	// Clear any previous content and ensure clean rendering
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.clearRect(0, 0, offscreen.width, offscreen.height);
 	ctx.drawImage(mainImage, 0, 0);
 
 	const primaryColour = getComputedStyle(document.documentElement)
@@ -64,7 +74,7 @@ export async function renderCanvas(
 	if (photo.faceSlices) {
 		// Create an array of promises for each slice
 		const slicePromises = photo.faceSlices.map(async (slice) => {
-			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return;
+			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return null;
 
 			const lineWidth = Math.floor(Math.max(slice.width / 24, 2));
 			ctx.lineWidth = lineWidth;
@@ -86,7 +96,7 @@ export async function renderCanvas(
 			);
 			ctx.stroke();
 
-			if (!slice?.file?.id) return;
+			if (!slice?.file?.id) return null;
 
 			// Handle face image loading with timeout to prevent hanging
 			try {
@@ -99,6 +109,10 @@ export async function renderCanvas(
 				const faceImage = await getFile(slice.file.id);
 
 				if (faceImage) {
+					// Apply image rendering with high quality settings
+					ctx.imageSmoothingEnabled = true;
+					ctx.imageSmoothingQuality = 'high';
+
 					ctx.drawImage(
 						faceImage,
 						Math.floor(slice.x),
@@ -107,17 +121,22 @@ export async function renderCanvas(
 						Math.ceil(slice.height)
 					);
 				}
-			} catch (e) {
+			} catch (e: unknown) {
 				// Convoluted stuff below to make Typescript happy when I just don't care about the error.
-				if (e) return;
-				return;
-				// console.log('Face processing error:', e);
-				// This is normal behaviour if the user doesn't have permission to view the face slice
+				if (e || !e) return null;
 			}
 		});
 
 		// Wait for all slices to complete or timeout
 		await Promise.allSettled(slicePromises);
+		const pica = new Pica({
+			tile: 512,
+			features: ['all']
+		});
+
+		await pica.resize(offscreen, canvas, {
+			filter: 'lanczos2' // Hamming gives the best performance, although still not great from a cold start.
+		});
 	}
 
 	// Explicitly return to ensure promise resolution

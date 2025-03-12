@@ -56,7 +56,6 @@
 
 	// Cropping state
 	let cropperModal: HTMLDialogElement | undefined = $state();
-	let cropInstance: Cropper | undefined = $state();
 	let croppedAreaPixels: CroppedAreaPixels = $state({
 		x: 0,
 		y: 0,
@@ -70,28 +69,34 @@
 
 	// Update file selection handler to calculate aspect ratio
 	const handleFileSelect = (e: Event & { currentTarget: HTMLInputElement }) => {
-		const input = e.currentTarget;
-		if (!input.files || !input.files[0]) return;
+		try {
+			const input = e.currentTarget;
+			if (!input.files || !input.files[0]) throw new Error('No file selected.');
 
-		originalFile = input.files[0];
+			originalFile = input.files[0];
 
-		// Calculate aspect ratio from the original image
-		const img = new Image();
-		const url = URL.createObjectURL(input.files[0]);
+			// Calculate aspect ratio from the original image
+			const img = new Image();
+			const url = URL.createObjectURL(input.files[0]);
 
-		img.onload = () => {
-			imageAspect = img.width / img.height;
-			URL.revokeObjectURL(url);
-			cropperModal?.showModal();
-		};
+			img.onload = () => {
+				imageAspect = img.width / img.height;
+				URL.revokeObjectURL(url);
+				cropperModal?.showModal();
+			};
 
-		img.onerror = () => {
-			URL.revokeObjectURL(url);
-			imageAspect = undefined;
-			cropperModal?.show();
-		};
+			img.onerror = () => {
+				URL.revokeObjectURL(url);
+				imageAspect = undefined;
+				cropperModal?.show();
+			};
 
-		img.src = url;
+			img.src = url;
+		} catch (e: unknown) {
+			if (e instanceof Error) {
+				toast.error(e.message, { duration: 3000 });
+			}
+		}
 	};
 
 	// Process cropped image and detect faces
@@ -120,14 +125,14 @@
 
 	// Handle crop completion
 	const handleCropComplete = async () => {
-		if (!originalFile) return;
-
 		try {
+			if (!originalFile) throw new Error('Something went wrong.');
 			const croppedBlob = await cropImage(originalFile, croppedAreaPixels);
 			cropperModal?.close();
 			await processCroppedImage(croppedBlob);
-		} catch (error) {
-			console.error('Error cropping image:', error);
+		} catch (e: unknown) {
+			console.error('Error cropping image:', e);
+			if (e instanceof Error) toast.error(e.message, { duration: 3000 });
 			ready.preview = 'no image';
 		}
 	};
@@ -227,19 +232,26 @@
 
 	// Function to handle drawing on canvas
 	const startDrawing = (e: MouseEvent | TouchEvent) => {
-		if (!canvases.dom) return;
+		try {
+			if (!canvases.dom) throw new Error('Something went wrong.');
 
-		isDrawing = true;
-		const rect = canvases.dom.getBoundingClientRect();
-		const x = (e instanceof MouseEvent ? e.clientX : e.touches[0].clientX) - rect.left;
-		const y = (e instanceof MouseEvent ? e.clientY : e.touches[0].clientY) - rect.top;
+			isDrawing = true;
+			const rect = canvases.dom.getBoundingClientRect();
+			const x = (e instanceof MouseEvent ? e.clientX : e.touches[0].clientX) - rect.left;
+			const y = (e instanceof MouseEvent ? e.clientY : e.touches[0].clientY) - rect.top;
 
-		drawStart = { x, y };
-		drawCurrent = { x, y };
+			drawStart = { x, y };
+			drawCurrent = { x, y };
+		} catch (e: unknown) {
+			console.error(e);
+			if (e instanceof Error) {
+				toast.error(e.message, { duration: 3000 });
+			}
+		}
 	};
 
 	const continueDrawing = (e: MouseEvent | TouchEvent) => {
-		if (!isDrawing || !canvases.dom) return;
+		if (!isDrawing || !canvases.dom) return null;
 
 		const rect = canvases.dom.getBoundingClientRect();
 		const x = (e instanceof MouseEvent ? e.clientX : e.touches[0].clientX) - rect.left;
@@ -252,7 +264,7 @@
 	};
 
 	const stopDrawing = () => {
-		if (!isDrawing || !canvases.dom || !canvases.original) return;
+		if (!isDrawing || !canvases.dom || !canvases.original) return null;
 
 		isDrawing = false;
 
@@ -292,27 +304,31 @@
 	};
 
 	const redrawCanvas = () => {
-		if (!canvases.dom || !isDrawing) return;
+		try {
+			if (!canvases.dom || !isDrawing) throw new Error('Something went wrong.');
 
-		// Get the context and redraw from the offscreen canvas
-		const ctx = canvases.dom.getContext('2d');
-		if (!ctx) throw new Error('Canvas context is null');
-		if (!canvases.offscreen) return;
+			// Get the context and redraw from the offscreen canvas
+			const ctx = canvases.dom.getContext('2d');
+			if (!ctx) throw new Error('Something went wrong.');
+			if (!canvases.offscreen) throw new Error('Something went wrong.');
 
-		ctx.clearRect(0, 0, canvases.dom.width, canvases.dom.height);
-		ctx.drawImage(canvases.offscreen, 0, 0, canvases.dom.width, canvases.dom.height);
+			ctx.clearRect(0, 0, canvases.dom.width, canvases.dom.height);
+			ctx.drawImage(canvases.offscreen, 0, 0, canvases.dom.width, canvases.dom.height);
 
-		// Draw the selection rectangle
-		ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-		ctx.lineWidth = 2;
-		ctx.beginPath();
-		ctx.rect(
-			Math.min(drawStart.x, drawCurrent.x),
-			Math.min(drawStart.y, drawCurrent.y),
-			Math.abs(drawCurrent.x - drawStart.x),
-			Math.abs(drawCurrent.y - drawStart.y)
-		);
-		ctx.stroke();
+			// Draw the selection rectangle
+			ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+			ctx.lineWidth = 2;
+			ctx.beginPath();
+			ctx.rect(
+				Math.min(drawStart.x, drawCurrent.x),
+				Math.min(drawStart.y, drawCurrent.y),
+				Math.abs(drawCurrent.x - drawStart.x),
+				Math.abs(drawCurrent.y - drawStart.y)
+			);
+			ctx.stroke();
+		} catch (e: unknown) {
+			if (e instanceof Error) toast.error('Something went wrong.', { duration: 3000 });
+		}
 	};
 </script>
 

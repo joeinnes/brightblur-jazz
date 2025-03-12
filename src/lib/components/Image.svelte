@@ -9,7 +9,7 @@
 
 	const {
 		id,
-		containerStyles = '',
+		containerStyles = 'w-full',
 		shouldLoad = true
 	}: {
 		id: ID<Photo>;
@@ -66,14 +66,17 @@
 
 {#if id}
 	<div
-		class="{containerStyles} flex items-center justify-center {loading && 'h-full'}"
+		class="{containerStyles} flex items-center justify-center {loading && 'h-full w-full'}"
 		bind:this={container}
 	>
-		<canvas
-			bind:this={canvas}
-			class="h-auto w-full object-contain object-center shadow-md"
-			style="display: {loading ? 'none' : 'block'};"
-		></canvas>
+		{#if container?.clientWidth}
+			<canvas
+				bind:this={canvas}
+				class="object-cover shadow-md"
+				width={container?.clientWidth}
+				style="display: {loading ? 'none' : 'block'}"
+			></canvas>
+		{/if}
 		{#if loading}
 			<div
 				class="bg-primary-content text-primary grid aspect-square w-full animate-pulse place-items-center"
