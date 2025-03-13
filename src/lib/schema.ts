@@ -39,6 +39,7 @@ export class BrightBlurAccount extends Account {
 export class Photo extends CoMap {
 	faceSlices = co.optional.ref(ListOfFaceSlices);
 	file = co.ref(FileStream);
+	fullSizeFile = co.ref(FileStream);
 }
 
 export class FeedOfPhotos extends CoFeed.Of(co.ref(Photo)) {}

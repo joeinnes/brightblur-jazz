@@ -80,12 +80,14 @@
 						onclick={async () => {
 							try {
 								if (!photo.current?.file?.id) throw new Error('No photo selected.');
-								const blob = await FileStream.loadAsBlob(photo.current.file.id);
+								const blob = await FileStream.loadAsBlob(
+									photo.current.fullSizeFile?.id || photo.current.file.id
+								);
 								if (!blob) throw new Error('Could not read file.');
 
 								const fileName = crypto.randomUUID() + '.jpg';
 								if (!blob) throw new Error('Could not read file.');
-								if (navigator && navigator.canShare()) {
+								if (navigator && navigator?.canShare?.()) {
 									const img = new File([blob], fileName, { type: 'image/jpeg' });
 									navigator.share({
 										title: 'BrightBlur Photo',
@@ -127,15 +129,19 @@
 							try {
 								if (!photo.current?.file?.id) throw new Error('No photo selected.');
 
-								const blob = await FileStream.loadAsBlob(photo.current.file.id);
+								const blob = await FileStream.loadAsBlob(
+									photo.current.fullSizeFile?.id || photo.current.file.id
+								);
 								if (!blob) throw new Error('Could not read file.');
 								const fileName = crypto.randomUUID() + '.jpg';
 								const bitmap = await createImageBitmap(blob);
 								const { width, height } = bitmap;
 								bitmap.close();
 								const canvas = document.createElement('canvas');
-								await renderCanvas(canvas, photo.current, { w: width, h: height });
-								if (navigator && navigator.canShare()) {
+								canvas.width = width;
+								canvas.height = height;
+								await renderCanvas(canvas, photo.current, { w: width, h: height }, true);
+								if (navigator && navigator?.canShare?.()) {
 									const blob = canvas.toBlob((blob) => {
 										if (!blob) throw new Error('Could not read file.');
 										const img = new File([blob], fileName, { type: 'image/jpeg' });
