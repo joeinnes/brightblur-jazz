@@ -67,9 +67,14 @@ export async function processImageForFaces(
 	// Extract face data
 	const faceList: FaceData[] = [];
 	detections.forEach((detection) => {
-		const { x, y, width, height } = detection.box;
+		const box = detection.box;
 		if (canvases.original) {
-			const faceData = extractFaceData(x, y, width, height, canvases.original);
+			// Convert to decimal coordinates (0-1 range)
+			const x = box.x / displaySize.width;
+			const y = box.y / displaySize.height;
+			const width = box.width / displaySize.width;
+			const height = box.height / displaySize.height;
+			const faceData = extractFaceData(x, y, width, height, canvases.original, displaySize);
 			if (faceData) faceList.push(faceData);
 		}
 	});
@@ -77,31 +82,30 @@ export async function processImageForFaces(
 	return { faceList, displaySize };
 }
 
-/**
- * Extract face data from coordinates
- */
 export function extractFaceData(
 	x: number,
 	y: number,
 	width: number,
 	height: number,
-	originalCanvas: HTMLCanvasElement | null
+	originalCanvas: HTMLCanvasElement | null,
+	displaySize: { width: number; height: number }
 ): FaceData | null {
 	if (!originalCanvas) return null;
 	const ctx = originalCanvas.getContext('2d');
 	if (!ctx) return null;
 
-	const blurX = Math.max(x, 0);
-	const blurY = Math.max(y, 0);
-	const blurWidth = Math.min(width, originalCanvas.width - blurX);
-	const blurHeight = Math.min(height, originalCanvas.height - blurY);
+	// Convert decimal coordinates back to pixels for image data extraction
+	const pixelX = Math.max(Math.floor(x * displaySize.width), 0);
+	const pixelY = Math.max(Math.floor(y * displaySize.height), 0);
+	const pixelWidth = Math.min(Math.ceil(width * displaySize.width), displaySize.width - pixelX);
+	const pixelHeight = Math.min(Math.ceil(height * displaySize.height), displaySize.height - pixelY);
 
 	return {
-		x: blurX,
-		y: blurY,
-		width: blurWidth,
-		height: blurHeight,
-		originalImageData: ctx.getImageData(blurX, blurY, blurWidth, blurHeight),
+		x,
+		y,
+		width,
+		height,
+		originalImageData: ctx.getImageData(pixelX, pixelY, pixelWidth, pixelHeight),
 		person: {
 			id: null
 		}
@@ -144,12 +148,38 @@ export function blurFaces(canvases: CanvasSet, faceList: FaceData[]): void {
 				const smallCtx = smallCanvas.getContext('2d');
 				if (!smallCtx || !canvases.offscreen) throw new Error('Something went wrong.');
 
+				// Convert decimal coordinates to pixels for this canvas
+				const pixelX = Math.floor(x * canvases.offscreen.width);
+				const pixelY = Math.floor(y * canvases.offscreen.height);
+				const pixelWidth = Math.ceil(width * canvases.offscreen.width);
+				const pixelHeight = Math.ceil(height * canvases.offscreen.height);
+
 				// Draw the face onto the small canvas
-				smallCtx.drawImage(canvases.offscreen, x, y, width, height, 0, 0, smallWidth, smallHeight);
+				smallCtx.drawImage(
+					canvases.offscreen,
+					pixelX,
+					pixelY,
+					pixelWidth,
+					pixelHeight,
+					0,
+					0,
+					smallWidth,
+					smallHeight
+				);
 
 				// Draw the small canvas back to the offscreen canvas (pixelated)
 				offscreenCtx.imageSmoothingEnabled = false;
-				offscreenCtx.drawImage(smallCanvas, 0, 0, smallWidth, smallHeight, x, y, width, height);
+				offscreenCtx.drawImage(
+					smallCanvas,
+					0,
+					0,
+					smallWidth,
+					smallHeight,
+					pixelX,
+					pixelY,
+					pixelWidth,
+					pixelHeight
+				);
 				offscreenCtx.imageSmoothingEnabled = true;
 			} catch (e: unknown) {
 				console.error(e);
@@ -178,12 +208,18 @@ export function blurFaces(canvases: CanvasSet, faceList: FaceData[]): void {
 		// Draw rectangles around faces
 		faceList.forEach((faceData) => {
 			const { x, y, width, height } = faceData;
-			ctx.lineWidth = width / 24;
+			// Convert decimal coordinates to pixels for the DOM canvas
+			const pixelX = x * canvases.dom.width;
+			const pixelY = y * canvases.dom.height;
+			const pixelWidth = width * canvases.dom.width;
+			const pixelHeight = height * canvases.dom.height;
+
+			ctx.lineWidth = pixelWidth / 24;
 			ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue(
 				'--color-primary'
 			);
 			ctx.beginPath();
-			ctx.roundRect(x, y, width, height, width / 24);
+			ctx.roundRect(pixelX, pixelY, pixelWidth, pixelHeight, pixelWidth / 24);
 			ctx.stroke();
 		});
 	} catch (e: unknown) {

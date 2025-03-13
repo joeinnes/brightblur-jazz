@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { createImage } from 'jazz-browser-media-images';
 	import { Group, FileStream, type ID, Account } from 'jazz-tools';
 	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData } from '$lib/schema';
 	import { useCoState } from 'jazz-svelte';
@@ -14,13 +13,13 @@
 		initFaceDetection,
 		processImageForFaces,
 		blurFaces,
-		createImageBlob,
 		type FaceData
 	} from '$lib/utils/faceDetection';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
 	import Cropper from 'svelte-easy-crop';
 	import { cropImage, type CroppedAreaPixels } from '$lib/utils/cropUtils';
 	import toast from '@natoune/svelte-daisyui-toast';
+	import Pica from 'pica';
 
 	// Get global data for people and photos
 	const globalData = $derived(
@@ -33,6 +32,7 @@
 	// Extract list of people from global data
 	let listOfPeople = $derived(extractAllPeople(globalData));
 
+	let cropInstance: Cropper | undefined = $state();
 	// Canvas state management
 	let canvases: {
 		dom: HTMLCanvasElement | undefined;
@@ -145,7 +145,10 @@
 			if (!canvases.offscreen) throw new Error('Something went wrong.');
 
 			// Create blob from the offscreen canvas
-			const file = await canvases.offscreen.convertToBlob();
+			const file = await canvases.offscreen.convertToBlob({
+				type: 'image/jpeg',
+				quality: 0.9
+			});
 
 			// Create public group for photo access
 			const publicGroup = Group.create();
@@ -191,14 +194,46 @@
 				listOfFaceSlices.push(faceSlice);
 			}
 
-			// Create the main photo
+			const pica = new Pica({
+				tile: 1024,
+				features: ['all']
+			});
+			const smallerCanvas = document.createElement('canvas');
+			smallerCanvas.width = 2048;
+			smallerCanvas.height = 2048 * (canvases.offscreen.height / canvases.offscreen.width);
+			const resizedImageCanvas = await pica.resize(
+				canvases.offscreen.transferToImageBitmap(),
+				smallerCanvas,
+				{
+					filter: 'lanczos2'
+				}
+			);
+			const resizedImageBlob: Blob = await new Promise((resolve, reject) => {
+				resizedImageCanvas.toBlob(
+					(r) => {
+						if (r instanceof Blob) {
+							resolve(r);
+						} else {
+							reject();
+						}
+					},
+					'image/jpeg',
+					0.9
+				);
+			});
+
 			const image = await FileStream.createFromBlob(file, {
+				owner: publicGroup
+			});
+
+			const resizedImage = await FileStream.createFromBlob(resizedImageBlob, {
 				owner: publicGroup
 			});
 
 			const photo = Photo.create(
 				{
-					file: image,
+					fullSizeFile: image,
+					file: resizedImage,
 					faceSlices: listOfFaceSlices
 				},
 				{
@@ -268,24 +303,27 @@
 
 		isDrawing = false;
 
-		// Calculate the scaling factor between preview and original image
-		const scaleX = canvases.original.width / canvases.dom.clientWidth;
-		const scaleY = canvases.original.height / canvases.dom.clientHeight;
-
-		// Calculate the rectangle in original image coordinates
-		const x = Math.min(drawStart.x, drawCurrent.x) * scaleX;
-		const y = Math.min(drawStart.y, drawCurrent.y) * scaleY;
-		const width = Math.abs(drawCurrent.x - drawStart.x) * scaleX;
-		const height = Math.abs(drawCurrent.y - drawStart.y) * scaleY;
+		// Calculate the rectangle in original image coordinates as decimal values (0-1)
+		const x = Math.min(drawStart.x, drawCurrent.x) / canvases.dom.clientWidth;
+		const y = Math.min(drawStart.y, drawCurrent.y) / canvases.dom.clientHeight;
+		const width = Math.abs(drawCurrent.x - drawStart.x) / canvases.dom.clientWidth;
+		const height = Math.abs(drawCurrent.y - drawStart.y) / canvases.dom.clientHeight;
 
 		// Only create a face slice if the area is large enough
-		if (width > 20 && height > 20) {
+		if (width * canvases.original.width > 20 && height * canvases.original.height > 20) {
 			// Create a new face slice from the drawn area
 			const ctx = canvases.original.getContext('2d');
 			if (!ctx) throw new Error('Canvas context is null');
-			const imageData = ctx.getImageData(x, y, width, height);
 
-			// Create a new face data object
+			// Convert decimal coordinates back to pixel values for getting image data
+			const pixelX = Math.floor(x * canvases.original.width);
+			const pixelY = Math.floor(y * canvases.original.height);
+			const pixelWidth = Math.ceil(width * canvases.original.width);
+			const pixelHeight = Math.ceil(height * canvases.original.height);
+
+			const imageData = ctx.getImageData(pixelX, pixelY, pixelWidth, pixelHeight);
+
+			// Create a new face data object with decimal coordinates
 			const newFace: FaceData = {
 				x,
 				y,
@@ -398,6 +436,8 @@
 						</div>
 						<div>
 							{#if listOfPeople && listOfPeople.length > 0}
+								{face.x}
+								{face.y}
 								<Autocomplete
 									bind:selectedItem={faceList[i].person.id}
 									imageData={face.originalImageData}

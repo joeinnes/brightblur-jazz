@@ -28,3 +28,11 @@ export function drawSelectionRectangle(
     ctx.lineWidth = 2;
     ctx.stroke();
 }
+
+// Add a new utility function for decimal-to-pixel conversion
+export function decimalToPixel(
+    decimal: number,
+    dimension: number
+): number {
+    return decimal * dimension;
+}

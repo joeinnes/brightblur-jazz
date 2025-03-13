@@ -41,19 +41,20 @@ export const getFile = async (id: ID<FileStream>) => {
 export async function renderCanvas(
 	canvas: HTMLCanvasElement,
 	photo: Photo,
-	naturalDimensions: { w: number; h: number }
+	naturalDimensions: { w: number; h: number },
+	fullSize = false
 ) {
 	const offscreen = document.createElement('canvas');
-	const dpr = window?.devicePixelRatio || 1;
-
 	const ctx = offscreen.getContext('2d');
-	if (!ctx || !photo.file?.id) throw new Error('No context or no photo file.');
+	const fileId = fullSize && photo.fullSizeFile?.id ? photo.fullSizeFile?.id : photo.file?.id;
+
+	if (!ctx || !fileId) throw new Error('No context or no photo file.');
 
 	// Set rendering quality
 	ctx.imageSmoothingEnabled = true;
 	ctx.imageSmoothingQuality = 'high';
 
-	const mainImage = await getFile(photo.file.id);
+	const mainImage = await getFile(fileId);
 	if (!mainImage) throw new Error('No main image');
 
 	naturalDimensions.w = mainImage.width;
@@ -76,22 +77,24 @@ export async function renderCanvas(
 		const slicePromises = photo.faceSlices.map(async (slice) => {
 			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return null;
 
-			const lineWidth = Math.floor(Math.max(slice.width / 24, 2));
+			// Convert decimal coordinates to pixel values based on canvas dimensions
+			const pixelX = Math.floor(slice.x * offscreen.width);
+			const pixelY = Math.floor(slice.y * offscreen.height);
+			const pixelWidth = Math.ceil(slice.width * offscreen.width);
+			const pixelHeight = Math.ceil(slice.height * offscreen.height);
+
+			const lineWidth = Math.floor(Math.max(pixelWidth / 24, 2));
 			ctx.lineWidth = lineWidth;
 
 			// Adjust border position to be fully under the face image
-			const x = Math.floor(slice.x);
-			const y = Math.floor(slice.y);
-			const width = Math.ceil(slice.width);
-			const height = Math.ceil(slice.height);
-			const radius = Math.floor(slice.width / 24);
+			const radius = Math.floor(pixelWidth / 24);
 
 			ctx.beginPath();
 			ctx.roundRect(
-				x + lineWidth / 2,
-				y + lineWidth / 2,
-				width - lineWidth,
-				height - lineWidth,
+				pixelX + lineWidth / 2,
+				pixelY + lineWidth / 2,
+				pixelWidth - lineWidth,
+				pixelHeight - lineWidth,
 				radius
 			);
 			ctx.stroke();
@@ -113,13 +116,7 @@ export async function renderCanvas(
 					ctx.imageSmoothingEnabled = true;
 					ctx.imageSmoothingQuality = 'high';
 
-					ctx.drawImage(
-						faceImage,
-						Math.floor(slice.x),
-						Math.floor(slice.y),
-						Math.ceil(slice.width),
-						Math.ceil(slice.height)
-					);
+					ctx.drawImage(faceImage, pixelX, pixelY, pixelWidth, pixelHeight);
 				}
 			} catch (e: unknown) {
 				// Convoluted stuff below to make Typescript happy when I just don't care about the error.
@@ -130,7 +127,7 @@ export async function renderCanvas(
 		// Wait for all slices to complete or timeout
 		await Promise.allSettled(slicePromises);
 		const pica = new Pica({
-			tile: 512,
+			tile: 1024,
 			features: ['all']
 		});
 
