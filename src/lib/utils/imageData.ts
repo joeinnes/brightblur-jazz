@@ -46,7 +46,36 @@ export async function renderCanvas(
 ) {
 	const offscreen = document.createElement('canvas');
 	const ctx = offscreen.getContext('2d');
-	const fileId = fullSize && photo.fullSizeFile?.id ? photo.fullSizeFile?.id : photo.file?.id;
+
+	// Determine the best image size to use based on the canvas width
+	let fileId;
+
+	if (fullSize) {
+		// Use the original size if fullSize is requested
+		fileId = photo.images?.[0]?.file?.id;
+	} else if (photo.images && photo.images.length > 0) {
+		// Find the best size that's larger than or equal to the canvas width
+		const targetWidth = canvas.width;
+		const sortedImages = [...photo.images].sort((a, b) => {
+			if (!a?.size || !b?.size) return 0;
+			return a.size - b.size;
+		});
+
+		// Find the smallest size that's larger than the target
+		let bestImage = sortedImages[0]; // Default to smallest
+
+		for (const img of sortedImages) {
+			if (img && img.size >= targetWidth) {
+				bestImage = img;
+				break;
+			}
+			// Keep updating with larger sizes until we find one big enough
+			bestImage = img;
+		}
+
+		if (!bestImage) throw new Error("Couldn't find a good image.");
+		fileId = bestImage.file?.id;
+	}
 
 	if (!ctx || !fileId) throw new Error('No context or no photo file.');
 
@@ -99,17 +128,45 @@ export async function renderCanvas(
 			);
 			ctx.stroke();
 
-			if (!slice?.file?.id) return null;
+			// Find the appropriate face image based on the main image size we're using
+			let faceImageId;
+
+			if (slice.images && slice.images.length > 0) {
+				// Find the main image size we're currently using
+				const mainImageSize = photo.images?.find((img) => img?.file?.id === fileId)?.size;
+
+				if (mainImageSize) {
+					// Find the face image with the same size or closest smaller size
+					const sortedFaceImages = [...slice.images].sort((a, b) => {
+						if (!a?.size || !b?.size) return 0;
+						return b.size - a.size; // Sort descending
+					});
+
+					for (const img of sortedFaceImages) {
+						if (img && img.size <= mainImageSize) {
+							faceImageId = img.file?.id;
+							break;
+						}
+					}
+
+					// If no suitable size found, use the smallest available
+					if (!faceImageId && sortedFaceImages.length > 0) {
+						faceImageId = sortedFaceImages[sortedFaceImages.length - 1]?.file?.id;
+					}
+				}
+			}
+
+			if (!faceImageId) return null;
 
 			// Handle face image loading with timeout to prevent hanging
 			try {
 				const me = Account.getMe();
-				const value = await FileStream.load(slice.file.id, []);
+				const value = await FileStream.load(faceImageId, []);
 
 				if (!value || !me.canRead(value)) {
 					throw new Error(`Can't access this face slice`);
 				}
-				const faceImage = await getFile(slice.file.id);
+				const faceImage = await getFile(faceImageId);
 
 				if (faceImage) {
 					// Apply image rendering with high quality settings
@@ -119,7 +176,7 @@ export async function renderCanvas(
 					ctx.drawImage(faceImage, pixelX, pixelY, pixelWidth, pixelHeight);
 				}
 			} catch (e: unknown) {
-				// Convoluted stuff below to make Typescript happy when I just don't care about the error.
+				// Make Typescript happy when I just don't care about the error.
 				if (e || !e) return null;
 			}
 		});
@@ -135,7 +192,4 @@ export async function renderCanvas(
 			filter: 'lanczos2' // Hamming gives the best performance, although still not great from a cold start.
 		});
 	}
-
-	// Explicitly return to ensure promise resolution
-	return true;
 }

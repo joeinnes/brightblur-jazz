@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Group, FileStream, type ID, Account } from 'jazz-tools';
-	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData } from '$lib/schema';
+	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData, Image, ListOfImages } from '$lib/schema';
 	import { useCoState } from 'jazz-svelte';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	import { imageDataToFile } from '$lib/utils/imageData';
@@ -76,7 +76,7 @@
 			originalFile = input.files[0];
 
 			// Calculate aspect ratio from the original image
-			const img = new Image();
+			const img = document.createElement('img');
 			const url = URL.createObjectURL(input.files[0]);
 
 			img.onload = () => {
@@ -142,20 +142,21 @@
 		e.preventDefault();
 
 		try {
-			if (!canvases.offscreen) throw new Error('Something went wrong.');
-
-			// Create blob from the offscreen canvas
-			const file = await canvases.offscreen.convertToBlob({
-				type: 'image/jpeg',
-				quality: 0.9
-			});
+			if (!canvases.offscreen || !canvases.original) throw new Error('Something went wrong.');
 
 			// Create public group for photo access
 			const publicGroup = Group.create();
 			publicGroup.addMember('everyone', 'reader');
 
+			// Define the target sizes we want to generate
+			const targetSizes = [320, 1024, 2048, 4096];
+
+			// Generate multiple sizes for the main photo
+			const photoImages = await generateResizedImages(canvases.original, targetSizes, publicGroup);
+
 			// Create list of face slices
 			const listOfFaceSlices = ListOfFaceSlices.create([], publicGroup);
+
 			// Process each detected face
 			for (const face of faceList) {
 				if (!face.person) continue;
@@ -170,70 +171,44 @@
 				sliceGroup.addMember('everyone', 'reader');
 
 				// Copy access permissions from parent group
-				parentGroup.members.forEach(async (member) => {
-					// 'everyone' does not get iterated over as part of the members array
+				for (const member of parentGroup.members) {
 					const userToAdd = await Account.load(member.id, []);
 					if (userToAdd) {
 						fileGroup.addMember(userToAdd, member.role);
 					}
-				});
+				}
 
-				// Create file from face image data
-				const faceFile = await imageDataToFile(face.originalImageData);
-				const fileStream = await FileStream.createFromBlob(faceFile, { owner: fileGroup });
+				// Create a canvas for the face slice
+				const faceCanvas = document.createElement('canvas');
+				faceCanvas.width = face.originalImageData.width;
+				faceCanvas.height = face.originalImageData.height;
+				const faceCtx = faceCanvas.getContext('2d');
+				if (!faceCtx) throw new Error('Canvas context is null');
+				faceCtx.putImageData(face.originalImageData, 0, 0);
 
-				// Create face slice
+				// Generate multiple sizes for the face slice
+				const faceImages = await generateResizedImages(faceCanvas, targetSizes, fileGroup);
+
+				// Create face slice with the new images array
 				const faceSlice = FaceSlice.create(
 					{
-						...face,
-						file: fileStream,
-						person: profile.value
+						x: face.x,
+						y: face.y,
+						width: face.width,
+						height: face.height,
+						person: profile.value,
+						images: faceImages
 					},
 					{ owner: sliceGroup }
 				);
+
 				listOfFaceSlices.push(faceSlice);
 			}
 
-			const pica = new Pica({
-				tile: 1024,
-				features: ['all']
-			});
-			const smallerCanvas = document.createElement('canvas');
-			smallerCanvas.width = 2048;
-			smallerCanvas.height = 2048 * (canvases.offscreen.height / canvases.offscreen.width);
-			const resizedImageCanvas = await pica.resize(
-				canvases.offscreen.transferToImageBitmap(),
-				smallerCanvas,
-				{
-					filter: 'lanczos2'
-				}
-			);
-			const resizedImageBlob: Blob = await new Promise((resolve, reject) => {
-				resizedImageCanvas.toBlob(
-					(r) => {
-						if (r instanceof Blob) {
-							resolve(r);
-						} else {
-							reject();
-						}
-					},
-					'image/jpeg',
-					0.9
-				);
-			});
-
-			const image = await FileStream.createFromBlob(file, {
-				owner: publicGroup
-			});
-
-			const resizedImage = await FileStream.createFromBlob(resizedImageBlob, {
-				owner: publicGroup
-			});
-
+			// Create the photo with all the generated images
 			const photo = Photo.create(
 				{
-					fullSizeFile: image,
-					file: resizedImage,
+					images: photoImages,
 					faceSlices: listOfFaceSlices
 				},
 				{
@@ -254,6 +229,93 @@
 			}
 		}
 	};
+
+	// Function to generate multiple image sizes
+	// Add proper type for generateResizedImages function
+	async function generateResizedImages(
+		sourceCanvas: HTMLCanvasElement,
+		targetSizes: number[],
+		ownerGroup: Group
+	): Promise<ListOfImages> {
+		const images = ListOfImages.create([], ownerGroup);
+		const originalWidth = sourceCanvas.width;
+		const originalHeight = sourceCanvas.height;
+
+		// Add the original image
+		const originalBlob: Blob = await new Promise((resolve, reject) => {
+			sourceCanvas.toBlob(
+				(blob) => {
+					if (blob instanceof Blob) {
+						resolve(blob);
+					} else {
+						reject(new Error('Failed to create original blob'));
+					}
+				},
+				'image/jpeg',
+				0.9
+			);
+		});
+
+		const originalFile = await FileStream.createFromBlob(originalBlob, {
+			owner: ownerGroup
+		});
+
+		const originalImage = Image.create(
+			{
+				size: originalWidth,
+				file: originalFile
+			},
+			{ owner: ownerGroup }
+		);
+
+		images.push(originalImage);
+
+		// Generate each target size that's smaller than the original
+		const pica = new Pica({
+			tile: 1024,
+			features: ['all']
+		}) as any; // Add type assertion until proper types are available
+
+		for (const size of targetSizes.filter((size) => size < originalWidth)) {
+			const resizedCanvas = document.createElement('canvas');
+			resizedCanvas.width = size;
+			resizedCanvas.height = Math.round(size * (originalHeight / originalWidth));
+
+			await pica.resize(sourceCanvas, resizedCanvas, {
+				filter: 'lanczos2'
+			});
+
+			const resizedBlob: Blob = await new Promise((resolve, reject) => {
+				resizedCanvas.toBlob(
+					(blob) => {
+						if (blob instanceof Blob) {
+							resolve(blob);
+						} else {
+							reject(new Error(`Failed to create ${size}px blob`));
+						}
+					},
+					'image/jpeg',
+					0.9
+				);
+			});
+
+			const resizedFile = await FileStream.createFromBlob(resizedBlob, {
+				owner: ownerGroup
+			});
+
+			const resizedImage = Image.create(
+				{
+					size: size,
+					file: resizedFile
+				},
+				{ owner: ownerGroup }
+			);
+
+			images.push(resizedImage);
+		}
+
+		return images;
+	}
 
 	// Initialize face detection on component mount
 	onMount(async () => {
@@ -298,6 +360,7 @@
 		redrawCanvas();
 	};
 
+	// Fix type in stopDrawing function
 	const stopDrawing = () => {
 		if (!isDrawing || !canvases.dom || !canvases.original) return null;
 
@@ -436,8 +499,9 @@
 						</div>
 						<div>
 							{#if listOfPeople && listOfPeople.length > 0}
-								{face.x}
-								{face.y}
+								<!-- Remove these debug outputs -->
+								<!-- {face.x}
+								{face.y} -->
 								<Autocomplete
 									bind:selectedItem={faceList[i].person.id}
 									imageData={face.originalImageData}

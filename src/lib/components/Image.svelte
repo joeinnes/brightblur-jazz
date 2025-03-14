@@ -18,8 +18,12 @@
 	} = $props();
 	const photo = $derived(
 		useCoState(Photo, id, {
-			file: [],
-			faceSlices: [{ file: [] }]
+			images: [
+				{
+					file: []
+				}
+			],
+			faceSlices: [{ images: [{ file: [] }] }]
 		})
 	);
 
