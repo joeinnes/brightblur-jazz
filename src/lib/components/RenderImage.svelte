@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { FileStream, Group, type ID } from 'jazz-tools';
+	import { FileStream, Group } from 'jazz-tools';
 	import { useAccount, useCoState } from 'jazz-svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
 	import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
 	import User from 'lucide-svelte/icons/user';
 	import Image from './Image.svelte';
-	import { BrightBlurAccount, Photo } from '$lib/schema';
+	import { BrightBlurAccount, ListOfImages, Photo } from '$lib/schema';
 	import { renderCanvas } from '$lib/utils/imageData';
 	const { me } = useAccount();
 	const { photo: photoProp } = $props();
@@ -13,9 +13,18 @@
 	const photo = $derived(
 		photoProp?.value?.id
 			? useCoState(Photo, photoProp.value.id, {
+					images: [
+						{
+							file: []
+						}
+					],
 					faceSlices: [
 						{
-							file: [],
+							images: [
+								{
+									file: []
+								}
+							],
 							person: {}
 						}
 					]
@@ -32,6 +41,37 @@
 				})
 			: {}
 	);
+
+	// Helper function to get the best image file ID based on desired size
+	function getBestImageFileId(images: ListOfImages | undefined | null, preferFullSize = false) {
+		if (!images || images.length === 0) return null;
+
+		if (preferFullSize) {
+			// Get the largest image (original)
+			const sortedImages = [...images].sort((a, b) => {
+				if (!a || !b) return 0;
+				return (b.size || 0) - (a.size || 0);
+			});
+
+			return sortedImages[0]?.file?.id;
+		} else {
+			// Get a reasonable size for display (prefer 1024px if available)
+			const preferredSize = 1024;
+			let bestImage = images[0];
+
+			for (const img of images) {
+				if (!img) continue;
+				if (img.size === preferredSize) {
+					return img.file?.id;
+				}
+				if ((img.size || 0) > (bestImage?.size || 0) && (img.size || 0) <= preferredSize) {
+					bestImage = img;
+				}
+			}
+
+			return bestImage?.file?.id;
+		}
+	}
 </script>
 
 <div class="w-full">
@@ -79,14 +119,14 @@
 					<button
 						onclick={async () => {
 							try {
-								if (!photo.current?.file?.id) throw new Error('No photo selected.');
-								const blob = await FileStream.loadAsBlob(
-									photo.current.fullSizeFile?.id || photo.current.file.id
-								);
+								// Get the best image for download (prefer 1024px for reasonable size)
+								const fileId = getBestImageFileId(photo.current?.images);
+								if (!fileId) throw new Error('No photo selected.');
+
+								const blob = await FileStream.loadAsBlob(fileId);
 								if (!blob) throw new Error('Could not read file.');
 
 								const fileName = crypto.randomUUID() + '.jpg';
-								if (!blob) throw new Error('Could not read file.');
 								if (navigator && navigator?.canShare?.()) {
 									const img = new File([blob], fileName, { type: 'image/jpeg' });
 									navigator.share({
@@ -127,12 +167,13 @@
 					<button
 						onclick={async () => {
 							try {
-								if (!photo.current?.file?.id) throw new Error('No photo selected.');
+								// Get the original/full size image
+								const fileId = getBestImageFileId(photo.current?.images, true);
+								if (!fileId) throw new Error('No photo selected.');
 
-								const blob = await FileStream.loadAsBlob(
-									photo.current.fullSizeFile?.id || photo.current.file.id
-								);
+								const blob = await FileStream.loadAsBlob(fileId);
 								if (!blob) throw new Error('Could not read file.');
+
 								const fileName = crypto.randomUUID() + '.jpg';
 								const bitmap = await createImageBitmap(blob);
 								const { width, height } = bitmap;
@@ -140,6 +181,7 @@
 								const canvas = document.createElement('canvas');
 								canvas.width = width;
 								canvas.height = height;
+								if (!photo.current) throw new Error('No photo selected.');
 								await renderCanvas(canvas, photo.current, { w: width, h: height }, true);
 								if (navigator && navigator?.canShare?.()) {
 									const blob = canvas.toBlob((blob) => {

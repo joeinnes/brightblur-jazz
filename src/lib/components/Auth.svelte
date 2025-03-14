@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { useAccount, usePasskeyAuth } from 'jazz-svelte';
+	import { usePasskeyAuth } from 'jazz-svelte';
+	import { Account } from 'jazz-tools';
 	import toast from '@natoune/svelte-daisyui-toast';
 
 	let { children }: { children?: Snippet } = $props();
@@ -23,7 +24,7 @@
 		auth.current
 			.signUp(name)
 			.then(async () => {
-				const { me } = useAccount();
+				const me = Account.getMe();
 				await me.ensureLoaded({
 					profile: {}
 				});

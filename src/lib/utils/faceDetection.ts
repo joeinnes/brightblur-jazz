@@ -207,6 +207,7 @@ export function blurFaces(canvases: CanvasSet, faceList: FaceData[]): void {
 
 		// Draw rectangles around faces
 		faceList.forEach((faceData) => {
+			if (!canvases.dom) return;
 			const { x, y, width, height } = faceData;
 			// Convert decimal coordinates to pixels for the DOM canvas
 			const pixelX = x * canvases.dom.width;

@@ -36,10 +36,16 @@ export class BrightBlurAccount extends Account {
 	}
 }
 
+export class Image extends CoMap {
+	size = co.number; // Changed from width to size to represent the width of the image (320, 1024, 2048, 4096, or original)
+	file = co.ref(FileStream);
+}
+
+export class ListOfImages extends CoList.Of(co.ref(Image)) {}
+
 export class Photo extends CoMap {
 	faceSlices = co.optional.ref(ListOfFaceSlices);
-	file = co.ref(FileStream);
-	fullSizeFile = co.ref(FileStream);
+	images = co.ref(ListOfImages);
 }
 
 export class FeedOfPhotos extends CoFeed.Of(co.ref(Photo)) {}
@@ -56,7 +62,7 @@ export class FaceSlice extends CoMap {
 	height = co.number;
 	width = co.number;
 	person = co.ref(BrightBlurProfile);
-	file = co.ref(FileStream);
+	images = co.ref(ListOfImages); // Changed from ListOfImages to co.ref(ListOfImages)
 }
 
 export class ListOfFaceSlices extends CoList.Of(co.ref(FaceSlice)) {}

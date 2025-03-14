@@ -8,6 +8,9 @@
 	import InviteViewerModal from '$lib/components/InviteViewerModal.svelte';
 	import Avatar from './Avatar.svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
+	import Pica from 'pica';
+	import { Image } from '$lib/schema';
+
 	let avatarCropperModal: HTMLDialogElement | undefined = $state();
 
 	let { profile, isOwnProfile, canAdminProfile } = $props();
@@ -28,13 +31,77 @@
 			throw new Error('You do not have permission to update this profile.');
 		}
 		if (avatarFile && avatarFile[0]) {
-			const avatarGroup = Group.create();
-			avatarGroup.addMember('everyone', 'reader');
-			const fileStream = await FileStream.createFromBlob(avatarFile[0], {
-				owner: avatarGroup
-			});
-			if (profile.current) {
-				profile.current.avatar = fileStream;
+			try {
+				const avatarGroup = Group.create();
+				avatarGroup.addMember('everyone', 'reader');
+
+				// Create a canvas with the cropped image
+				const image = document.createElement('img');
+				const url = URL.createObjectURL(avatarFile[0]);
+
+				// Load the image and resize it
+				await new Promise((resolve, reject) => {
+					image.onload = resolve;
+					image.onerror = reject;
+					image.src = url;
+				});
+
+				// Create source canvas with the original image
+				const sourceCanvas = document.createElement('canvas');
+				const sourceCtx = sourceCanvas.getContext('2d');
+				sourceCanvas.width = image.width;
+				sourceCanvas.height = image.height;
+				sourceCtx?.drawImage(image, 0, 0);
+				URL.revokeObjectURL(url);
+
+				// Resize to max 512px width if needed
+				if (image.width > 512) {
+					const targetCanvas = document.createElement('canvas');
+					targetCanvas.width = 512;
+					targetCanvas.height = Math.round(512 * (image.height / image.width));
+
+					const pica = new Pica({
+						tile: 1024,
+						features: ['all']
+					});
+
+					await pica.resize(sourceCanvas, targetCanvas, {
+						filter: 'lanczos2'
+					});
+
+					// Convert to blob
+					const resizedBlob = await new Promise<Blob>((resolve, reject) => {
+						targetCanvas.toBlob(
+							(blob) => {
+								if (blob) resolve(blob);
+								else reject(new Error('Failed to create resized blob'));
+							},
+							'image/jpeg',
+							0.9
+						);
+					});
+
+					// Create file stream from the resized blob
+					const fileStream = await FileStream.createFromBlob(resizedBlob, {
+						owner: avatarGroup
+					});
+
+					if (profile.current) {
+						profile.current.avatar = fileStream;
+					}
+				} else {
+					// If image is already small enough, use it directly
+					const fileStream = await FileStream.createFromBlob(avatarFile[0], {
+						owner: avatarGroup
+					});
+
+					if (profile.current) {
+						profile.current.avatar = fileStream;
+					}
+				}
+			} catch (error) {
+				console.error('Error resizing avatar:', error);
+				toast.error('Failed to update avatar', { duration: 3000 });
 			}
 		}
 	};
@@ -62,7 +129,7 @@
 				throw new Error('No file selected');
 			}
 
-			const image = new Image();
+			const image = document.createElement('img');
 			const url = URL.createObjectURL(avatarFile[0]);
 			image.src = url;
 			image.onload = () => {
