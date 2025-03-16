@@ -101,95 +101,96 @@ export async function renderCanvas(
 		.trim();
 	ctx.strokeStyle = primaryColour;
 
+	// In the renderCanvas function, ensure we're correctly processing face slices
 	if (photo.faceSlices) {
-		// Create an array of promises for each slice
-		const slicePromises = photo.faceSlices.map(async (slice) => {
-			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return null;
-
-			// Convert decimal coordinates to pixel values based on canvas dimensions
-			const pixelX = Math.floor(slice.x * offscreen.width);
-			const pixelY = Math.floor(slice.y * offscreen.height);
-			const pixelWidth = Math.ceil(slice.width * offscreen.width);
-			const pixelHeight = Math.ceil(slice.height * offscreen.height);
-
-			const lineWidth = Math.floor(Math.max(pixelWidth / 24, 2));
-			ctx.lineWidth = lineWidth;
-
-			// Adjust border position to be fully under the face image
-			const radius = Math.floor(pixelWidth / 24);
-
-			ctx.beginPath();
-			ctx.roundRect(
-				pixelX + lineWidth / 2,
-				pixelY + lineWidth / 2,
-				pixelWidth - lineWidth,
-				pixelHeight - lineWidth,
-				radius
-			);
-			ctx.stroke();
-
-			// Find the appropriate face image based on the main image size we're using
-			let faceImageId;
-
-			if (slice.images && slice.images.length > 0) {
-				// Find the main image size we're currently using
-				const mainImageSize = photo.images?.find((img) => img?.file?.id === fileId)?.size;
-
-				if (mainImageSize) {
-					// Find the face image with the same size or closest smaller size
-					const sortedFaceImages = [...slice.images].sort((a, b) => {
-						if (!a?.size || !b?.size) return 0;
-						return b.size - a.size; // Sort descending
-					});
-
-					for (const img of sortedFaceImages) {
-						if (img && img.size <= mainImageSize) {
-							faceImageId = img.file?.id;
-							break;
-						}
-					}
-
-					// If no suitable size found, use the smallest available
-					if (!faceImageId && sortedFaceImages.length > 0) {
-						faceImageId = sortedFaceImages[sortedFaceImages.length - 1]?.file?.id;
-					}
-				}
-			}
-
-			if (!faceImageId) return null;
-
-			// Handle face image loading with timeout to prevent hanging
-			try {
-				const me = Account.getMe();
-				const value = await FileStream.load(faceImageId, []);
-
-				if (!value || !me.canRead(value)) {
-					throw new Error(`Can't access this face slice`);
-				}
-				const faceImage = await getFile(faceImageId);
-
-				if (faceImage) {
-					// Apply image rendering with high quality settings
-					ctx.imageSmoothingEnabled = true;
-					ctx.imageSmoothingQuality = 'high';
-
-					ctx.drawImage(faceImage, pixelX, pixelY, pixelWidth, pixelHeight);
-				}
-			} catch (e: unknown) {
-				// Make Typescript happy when I just don't care about the error.
-				if (e || !e) return null;
-			}
-		});
-
-		// Wait for all slices to complete or timeout
-		await Promise.allSettled(slicePromises);
-		const pica = new Pica({
-			tile: 1024,
-			features: ['all']
-		});
-
-		await pica.resize(offscreen, canvas, {
-			filter: 'lanczos2' // Hamming gives the best performance, although still not great from a cold start.
-		});
+	  // Create an array of promises for each slice
+	  const slicePromises = photo.faceSlices.map(async (slice) => {
+	    if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return null;
+	
+	    // Convert decimal coordinates to pixel values based on canvas dimensions
+	    const pixelX = Math.floor(slice.x * offscreen.width);
+	    const pixelY = Math.floor(slice.y * offscreen.height);
+	    const pixelWidth = Math.ceil(slice.width * offscreen.width);
+	    const pixelHeight = Math.ceil(slice.height * offscreen.height);
+	
+	    const lineWidth = Math.floor(Math.max(pixelWidth / 24, 2));
+	    ctx.lineWidth = lineWidth;
+	
+	    // Adjust border position to be fully under the face image
+	    const radius = Math.floor(pixelWidth / 24);
+	
+	    ctx.beginPath();
+	    ctx.roundRect(
+	      pixelX + lineWidth / 2,
+	      pixelY + lineWidth / 2,
+	      pixelWidth - lineWidth,
+	      pixelHeight - lineWidth,
+	      radius
+	    );
+	    ctx.stroke();
+	
+	    // Find the appropriate face image based on the main image size we're using
+	    let faceImageId;
+	    
+	    if (slice.images && slice.images.length > 0) {
+	      // Find the main image size we're currently using
+	      const mainImageSize = photo.images?.find(img => img.file?.id === fileId)?.size;
+	      
+	      if (mainImageSize) {
+	        // Find the face image with the same size or closest smaller size
+	        const sortedFaceImages = [...slice.images].sort((a, b) => {
+	          if (!a?.size || !b?.size) return 0;
+	          return b.size - a.size; // Sort descending
+	        });
+	        
+	        for (const img of sortedFaceImages) {
+	          if (img && img.size <= mainImageSize) {
+	            faceImageId = img.file?.id;
+	            break;
+	          }
+	        }
+	        
+	        // If no suitable size found, use the smallest available
+	        if (!faceImageId && sortedFaceImages.length > 0) {
+	          faceImageId = sortedFaceImages[sortedFaceImages.length - 1].file?.id;
+	        }
+	      }
+	    }
+	    
+	    if (!faceImageId) return null;
+	
+	    // Handle face image loading with timeout to prevent hanging
+	    try {
+	      const me = Account.getMe();
+	      const value = await FileStream.load(faceImageId, []);
+	
+	      if (!value || !me.canRead(value)) {
+	        throw new Error(`Can't access this face slice`);
+	      }
+	      const faceImage = await getFile(faceImageId);
+	
+	      if (faceImage) {
+	        // Apply image rendering with high quality settings
+	        ctx.imageSmoothingEnabled = true;
+	        ctx.imageSmoothingQuality = 'high';
+	
+	        ctx.drawImage(faceImage, pixelX, pixelY, pixelWidth, pixelHeight);
+	      }
+	    } catch (e: unknown) {
+	      console.error('Error loading face slice:', e);
+	      return null;
+	    }
+	  });
+	
+	  // Wait for all slices to complete
+	  await Promise.allSettled(slicePromises);
 	}
+	const pica = new Pica({
+		tile: 1024,
+		features: ['all']
+	});
+
+	await pica.resize(offscreen, canvas, {
+		filter: 'lanczos2' // Hamming gives the best performance, although still not great from a cold start.
+	});
 }

@@ -5,7 +5,7 @@
 
 	import { BrightBlurAccount, BrightBlurProfile } from '$lib/schema';
 	import { formatRole } from '$lib/utils/profileUtils';
-	import UserRoundX from 'lucide-svelte/icons/user-round-minus';
+	import UserRoundMinus from 'lucide-svelte/icons/user-round-minus';
 	import ShieldOff from 'lucide-svelte/icons/shield-off';
 	import ShieldPlus from 'lucide-svelte/icons/shield-plus';
 	import Avatar from './Avatar.svelte';
@@ -52,21 +52,27 @@
 							>
 								<button
 									class="btn btn-square btn-ghost"
-									disabled={member.id !== me?.id && member.role === 'admin'}
+									disabled={member.id === currentlyViewing.current?.user?.id &&
+										member.role === 'admin'}
 									onclick={async (e) => {
 										e.preventDefault();
 										e.stopPropagation();
-
+										if (member.id === currentlyViewing.current?.user?.id) {
+											throw new Error('You cannot remove yourself from this profile');
+										} else if (countAdmins < 2 && member.role === 'admin') {
+											throw new Error('You cannot remove the last admin from this profile');
+										}
 										try {
 											const account = await Account.load(member.account.id, {});
 											if (!account) throw new Error("Couldn't find account.");
+
 											await currentlyViewing.current?._owner?.castAs?.(Group).removeMember(account);
 										} catch (e) {
 											console.log(`That didn't work`, e);
 										}
 									}}
 								>
-									<UserRoundX />
+									<UserRoundMinus />
 								</button>
 								{#if member.role === 'admin'}
 									<button
@@ -75,11 +81,17 @@
 										onclick={async (e) => {
 											e.preventDefault();
 											e.stopPropagation();
+											if (member.id === currentlyViewing.current?.user?.id) {
+												throw new Error('You cannot remove yourself from this profile');
+											} else if (countAdmins < 2 && member.role === 'admin') {
+												throw new Error('You cannot remove the last admin from this profile');
+											}
 											const group = currentlyViewing.current?._owner?.castAs?.(Group);
 											if (!group) {
 												toast.error('Something went wrong.', { duration: 3000 });
 												throw new Error("Couldn't find group.");
 											}
+
 											await group.removeMember(member.account);
 										}}
 									>
