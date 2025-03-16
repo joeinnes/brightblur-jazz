@@ -9,7 +9,6 @@
 	import ProfileHeader from '$lib/components/ProfileHeader.svelte';
 	import ProfileAccessManager from '$lib/components/ProfileAccessManager.svelte';
 	import ManagedUsersList from '$lib/components/ManagedUsersList.svelte';
-	import Image from '$lib/components/Image.svelte';
 
 	// Import utility functions
 	import {

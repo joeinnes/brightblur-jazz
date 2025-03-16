@@ -152,7 +152,7 @@
 			const targetSizes = [320, 1024, 2048, 4096];
 
 			// Generate multiple sizes for the main photo
-			const photoImages = await generateResizedImages(canvases.original, targetSizes, publicGroup);
+			const photoImages = await generateResizedImages(canvases.offscreen, targetSizes, publicGroup);
 
 			// Create list of face slices
 			const listOfFaceSlices = ListOfFaceSlices.create([], publicGroup);
@@ -242,7 +242,15 @@
 		const originalHeight = sourceCanvas.height;
 
 		// Add the original image
-		const originalBlob: Blob = await new Promise((resolve, reject) => {
+		const originalBlob: Blob = await new Promise(async (resolve, reject) => {
+			if (sourceCanvas instanceof OffscreenCanvas) {
+				const blob = await sourceCanvas.convertToBlob({ type: 'image/jpeg', quality: 0.9 });
+				if (blob instanceof Blob) {
+					resolve(blob);
+				} else {
+					reject(new Error('Failed to create original blob'));
+				}
+			}
 			sourceCanvas.toBlob(
 				(blob) => {
 					if (blob instanceof Blob) {
@@ -549,7 +557,7 @@
 			/>
 		</div>
 		<div class="flex gap-2 bg-transparent py-4">
-			<button class="btn btn-primary" onclick={handleCropComplete}> Crop </button>
+			<button class="btn btn-primary" onclick={handleCropComplete}> OK </button>
 			<button
 				class="btn btn-error"
 				onclick={() => {
