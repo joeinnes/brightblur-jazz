@@ -162,19 +162,20 @@
 				if (!face.person) continue;
 
 				const profile = listOfPeople?.find((profile) => profile.value.id === face.person.id);
-				if (!profile) continue;
 
 				// Setup access groups
-				const parentGroup = profile.value._owner.castAs(Group) as Group;
+
 				const fileGroup = Group.create();
 				const sliceGroup = Group.create();
 				sliceGroup.addMember('everyone', 'reader');
 
-				// Copy access permissions from parent group
-				for (const member of parentGroup.members) {
-					const userToAdd = await Account.load(member.id, []);
-					if (userToAdd) {
-						fileGroup.addMember(userToAdd, member.role);
+				if (profile) {
+					const parentGroup = profile.value._owner.castAs(Group) as Group;
+					for (const member of parentGroup.members) {
+						const userToAdd = await Account.load(member.id, []);
+						if (userToAdd) {
+							fileGroup.addMember(userToAdd, member.role);
+						}
 					}
 				}
 
@@ -196,7 +197,7 @@
 						y: face.y,
 						width: face.width,
 						height: face.height,
-						person: profile.value,
+						person: profile?.value || null,
 						images: faceImages
 					},
 					{ owner: sliceGroup }
@@ -425,8 +426,12 @@
 			ctx.drawImage(canvases.offscreen, 0, 0, canvases.dom.width, canvases.dom.height);
 
 			// Draw the selection rectangle
-			ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-			ctx.lineWidth = 2;
+
+			const primaryColour = getComputedStyle(document.documentElement)
+				.getPropertyValue('--color-primary')
+				.trim();
+			ctx.strokeStyle = primaryColour;
+			ctx.lineWidth = Math.floor(Math.max(canvases.dom.width / 24, 2));
 			ctx.beginPath();
 			ctx.rect(
 				Math.min(drawStart.x, drawCurrent.x),

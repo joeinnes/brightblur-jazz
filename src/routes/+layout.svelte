@@ -45,7 +45,7 @@
 {:else}
 	<div class="bg-primary relative flex min-h-screen w-full overflow-hidden">
 		<div
-			class="text-primary-content z-10 flex max-w-xl flex-col justify-center px-8 py-16 md:px-12 lg:py-24"
+			class="text-primary-content z-10 flex max-w-xl flex-1 flex-col justify-center px-8 py-16 md:px-12 lg:py-24"
 		>
 			<h1 class="flex items-center pb-4 text-5xl font-black md:text-6xl lg:text-7xl xl:text-8xl">
 				<img src="/bb-b-w.svg" class="mr-3 h-[1em]" alt="BrightBlur Logo" />BrightBlur
@@ -60,14 +60,14 @@
 				onclick={() => (login = true)}>Get Started</button
 			>
 		</div>
-		<div class="fadein group absolute top-0 right-0 h-full w-full md:w-2/5 lg:w-3/5">
+		<div class="fadein group absolute top-0 right-0 h-full w-full md:w-3/5">
 			<div
-				class="from-primary pointer-events-none absolute inset-0 z-10 bg-gradient-to-r via-transparent to-transparent"
+				class="from-primary pointer-events-none absolute inset-0 z-10 bg-gradient-to-r to-transparent"
 			></div>
-			<img src="/demo/unblurred.jpg" alt="Unblurred" class="h-full w-full object-cover" />
+			<img src="/demo/unblurred.jpg" alt="Unblurred example" class="h-full w-full object-cover" />
 			<img
 				src="/demo/blurred.jpg"
-				alt="Blurred"
+				alt="Blurred example"
 				class="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-0"
 			/>
 		</div>

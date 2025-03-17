@@ -61,7 +61,7 @@ export class FaceSlice extends CoMap {
 	y = co.number;
 	height = co.number;
 	width = co.number;
-	person = co.ref(BrightBlurProfile);
+	person = co.optional.ref(BrightBlurProfile);
 	images = co.ref(ListOfImages); // Changed from ListOfImages to co.ref(ListOfImages)
 }
 
