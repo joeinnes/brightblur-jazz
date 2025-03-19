@@ -68,7 +68,7 @@
 			<img
 				src="/demo/blurred.jpg"
 				alt="Blurred example"
-				class="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+				class="blurred-image absolute inset-0 h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-0"
 			/>
 		</div>
 	</div>
@@ -207,6 +207,25 @@
 		position: absolute;
 		right: 0;
 		height: 100%;
+	}
+
+	.blurred-image {
+		animation: pulse-opacity 3s infinite ease-in-out;
+	}
+
+	.group:hover .blurred-image {
+		animation: none;
+		opacity: 0;
+	}
+
+	@keyframes pulse-opacity {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.3;
+		}
 	}
 
 	@media (max-width: 768px) {
