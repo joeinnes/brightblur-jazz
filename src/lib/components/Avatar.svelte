@@ -1,18 +1,23 @@
 <script lang="ts">
+	import type { BrightBlurProfile } from '$lib/schema';
+	import { getUserHue } from '$lib/utils/userUtils';
 	import { FileStream, type ID } from 'jazz-tools';
 
 	const {
 		id,
 		name = '',
+		userId,
 		style = 'size-10'
 	}: {
 		id: ID<FileStream> | undefined;
 		name?: string;
+		userId: ID<BrightBlurProfile> | undefined;
 		style?: `size-${number}`;
 	} = $props();
 
 	const sizeValue = $derived(parseInt(style.split('-')[1]) || 10);
 	const fontSize = $derived(`${sizeValue * 0.1}rem`);
+	$inspect(userId);
 </script>
 
 {#if id}
@@ -28,9 +33,10 @@
 		{/if}
 	{/await}
 {:else}
+	{@const hue = getUserHue(userId)}
 	<div
-		class="border-primary bg-secondary text-secondary-content {style} avatar avatar-placeholder flex w-full items-center justify-center rounded-full border-2"
-		style={`font-size: ${fontSize}`}
+		class="border-primary text-secondary-content {style} avatar avatar-placeholder flex items-center justify-center rounded-full border-2"
+		style={`font-size: ${fontSize}; background-color: oklch(85% 0.21 ${hue}); color: oklch(10% 0.21 ${hue});`}
 	>
 		<div class="flex h-full w-full items-center justify-center text-center leading-none">
 			{name

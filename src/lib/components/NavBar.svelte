@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Profile } from 'jazz-tools';
 	import Avatar from './Avatar.svelte';
 	import { useAccount } from 'jazz-svelte';
 
@@ -9,7 +10,7 @@
 	);
 </script>
 
-<div class="navbar bg-base-100 mb-4 shadow-sm sticky top-0 z-50">
+<div class="navbar bg-base-100 sticky top-0 z-50 mb-4 shadow-sm">
 	<div class="flex-1">
 		<a class="flex items-center gap-1 text-xl font-black" href="/"
 			><img src="/bb-b-brand.svg" alt="Logo" class="h-8 w-8" />BrightBlur</a
@@ -20,7 +21,7 @@
 			<div role="button" tabindex="0" class="btn btn-ghost">
 				<span>{me?.profile?.name}</span>
 				<div class="circle avatar w-10 rounded-full">
-					<Avatar id={me?.profile?.avatar?.id} name={me?.profile?.name} />
+					<Avatar id={me?.profile?.avatar?.id} name={me?.profile?.name} userId={me?.profile?.id} />
 				</div>
 			</div>
 			<ul class="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">

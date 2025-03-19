@@ -422,16 +422,31 @@
 			if (!ctx) throw new Error('Something went wrong.');
 			if (!canvases.offscreen) throw new Error('Something went wrong.');
 
+			// Get device pixel ratio
+			const dpr = window.devicePixelRatio || 1;
+			
+			// Calculate scale factors
+			const scaleX = canvases.dom.width / canvases.offscreen.width;
+			const scaleY = canvases.dom.height / canvases.offscreen.height;
+			const minScale = Math.min(scaleX, scaleY);
+			
+			// Reset transformations
+			ctx.resetTransform();
+			ctx.scale(dpr, dpr);
+			
 			ctx.clearRect(0, 0, canvases.dom.width, canvases.dom.height);
 			ctx.drawImage(canvases.offscreen, 0, 0, canvases.dom.width, canvases.dom.height);
-
+			
 			// Draw the selection rectangle
-
 			const primaryColour = getComputedStyle(document.documentElement)
 				.getPropertyValue('--color-primary')
 				.trim();
 			ctx.strokeStyle = primaryColour;
-			ctx.lineWidth = Math.floor(Math.max(canvases.dom.width / 24, 2));
+			
+			// Calculate line width based on original image size and scale
+			const baseWidth = canvases.offscreen.width;
+			ctx.lineWidth = Math.max(baseWidth / 100, 2) * minScale;
+			
 			ctx.beginPath();
 			ctx.rect(
 				Math.min(drawStart.x, drawCurrent.x),

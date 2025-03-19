@@ -172,7 +172,12 @@
 		<div class="avatar placeholder">
 			<label class="cursor-pointer">
 				<div class="bg-neutral text-neutral-content h-24 w-24 rounded-full">
-					<Avatar id={profile?.current?.avatar?.id} style="size-24" name={profile.current.name} />
+					<Avatar
+						id={profile?.current?.avatar?.id}
+						style="size-24"
+						name={profile.current.name}
+						userId={profile.current.id}
+					/>
 				</div>
 				{#if canAdminProfile}
 					<input

@@ -5,8 +5,10 @@
 	import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
 	import User from 'lucide-svelte/icons/user';
 	import Image from './Image.svelte';
+	import Avatar from './Avatar.svelte';
 	import { BrightBlurAccount, ListOfImages, Photo } from '$lib/schema';
 	import { renderCanvas } from '$lib/utils/imageData';
+	import { getUserHue } from '$lib/utils/userUtils';
 	const { me } = useAccount();
 	const { photo: photoProp } = $props();
 
@@ -76,23 +78,11 @@
 
 <div class="w-full">
 	<div class="mb-2 flex items-center gap-2 px-2">
-		{#if photographer?.current?.profile?.avatar?.id}
-			{#await FileStream.loadAsBlob(photographer?.current?.profile?.avatar?.id) then blob}
-				{#if blob}
-					{@const url = URL.createObjectURL(blob)}
-					<img
-						src={url}
-						onload={() => {
-							URL.revokeObjectURL(url);
-						}}
-						alt="Profile"
-						class="border-primary size-10 rounded-full border-2 object-cover"
-					/>
-				{/if}
-			{/await}
-		{:else}
-			<div class="border-primary size-10 rounded-full border-2 bg-gray-200"></div>
-		{/if}
+		<Avatar
+			id={photographer?.current?.profile?.avatar?.id}
+			name={photographer?.current?.profile?.name}
+			userId={photographer?.current?.profile?.id}
+		/>
 		<hgroup>
 			<h3 class="mb-0 leading-2 font-bold">
 				<a href="/profile/{photographer?.current?.profile?.id}">
@@ -257,10 +247,7 @@
 		{#if photo?.current?.faceSlices}
 			{#each photo.current.faceSlices as slice}
 				{#if slice?.person?.name}
-					{@const hue =
-						slice.person.name
-							.split('')
-							.reduce((acc: number, curr: string) => acc + curr.charCodeAt(0), 0) % 360}
+					{@const hue = getUserHue(slice.person.id)}
 					<a href="/profile/{slice.person.id}">
 						<div
 							class="badge badge-sm"
