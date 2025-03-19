@@ -113,7 +113,7 @@ export async function renderCanvas(
 			const pixelWidth = Math.ceil(slice.width * offscreen.width);
 			const pixelHeight = Math.ceil(slice.height * offscreen.height);
 
-			const lineWidth = Math.floor(Math.max(naturalDimensions.w / 24, 2));
+			const lineWidth = Math.floor(Math.max(naturalDimensions.w / 100, 2));
 			ctx.lineWidth = lineWidth;
 
 			// Adjust border position to be fully under the face image
@@ -152,7 +152,7 @@ export async function renderCanvas(
 
 					// If no suitable size found, use the smallest available
 					if (!faceImageId && sortedFaceImages.length > 0) {
-						faceImageId = sortedFaceImages[sortedFaceImages.length - 1].file?.id;
+						faceImageId = sortedFaceImages[sortedFaceImages.length - 1]?.file?.id;
 					}
 				}
 			}
@@ -178,7 +178,6 @@ export async function renderCanvas(
 				}
 			} catch (e: unknown) {
 				console.error('Error loading face slice:', e);
-				return null;
 			}
 		});
 
