@@ -21,8 +21,6 @@
 		when: 'signedUp'
 	};
 	let AccountSchema = BrightBlurAccount;
-	let auth = usePasskeyAuth({ appName: 'BrightBlur' });
-	let login = $state(false);
 </script>
 
 <svelte:head>
