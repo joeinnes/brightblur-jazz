@@ -22,7 +22,7 @@
 		{#each photoArray as photo, i (photo?.value?.id || i)}
 			<RenderImage {photo} />
 		{:else}
-			<div>
+			<div class="p-4">
 				<p class="pb-2">It's a bit quiet round here.</p>
 				<a href="/new" class="btn btn-primary">Get the party started?</a>
 			</div>

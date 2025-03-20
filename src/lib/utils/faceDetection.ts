@@ -15,52 +15,19 @@ export type FaceData = {
 type CanvasSet = {
 	dom: Canvas | undefined;
 	original: Canvas | undefined;
-	offscreen: OffscreenCanvas | undefined;
+	offscreen: Canvas | undefined;
 };
-
-/**
- * Initialize face detection by loading the required models
- */
-export async function initFaceDetection(): Promise<boolean> {
-	try {
-		await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-		return true;
-	} catch (e) {
-		console.error('Failed to load face detection models:', e);
-		return false;
-	}
-}
 
 /**
  * Process an uploaded image file to detect faces
  */
-export async function processImageForFaces(
-	file: File,
-	canvases: CanvasSet
-): Promise<{ faceList: FaceData[]; displaySize: { width: number; height: number } }> {
-	const img = await faceapi.bufferToImage(file);
-	const displaySize = { width: img.width, height: img.height };
-
-	// Setup original canvas
-	canvases.original = document.createElement('canvas');
-	canvases.original.width = displaySize.width;
-	canvases.original.height = displaySize.height;
-	const originalCtx = canvases.original.getContext('2d');
-	if (!originalCtx) throw new Error('Could not get original canvas context');
-	originalCtx.drawImage(img, 0, 0, displaySize.width, displaySize.height);
-
-	// Setup DOM canvas
-	if (canvases.dom) {
-		canvases.dom.width = displaySize.width;
-		canvases.dom.height = displaySize.height;
-		const domCtx = canvases.dom.getContext('2d');
-		if (!domCtx) throw new Error('Could not get DOM canvas context');
-		domCtx.drawImage(img, 0, 0, displaySize.width, displaySize.height);
-	}
-
+export async function processImageForFaces(canvas: Canvas): Promise<FaceData[]> {
+	if (!canvas) throw new Error('No canvas passed');
+	const ctx = canvas.getContext('2d');
+	if (!ctx) throw new Error('Could not get canvas context');
 	// Detect faces
 	const detections = await faceapi.detectAllFaces(
-		img,
+		canvas,
 		new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.4 })
 	);
 
@@ -68,48 +35,27 @@ export async function processImageForFaces(
 	const faceList: FaceData[] = [];
 	detections.forEach((detection) => {
 		const box = detection.box;
-		if (canvases.original) {
+		if (canvas) {
 			// Convert to decimal coordinates (0-1 range)
-			const x = box.x / displaySize.width;
-			const y = box.y / displaySize.height;
-			const width = box.width / displaySize.width;
-			const height = box.height / displaySize.height;
-			const faceData = extractFaceData(x, y, width, height, canvases.original, displaySize);
+			const x = box.x / canvas.width;
+			const y = box.y / canvas.height;
+			const width = box.width / canvas.width;
+			const height = box.height / canvas.height;
+			const faceData = {
+				x,
+				y,
+				width,
+				height,
+				originalImageData: ctx.getImageData(box.x, box.y, box.width, box.height),
+				person: {
+					id: null
+				}
+			};
 			if (faceData) faceList.push(faceData);
 		}
 	});
 
-	return { faceList, displaySize };
-}
-
-export function extractFaceData(
-	x: number,
-	y: number,
-	width: number,
-	height: number,
-	originalCanvas: HTMLCanvasElement | null,
-	displaySize: { width: number; height: number }
-): FaceData | null {
-	if (!originalCanvas) return null;
-	const ctx = originalCanvas.getContext('2d');
-	if (!ctx) return null;
-
-	// Convert decimal coordinates back to pixels for image data extraction
-	const pixelX = Math.max(Math.floor(x * displaySize.width), 0);
-	const pixelY = Math.max(Math.floor(y * displaySize.height), 0);
-	const pixelWidth = Math.min(Math.ceil(width * displaySize.width), displaySize.width - pixelX);
-	const pixelHeight = Math.min(Math.ceil(height * displaySize.height), displaySize.height - pixelY);
-
-	return {
-		x,
-		y,
-		width,
-		height,
-		originalImageData: ctx.getImageData(pixelX, pixelY, pixelWidth, pixelHeight),
-		person: {
-			id: null
-		}
-	};
+	return faceList;
 }
 
 /**
@@ -123,7 +69,9 @@ export function blurFaces(canvases: CanvasSet, faceList: FaceData[]): void {
 
 		// Initialize offscreen canvas if needed
 		if (!canvases.offscreen) {
-			canvases.offscreen = new OffscreenCanvas(canvases.original.width, canvases.original.height);
+			canvases.offscreen = document.createElement('canvas');
+			canvases.offscreen.width = canvases.original.width;
+			canvases.offscreen.height = canvases.original.height;
 		}
 
 		const offscreenCtx = canvases.offscreen.getContext('2d', { willReadFrequently: true });

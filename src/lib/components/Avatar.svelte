@@ -17,7 +17,6 @@
 
 	const sizeValue = $derived(parseInt(style.split('-')[1]) || 10);
 	const fontSize = $derived(`${sizeValue * 0.1}rem`);
-	$inspect(userId);
 </script>
 
 {#if id}
