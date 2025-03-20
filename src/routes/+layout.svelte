@@ -7,23 +7,21 @@
 </script>
 
 <script lang="ts">
-	import { Toaster } from '@natoune/svelte-daisyui-toast';
-
-	import '../app.css';
+	import { JazzProvider, usePasskeyAuth } from 'jazz-svelte';
 	import type { SyncConfig } from 'jazz-tools';
-
-	import { JazzProvider } from 'jazz-svelte';
+	import { PUBLIC_SYNC_SERVER, PUBLIC_API_KEY } from '$env/static/public';
+	import { Toaster } from '@natoune/svelte-daisyui-toast';
 	import { BrightBlurAccount } from '$lib/schema';
-
 	import Auth from '$lib/components/Auth.svelte';
-
+	import '../app.css';
 	let { children } = $props();
 
 	let sync: SyncConfig = {
-		peer: 'ws://localhost:4200',
+		peer: `wss://${PUBLIC_SYNC_SERVER}/?key=${PUBLIC_API_KEY}`,
 		when: 'signedUp'
 	};
 	let AccountSchema = BrightBlurAccount;
+	let auth = usePasskeyAuth({ appName: 'BrightBlur' });
 	let login = $state(false);
 </script>
 
@@ -35,7 +33,7 @@
 	/>
 </svelte:head>
 
-{#if login}
+{#if login || auth.current}
 	<JazzProvider {sync} {AccountSchema}>
 		<Auth>
 			{@render children()}
