@@ -7,7 +7,7 @@
 </script>
 
 <script lang="ts">
-	import { JazzProvider, usePasskeyAuth } from 'jazz-svelte';
+	import { JazzProvider } from 'jazz-svelte';
 	import type { SyncConfig } from 'jazz-tools';
 	import { PUBLIC_SYNC_SERVER, PUBLIC_API_KEY } from '$env/static/public';
 	import { Toaster } from '@natoune/svelte-daisyui-toast';
@@ -15,9 +15,10 @@
 	import Auth from '$lib/components/Auth.svelte';
 	import '../app.css';
 	let { children } = $props();
+	const syncServer = PUBLIC_SYNC_SERVER as `wss://${string}` | `ws://${string}`;
 
 	let sync: SyncConfig = {
-		peer: `wss://${PUBLIC_SYNC_SERVER}/?key=${PUBLIC_API_KEY}`,
+		peer: `${syncServer}/?key=${PUBLIC_API_KEY}`,
 		when: 'signedUp'
 	};
 	let AccountSchema = BrightBlurAccount;

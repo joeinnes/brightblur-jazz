@@ -9,7 +9,6 @@
 	let imageAspect: number | undefined = $state();
 	let originalFile: File | undefined = $state();
 	let cropperModal: HTMLDialogElement | undefined = $state();
-	$inspect(croppedBlob);
 
 	const handleFileSelect = (e: Event & { currentTarget: HTMLInputElement }) => {
 		try {
