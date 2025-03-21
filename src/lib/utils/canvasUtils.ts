@@ -194,3 +194,18 @@ export async function generateResizedImages(
 	}
 	return images;
 }
+
+export const redrawCanvas = (
+	sourceCanvas: HTMLCanvasElement,
+	destinationCanvas: HTMLCanvasElement
+) => {
+	if (!sourceCanvas || !destinationCanvas) throw new Error('No canvas');
+
+	const ctx = destinationCanvas.getContext('2d');
+	if (!ctx) throw new Error('Missing canvas context');
+
+	// Redraw the canvas with the current selection rectangle
+	// I was clearing the canvas first this before, but there's no reason to because the image will be drawn fully over the old canvas anyway
+	// ctx.clearRect(0, 0, destinationCanvas.width, destinationCanvas.height);
+	ctx.drawImage(sourceCanvas, 0, 0);
+};
