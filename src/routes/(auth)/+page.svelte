@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { FileStream, type ID } from 'jazz-tools';
+	import { type ID } from 'jazz-tools';
 	import { useCoState } from 'jazz-svelte';
-	import { GlobalData, Photo } from '$lib/schema';
+	import { GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	import RenderImage from '$lib/components/RenderImage.svelte';
 	import { extractSortedPhotos } from '$lib/utils/profileUtils';
-	import { getFile } from '$lib/utils/imageData';
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
 			people: [],

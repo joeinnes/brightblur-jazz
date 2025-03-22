@@ -3,7 +3,7 @@
 	import { useCoState } from 'jazz-svelte';
 	import { Photo } from '$lib/schema';
 
-	import { renderCanvas } from '$lib/utils/imageData';
+	import { renderCanvas, useProgressiveImg } from '$lib/utils/imageData.svelte';
 
 	import LoaderPinwheel from 'lucide-svelte/icons/loader-pinwheel';
 
@@ -18,12 +18,8 @@
 	} = $props();
 	const photo = $derived(
 		useCoState(Photo, id, {
-			images: [
-				{
-					file: []
-				}
-			],
-			faceSlices: [{ images: [{ file: [] }] }]
+			image: {},
+			faceSlices: [{ image: {} }]
 		})
 	);
 
@@ -32,14 +28,17 @@
 
 	let naturalDimensions = $state({ w: 0, h: 0 });
 	let container: HTMLDivElement | undefined = $state();
+	const { src } = $derived(
+		useProgressiveImg({ image: photo.current?.image, maxWidth: document.body.clientWidth * 4 })
+	);
 
 	$effect(() => {
 		if (container && shouldLoad && photo.current) {
 			const observer = new IntersectionObserver(
 				(entries) => {
 					entries.forEach((entry) => {
-						if (entry.isIntersecting && canvas && photo.current) {
-							renderCanvas(canvas, photo.current, naturalDimensions)
+						if (entry.isIntersecting && canvas && photo.current && src) {
+							renderCanvas(canvas, src, photo.current.faceSlices, naturalDimensions)
 								.then(() => {
 									loading = false;
 									observer.unobserve(entry.target);
@@ -82,13 +81,7 @@
 			></canvas>
 		{/if}
 		{#if loading}
-			<div
-				class="bg-primary-content text-primary grid aspect-square w-full animate-pulse place-items-center"
-			>
-				<div class="w-1/2 animate-spin">
-					<LoaderPinwheel class="size-full" />
-				</div>
-			</div>
+			<img {src} class="w-full animate-pulse blur-lg" alt="Placeholder" />
 		{/if}
 	</div>
 {/if}

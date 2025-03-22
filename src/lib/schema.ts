@@ -1,4 +1,14 @@
-import { Account, Profile, co, FileStream, CoMap, CoList, Group, CoFeed } from 'jazz-tools';
+import {
+	Account,
+	Profile,
+	co,
+	FileStream,
+	CoMap,
+	CoList,
+	Group,
+	CoFeed,
+	ImageDefinition
+} from 'jazz-tools';
 
 export class BrightBlurProfile extends Profile {
 	name = co.string;
@@ -50,7 +60,7 @@ export class ListOfImages extends CoList.Of(co.ref(Image)) {}
 
 export class Photo extends CoMap {
 	faceSlices = co.optional.ref(ListOfFaceSlices);
-	images = co.ref(ListOfImages);
+	image = co.ref(ImageDefinition);
 }
 
 export class FeedOfPhotos extends CoFeed.Of(co.ref(Photo)) {}
@@ -74,7 +84,7 @@ export class FaceSlice extends CoMap {
 	height = co.number;
 	width = co.number;
 	person = co.optional.ref(BrightBlurProfile);
-	images = co.ref(ListOfImages); // Changed from ListOfImages to co.ref(ListOfImages)
+	image = co.ref(ImageDefinition);
 }
 
 export class ListOfFaceSlices extends CoList.Of(co.ref(FaceSlice)) {}

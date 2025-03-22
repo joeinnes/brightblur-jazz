@@ -2,7 +2,7 @@
 	import { Group, type ID } from 'jazz-tools';
 	import { BrightBlurProfile } from '$lib/schema';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
-	import { imageDataToFile } from '$lib/utils/imageData';
+	import { imageDataToFile } from '$lib/utils/imageData.svelte';
 	let {
 		selectedItem = $bindable(),
 		placeholder = '',
