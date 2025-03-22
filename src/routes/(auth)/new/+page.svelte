@@ -3,25 +3,22 @@
 	import { goto } from '$app/navigation';
 	import { Group, type ID, Account } from 'jazz-tools';
 	import { useCoState } from 'jazz-svelte';
+	import { createImage } from 'jazz-browser-media-images';
 	import * as faceapi from 'face-api.js';
 	import toast from '@natoune/svelte-daisyui-toast';
 
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
 	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData } from '$lib/schema';
-	import { imageDataToFile } from '$lib/utils/imageData';
+	import { imageDataToFile } from '$lib/utils/imageData.svelte';
 	import { processImageForFaces, type FaceData } from '$lib/utils/faceDetection';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
-	import {
-		blobToCanvas,
-		drawFaceRectangles,
-		generateResizedImages,
-		renderBlurredCanvas
-	} from '$lib/utils/canvasUtils';
+	import { blobToCanvas, drawFaceRectangles, renderBlurredCanvas } from '$lib/utils/canvasUtils';
 
 	import Autocomplete from '$lib/components/Autocomplete.svelte';
 	import ImageUpload from '$lib/components/ImageUpload.svelte';
 	import PreviewCanvas from '$lib/components/PreviewCanvas.svelte';
+	import pica from 'pica';
 
 	// Get global data for people and photos
 	const globalData = $derived(
@@ -90,13 +87,16 @@
 		try {
 			const canvas = await originalCanvas;
 			if (!canvas) throw new Error('Something went wrong.');
-			// Create public group for photo access
+			const offscreenCanvas = document.createElement('canvas');
+			offscreenCanvas.width = canvas.width;
+			offscreenCanvas.height = canvas.height;
+			await renderBlurredCanvas(canvas, offscreenCanvas, faceList);
+
 			const publicGroup = Group.create();
 			publicGroup.addMember('everyone', 'reader');
-			// Define the target sizes we want to generate
-			const targetSizes = [320, 1024, 2048, 4096];
-			// Generate multiple sizes for the main photo
-			const photoImages = await generateResizedImages(canvas, targetSizes, publicGroup, faceList);
+			const picaInstance = new pica();
+			const blob = await picaInstance.toBlob(offscreenCanvas, 'image/jpeg', 1);
+			const photoImage = await createImage(blob, { owner: publicGroup });
 			// Create list of face slices
 			const listOfFaceSlices = ListOfFaceSlices.create([], publicGroup);
 			// Process each detected face
@@ -125,8 +125,9 @@
 				if (!faceCtx) throw new Error('Canvas context is null');
 				faceCtx.putImageData(face.originalImageData, 0, 0);
 
+				const blob = await picaInstance.toBlob(faceCanvas, 'image/jpeg', 1);
 				// Generate multiple sizes for the face slice
-				const faceImages = await generateResizedImages(faceCanvas, targetSizes, fileGroup);
+				const faceImage = await createImage(blob, { owner: fileGroup });
 
 				// Create face slice with the new images array
 				const faceSlice = FaceSlice.create(
@@ -136,7 +137,7 @@
 						width: face.width,
 						height: face.height,
 						person: profile?.value || null,
-						images: faceImages
+						image: faceImage
 					},
 					{ owner: sliceGroup }
 				);
@@ -147,7 +148,7 @@
 			// Create the photo with all the generated images
 			const photo = Photo.create(
 				{
-					images: photoImages,
+					image: photoImage,
 					faceSlices: listOfFaceSlices
 				},
 				{

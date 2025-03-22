@@ -2,8 +2,6 @@ import * as faceapi from 'face-api.js';
 import toast from '@natoune/svelte-daisyui-toast';
 import type { FaceData } from './faceDetection';
 import Pica from 'pica';
-import { FileStream, type Group } from 'jazz-tools';
-import { Image, ListOfImages } from '$lib/schema';
 
 export function drawSelectionRectangle(
 	ctx: CanvasRenderingContext2D,
@@ -146,53 +144,6 @@ export async function renderBlurredCanvas(
 
 	targetCtx.imageSmoothingEnabled = true; // Re-enable smoothing for the final image
 	return;
-}
-
-// Function to generate multiple image sizes
-// Add proper type for generateResizedImages function
-export async function generateResizedImages(
-	sourceCanvas: HTMLCanvasElement,
-	desiredSizes: number[],
-	ownerGroup: Group,
-	faceList?: FaceData[]
-): Promise<ListOfImages> {
-	const pica = new Pica({
-		tile: 512,
-		features: ['all']
-	});
-	const images = ListOfImages.create([], ownerGroup);
-	const originalWidth = sourceCanvas.width;
-	const originalHeight = sourceCanvas.height;
-	const targetSizes = desiredSizes.filter((el) => el < originalWidth);
-	targetSizes.unshift(originalWidth);
-	const canvases = await Promise.all(
-		targetSizes.map(async (el) => {
-			const canvas = document.createElement('canvas');
-			canvas.width = el;
-			canvas.height = el * (originalHeight / originalWidth);
-			await renderBlurredCanvas(sourceCanvas, canvas, faceList);
-			return {
-				size: el,
-				canvas
-			};
-		})
-	);
-
-	for (const canvas of canvases) {
-		const blob = await pica.toBlob(canvas.canvas, 'image/jpeg', 0.9);
-		const resizedFile = await FileStream.createFromBlob(blob, {
-			owner: ownerGroup
-		});
-		const resizedImage = Image.create(
-			{
-				size: canvas.size,
-				file: resizedFile
-			},
-			{ owner: ownerGroup }
-		);
-		images.push(resizedImage);
-	}
-	return images;
 }
 
 export const redrawCanvas = (

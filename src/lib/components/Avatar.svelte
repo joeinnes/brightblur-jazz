@@ -35,7 +35,7 @@
 	{@const hue = getUserHue(userId)}
 	<div
 		class="border-primary text-secondary-content {style} avatar avatar-placeholder flex items-center justify-center rounded-full border-2"
-		style={`font-size: ${fontSize}; background-color: oklch(85% 0.21 ${hue}); color: oklch(10% 0.21 ${hue});`}
+		style={`font-size: ${fontSize}; background-color: oklch(49.8% 0.0763 ${hue}); color: oklch(90% 0.21 ${hue});`}
 	>
 		<div class="flex h-full w-full items-center justify-center text-center leading-none">
 			{name

@@ -7,7 +7,7 @@
 	import Image from './Image.svelte';
 	import Avatar from './Avatar.svelte';
 	import { BrightBlurAccount, ListOfImages, Photo } from '$lib/schema';
-	import { renderCanvas } from '$lib/utils/imageData';
+	import { renderCanvas } from '$lib/utils/imageData.svelte';
 	import { getUserHue } from '$lib/utils/userUtils';
 	const { me } = useAccount();
 	const { photo: photoProp } = $props();
@@ -15,18 +15,10 @@
 	const photo = $derived(
 		photoProp?.value?.id
 			? useCoState(Photo, photoProp.value.id, {
-					images: [
-						{
-							file: []
-						}
-					],
+					image: [],
 					faceSlices: [
 						{
-							images: [
-								{
-									file: []
-								}
-							],
+							image: [],
 							person: {}
 						}
 					]
@@ -43,37 +35,6 @@
 				})
 			: {}
 	);
-
-	// Helper function to get the best image file ID based on desired size
-	function getBestImageFileId(images: ListOfImages | undefined | null, preferFullSize = false) {
-		if (!images || images.length === 0) return null;
-
-		if (preferFullSize) {
-			// Get the largest image (original)
-			const sortedImages = [...images].sort((a, b) => {
-				if (!a || !b) return 0;
-				return (b.size || 0) - (a.size || 0);
-			});
-
-			return sortedImages[0]?.file?.id;
-		} else {
-			// Get a reasonable size for display (prefer 1024px if available)
-			const preferredSize = 1024;
-			let bestImage = images[0];
-
-			for (const img of images) {
-				if (!img) continue;
-				if (img.size === preferredSize) {
-					return img.file?.id;
-				}
-				if ((img.size || 0) > (bestImage?.size || 0) && (img.size || 0) <= preferredSize) {
-					bestImage = img;
-				}
-			}
-
-			return bestImage?.file?.id;
-		}
-	}
 </script>
 
 <div class="w-full">
@@ -106,7 +67,7 @@
 			</div>
 			<ul class="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-64 gap-1 p-2 shadow">
 				<li>
-					<button
+					<!--<button
 						onclick={async () => {
 							try {
 								// Get the best image for download (prefer 1024px for reasonable size)
@@ -151,10 +112,10 @@
 						}}
 					>
 						Download Blurred Photo</button
-					>
+        >-->
 				</li>
 				<li>
-					<button
+					<!--<button
 						onclick={async () => {
 							try {
 								// Get the original/full size image
@@ -209,7 +170,7 @@
 						}}
 					>
 						Download Unblurred Photo</button
-					>
+        >-->
 				</li>
 
 				{#if photographer.current?.id === me.id}
@@ -250,8 +211,8 @@
 					{@const hue = getUserHue(slice.person.id)}
 					<a href="/profile/{slice.person.id}">
 						<div
-							class="badge badge-sm"
-							style="background-color: oklch(85% 0.21 {hue}); color: oklch(10% 0.21 {hue});"
+							class="badge badge-sm border-0"
+							style="background-color: oklch(49.8% 0.0763 {hue}); color: oklch(90% 0.21 {hue});"
 						>
 							<User class="mr-0.5 w-[1em]" />{slice.person.name}
 						</div>
