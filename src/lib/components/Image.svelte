@@ -28,9 +28,7 @@
 
 	let naturalDimensions = $state({ w: 0, h: 0 });
 	let container: HTMLDivElement | undefined = $state();
-	const { src } = $derived(
-		useProgressiveImg({ image: photo.current?.image, maxWidth: document.body.clientWidth * 4 })
-	);
+	const { src } = $derived(useProgressiveImg({ image: photo.current?.image, maxWidth: 1024 }));
 
 	$effect(() => {
 		if (container && shouldLoad && photo.current) {
