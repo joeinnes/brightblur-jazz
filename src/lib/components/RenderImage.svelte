@@ -1,224 +1,224 @@
 <script lang="ts">
-	import { FileStream, Group } from 'jazz-tools';
+	import { Group } from 'jazz-tools';
 	import { useAccount, useCoState } from 'jazz-svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
 	import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
 	import User from 'lucide-svelte/icons/user';
 	import Image from './Image.svelte';
 	import Avatar from './Avatar.svelte';
-	import { BrightBlurAccount, ListOfImages, Photo } from '$lib/schema';
-	import { renderCanvas } from '$lib/utils/imageData.svelte';
+	import { BrightBlurAccount, Photo } from '$lib/schema';
 	import { getUserHue } from '$lib/utils/userUtils';
+	import { renderCanvas, useProgressiveImg } from '$lib/utils/imageData.svelte';
 	const { me } = useAccount();
-	const { photo: photoProp } = $props();
+	const { photo: PhotoProp } = $props();
+	let photoId = $derived(PhotoProp?.value?.id);
+	let photographerId = $derived(PhotoProp?.by?.id);
+	let madeAt = $derived(PhotoProp?.madeAt);
 
 	const photo = $derived(
-		photoProp?.value?.id
-			? useCoState(Photo, photoProp.value.id, {
-					image: [],
-					faceSlices: [
-						{
-							image: [],
-							person: {}
-						}
-					]
-				})
-			: {}
+		useCoState(Photo, photoId, {
+			resolve: {
+				faceSlices: { $each: { person: true } }
+			}
+		})
 	);
 
 	const photographer = $derived(
-		photoProp?.by?.id
-			? useCoState(BrightBlurAccount, photoProp.by.id, {
-					profile: {
-						avatar: []
-					}
-				})
-			: {}
+		useCoState(BrightBlurAccount, photographerId, {
+			resolve: {
+				profile: {
+					avatar: true
+				}
+			}
+		})
 	);
 </script>
 
-<div class="w-full">
-	<div class="mb-2 flex items-center gap-2 px-2">
-		<Avatar
-			id={photographer?.current?.profile?.avatar?.id}
-			name={photographer?.current?.profile?.name}
-			userId={photographer?.current?.profile?.id}
-		/>
-		<hgroup>
-			<h3 class="mb-0 leading-2 font-bold">
-				<a href="/profile/{photographer?.current?.profile?.id}">
-					@{photographer?.current?.profile?.name}
-				</a>
-			</h3>
-			<small class="opacity-60">
-				{photoProp.madeAt.toLocaleDateString('en-GB', {
-					hour: '2-digit',
-					minute: '2-digit',
-					weekday: 'short',
-					year: 'numeric',
-					month: 'short',
-					day: 'numeric'
-				})}
-			</small>
-		</hgroup>
-		<div class="dropdown dropdown-end ms-auto">
-			<div role="button" tabindex="0" class="btn btn-square btn-outline btn-sm btn- ms-auto">
-				<EllipsisVertical />
-			</div>
-			<ul class="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-64 gap-1 p-2 shadow">
-				<li>
-					<!--<button
-						onclick={async () => {
-							try {
-								// Get the best image for download (prefer 1024px for reasonable size)
-								const fileId = getBestImageFileId(photo.current?.images);
-								if (!fileId) throw new Error('No photo selected.');
-
-								const blob = await FileStream.loadAsBlob(fileId);
-								if (!blob) throw new Error('Could not read file.');
-
-								const fileName = crypto.randomUUID() + '.jpg';
-								if (navigator && navigator?.canShare?.()) {
-									const img = new File([blob], fileName, { type: 'image/jpeg' });
-									navigator.share({
-										title: 'BrightBlur Photo',
-										text: 'Check out this photo on BrightBlur!',
-										files: [img]
-									});
-									return null;
-								}
-								const url = URL.createObjectURL(blob);
-								const a = document.createElement('a');
-
-								a.download = fileName;
-								a.href = url;
-								a.target = '_blank';
-								document.body.appendChild(a);
-								a.dispatchEvent(
-									new MouseEvent('click', {
-										bubbles: true,
-										cancelable: true,
-										view: window
-									})
-								);
-								document.body.removeChild(a);
-								setTimeout(() => {
-									URL.revokeObjectURL(url);
-									a.remove();
-								}, 100);
-							} catch (e: any) {
-								toast.error(e.message, { duration: 3000 });
-							}
-						}}
-					>
-						Download Blurred Photo</button
-        >-->
-				</li>
-				<li>
-					<!--<button
-						onclick={async () => {
-							try {
-								// Get the original/full size image
-								const fileId = getBestImageFileId(photo.current?.images, true);
-								if (!fileId) throw new Error('No photo selected.');
-
-								const blob = await FileStream.loadAsBlob(fileId);
-								if (!blob) throw new Error('Could not read file.');
-
-								const fileName = crypto.randomUUID() + '.jpg';
-								const bitmap = await createImageBitmap(blob);
-								const { width, height } = bitmap;
-								bitmap.close();
-								const canvas = document.createElement('canvas');
-								canvas.width = width;
-								canvas.height = height;
-								if (!photo.current) throw new Error('No photo selected.');
-								await renderCanvas(canvas, photo.current, { w: width, h: height }, true);
-								if (navigator && navigator?.canShare?.()) {
-									const blob = canvas.toBlob((blob) => {
-										if (!blob) throw new Error('Could not read file.');
+{#if photo && photographer}
+	<div class="w-full">
+		<div class="mb-2 flex items-center gap-2 px-2">
+			<Avatar
+				id={photographer?.current?.profile?.avatar?.id}
+				name={photographer?.current?.profile?.name}
+				userId={photographer?.current?.profile?.id}
+			/>
+			<hgroup>
+				<h3 class="mb-0 leading-2 font-bold">
+					<a href="/profile/{photographer?.current?.profile?.id}">
+						@{photographer?.current?.profile?.name}
+					</a>
+				</h3>
+				<small class="opacity-60">
+					{madeAt.toLocaleDateString('en-GB', {
+						hour: '2-digit',
+						minute: '2-digit',
+						weekday: 'short',
+						year: 'numeric',
+						month: 'short',
+						day: 'numeric'
+					})}
+				</small>
+			</hgroup>
+			<div class="dropdown dropdown-end ms-auto">
+				<div role="button" tabindex="0" class="btn btn-square btn-outline btn-sm btn- ms-auto">
+					<EllipsisVertical />
+				</div>
+				<ul class="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-64 gap-1 p-2 shadow">
+					<li>
+						<button
+							onclick={async () => {
+								try {
+									// Get the best image for download (prefer 1024px for reasonable size)
+									if (!photo.current?.image) throw new Error('No photo selected.');
+									const file = photo.current.image.highestResAvailable();
+									if (!file) throw new Error('No photo found.');
+									const blob = file.stream.toBlob();
+									if (!blob) throw new Error('Could not read file.');
+									const fileName = crypto.randomUUID() + '.jpg';
+									if (navigator && navigator?.canShare?.()) {
 										const img = new File([blob], fileName, { type: 'image/jpeg' });
 										navigator.share({
 											title: 'BrightBlur Photo',
 											text: 'Check out this photo on BrightBlur!',
 											files: [img]
 										});
-									});
-									return null;
-								}
-								const url = canvas.toDataURL('image/jpeg', 1.0);
-								const a = document.createElement('a');
-								a.download = fileName;
-								a.href = url;
-								a.target = '_blank';
-								document.body.appendChild(a);
-								a.dispatchEvent(
-									new MouseEvent('click', {
-										bubbles: true,
-										cancelable: true,
-										view: window
-									})
-								);
-								document.body.removeChild(a);
-								setTimeout(() => {
-									URL.revokeObjectURL(url);
-									a.remove();
-								}, 100);
-							} catch (e: any) {
-								toast.error(e.message, { duration: 3000 });
-							}
-						}}
-					>
-						Download Unblurred Photo</button
-        >-->
-				</li>
+										return null;
+									}
+									const url = URL.createObjectURL(blob);
+									const a = document.createElement('a');
 
-				{#if photographer.current?.id === me.id}
-					<li>
-						<button
-							class="btn btn-error btn-sm"
-							onclick={() => {
-								try {
-									const owningGroup = photo.current?._owner.castAs(Group);
-									if (!owningGroup)
-										throw new Error("Couldn't work out who owns this. Maybe it was deleted?");
-									owningGroup.members.forEach((member) => {
-										owningGroup.removeMember(member.account);
-									});
+									a.download = fileName;
+									a.href = url;
+									a.target = '_blank';
+									document.body.appendChild(a);
+									a.dispatchEvent(
+										new MouseEvent('click', {
+											bubbles: true,
+											cancelable: true,
+											view: window
+										})
+									);
+									document.body.removeChild(a);
+									setTimeout(() => {
+										URL.revokeObjectURL(url);
+										a.remove();
+									}, 100);
 								} catch (e: any) {
 									toast.error(e.message, { duration: 3000 });
 								}
-							}}>Delete Photo</button
+							}}
+						>
+							Download Blurred Photo</button
 						>
 					</li>
-				{/if}
-			</ul>
+					<li>
+						<button
+							onclick={async () => {
+								try {
+									// Get the original/full size image
+									if (!photo.current?.image) throw new Error('No photo selected.');
+									const file = photo.current.image.highestResAvailable();
+									if (!file) throw new Error('No photo found.');
+									const blob = file.stream.toBlob();
+									if (!blob) throw new Error('Could not read file.');
+									const fileName = crypto.randomUUID() + '.jpg';
+									const bitmap = await createImageBitmap(blob);
+									const { width, height } = bitmap;
+									bitmap.close();
+									const canvas = document.createElement('canvas');
+									canvas.width = width;
+									canvas.height = height;
+									if (!photo.current) throw new Error('No photo selected.');
+									const imgSrc = URL.createObjectURL(blob);
+									await renderCanvas(canvas, imgSrc, photo.current.faceSlices);
+									setTimeout(() => URL.revokeObjectURL(imgSrc), 200);
+
+									if (navigator && navigator?.canShare?.()) {
+										const blob = canvas.toBlob((blob) => {
+											if (!blob) throw new Error('Could not read file.');
+											const img = new File([blob], fileName, { type: 'image/jpeg' });
+											navigator.share({
+												title: 'BrightBlur Photo',
+												text: 'Check out this photo on BrightBlur!',
+												files: [img]
+											});
+										});
+										return null;
+									}
+									const url = canvas.toDataURL('image/jpeg', 1.0);
+									const a = document.createElement('a');
+									a.download = fileName;
+									a.href = url;
+									a.target = '_blank';
+									document.body.appendChild(a);
+									a.dispatchEvent(
+										new MouseEvent('click', {
+											bubbles: true,
+											cancelable: true,
+											view: window
+										})
+									);
+									document.body.removeChild(a);
+									setTimeout(() => {
+										URL.revokeObjectURL(url);
+										a.remove();
+									}, 100);
+								} catch (e: any) {
+									toast.error(e.message, { duration: 3000 });
+								}
+							}}
+						>
+							Download Unblurred Photo</button
+						>
+					</li>
+
+					{#if photographer.current?.id === me?.id}
+						<li>
+							<button
+								class="btn btn-error btn-sm"
+								onclick={() => {
+									try {
+										const owningGroup = photo.current?._owner.castAs(Group);
+										if (!owningGroup)
+											throw new Error("Couldn't work out who owns this. Maybe it was deleted?");
+										owningGroup.members.forEach((member) => {
+											owningGroup.removeMember(member.account);
+										});
+									} catch (e: any) {
+										toast.error(e.message, { duration: 3000 });
+									}
+								}}>Delete Photo</button
+							>
+						</li>
+					{/if}
+				</ul>
+			</div>
+		</div>
+
+		<figure class="relative my-2">
+			{#if photoId}
+				<Image id={photoId} />
+			{/if}
+		</figure>
+
+		<!--<button class="btn btn-error" onclick={() => photos.splice(i, 1)}>Delete</button>-->
+
+		<div class="px-2">
+			{#if photo?.current?.faceSlices}
+				{#each photo.current.faceSlices as slice}
+					{#if slice?.person?.name}
+						{@const hue = getUserHue(slice.person.id)}
+						<a href="/profile/{slice.person.id}">
+							<div
+								class="badge badge-sm border-0"
+								style="background-color: oklch(49.8% 0.0763 {hue}); color: oklch(90% 0.21 {hue});"
+							>
+								<User class="mr-0.5 w-[1em]" />{slice.person.name}
+							</div>
+						</a>
+					{/if}
+				{/each}
+			{/if}
 		</div>
 	</div>
-
-	<figure class="relative my-2">
-		{#if photoProp?.value?.id}
-			<Image id={photoProp.value.id} />
-		{/if}
-	</figure>
-
-	<!--<button class="btn btn-error" onclick={() => photos.splice(i, 1)}>Delete</button>-->
-
-	<div class="px-2">
-		{#if photo?.current?.faceSlices}
-			{#each photo.current.faceSlices as slice}
-				{#if slice?.person?.name}
-					{@const hue = getUserHue(slice.person.id)}
-					<a href="/profile/{slice.person.id}">
-						<div
-							class="badge badge-sm border-0"
-							style="background-color: oklch(49.8% 0.0763 {hue}); color: oklch(90% 0.21 {hue});"
-						>
-							<User class="mr-0.5 w-[1em]" />{slice.person.name}
-						</div>
-					</a>
-				{/if}
-			{/each}
-		{/if}
-	</div>
-</div>
+{/if}

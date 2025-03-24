@@ -1,7 +1,8 @@
 import type { Account, ID } from 'jazz-tools';
 import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
 
-import type { FaceSlice, GlobalData, BrightBlurProfile, Photo } from '$lib/schema';
+import type { FaceSlice, BrightBlurProfile, Photo, FeedOfPhotos } from '$lib/schema';
+import { GlobalData } from '$lib/schema';
 
 /**
  * Extracts all people from the global data feed
@@ -43,9 +44,9 @@ export function filterManagedPeople(
 /**
  * Extracts all photos from the global data feed and sorts them by date
  */
-export function extractSortedPhotos(globalData: { current?: GlobalData | null }) {
-	return globalData.current?.photos
-		? Object.values(globalData.current?.photos)
+export function extractSortedPhotos(photoFeed: FeedOfPhotos | undefined) {
+	return photoFeed
+		? Object.values(photoFeed)
 				.flatMap((entries) => [...(entries?.all || [])])
 				.sort((a, b) => (b.madeAt > a.madeAt ? 1 : -1))
 		: [];

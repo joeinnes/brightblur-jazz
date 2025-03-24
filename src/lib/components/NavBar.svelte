@@ -1,13 +1,8 @@
 <script lang="ts">
-	import { Profile } from 'jazz-tools';
 	import Avatar from './Avatar.svelte';
 	import { useAccount } from 'jazz-svelte';
 
-	const { me, logOut } = $derived(
-		useAccount({
-			profile: { avatar: [] }
-		})
-	);
+	const { me, logOut } = $derived(useAccount());
 </script>
 
 <div class="navbar bg-base-100 sticky top-0 z-50 mb-4 shadow-sm">

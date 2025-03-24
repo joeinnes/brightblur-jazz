@@ -37,8 +37,7 @@
 	// Get global data for people
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
-			people: [],
-			photos: []
+			resolve: { photos: true, people: true }
 		})
 	);
 
@@ -48,7 +47,7 @@
 		allPeople && filterManagedPeople(allPeople, me?.id, me?.profile?.id)
 	);
 
-	const photoArray = $derived(extractSortedPhotos(globalData));
+	const photoArray = $derived(extractSortedPhotos(globalData?.current?.photos || undefined));
 
 	const uploadedPhotos: CoFeedEntry<Photo>[] = $derived(
 		filterPhotosByUploader(photoArray, profile?.current?.user?.id)

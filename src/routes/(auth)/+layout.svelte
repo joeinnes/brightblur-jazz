@@ -18,8 +18,7 @@
 
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
-			people: [],
-			photos: []
+			resolve: { photos: true, people: true }
 		})
 	);
 
@@ -44,8 +43,8 @@
 
 	$effect(() => {
 		// User must have added their own profile to the feed
-		if (listOfPeople !== undefined) {
-			me.ensureLoaded({ profile: {} }).then((me) => {
+		if (listOfPeople !== undefined && me) {
+			me.ensureLoaded({ resolve: { profile: true } }).then((me) => {
 				const myProfile = listOfPeople.find((profile) => {
 					if (profile && profile.value) return profile.value.id === me?.profile?.id;
 					return false;

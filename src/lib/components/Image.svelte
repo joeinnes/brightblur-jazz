@@ -4,8 +4,7 @@
 	import { Photo } from '$lib/schema';
 
 	import { renderCanvas, useProgressiveImg } from '$lib/utils/imageData.svelte';
-
-	import LoaderPinwheel from 'lucide-svelte/icons/loader-pinwheel';
+	import { onMount } from 'svelte';
 
 	const {
 		id,
@@ -18,34 +17,40 @@
 	} = $props();
 	const photo = $derived(
 		useCoState(Photo, id, {
-			image: {},
-			faceSlices: [{ image: {} }]
+			resolve: {
+				image: {
+					$each: true
+				},
+				faceSlices: {
+					$each: {
+						image: { $each: true }
+					}
+				}
+			}
 		})
 	);
 
+	let faceSlices = $derived(photo.current?.faceSlices);
 	let canvas: HTMLCanvasElement | undefined = $state();
 	let loading = $state(true);
+	let width: number | undefined = $state();
+	let shouldRender = $state(false);
 
-	let naturalDimensions = $state({ w: 0, h: 0 });
 	let container: HTMLDivElement | undefined = $state();
-	const { src } = $derived(useProgressiveImg({ image: photo.current?.image, maxWidth: 1024 }));
+	const { src, res } = $derived(
+		useProgressiveImg({ image: photo.current?.image, targetWidth: width || 1024 })
+	);
 
 	$effect(() => {
+		console.log(container, shouldLoad, photo.current);
 		if (container && shouldLoad && photo.current) {
 			const observer = new IntersectionObserver(
 				(entries) => {
 					entries.forEach((entry) => {
-						if (entry.isIntersecting && canvas && photo.current && src) {
-							renderCanvas(canvas, src, photo.current.faceSlices, naturalDimensions)
-								.then(() => {
-									loading = false;
-									observer.unobserve(entry.target);
-								})
-								.catch((e) => {
-									console.error('Render failed:', e);
-									loading = false;
-									observer.unobserve(entry.target);
-								});
+						if (entry.isIntersecting && src) {
+							console.log('intersecting');
+							shouldRender = true;
+							observer.unobserve(entry.target);
 						}
 					});
 				},
@@ -63,6 +68,18 @@
 			};
 		}
 	});
+	const renderCanvasAction = (node: HTMLCanvasElement, src: string) => {
+		if (!src) return;
+		width = node.width;
+		renderCanvas(node, src, faceSlices)
+			.then(() => {
+				loading = false;
+			})
+			.catch((e) => {
+				console.error('Render failed:', e);
+				loading = false;
+			});
+	};
 </script>
 
 {#if id}
@@ -70,16 +87,19 @@
 		class="{containerStyles} flex items-center justify-center {loading && 'h-full w-full'}"
 		bind:this={container}
 	>
-		{#if container?.clientWidth}
+		{#if src && shouldRender}
 			<canvas
 				bind:this={canvas}
 				class="object-cover shadow-md"
+				class:hidden={res === 'placeholder' || loading}
 				width={container?.clientWidth}
-				style="display: {loading ? 'none' : 'block'}"
+				use:renderCanvasAction={src}
 			></canvas>
-		{/if}
-		{#if loading}
-			<img {src} class="w-full animate-pulse blur-lg" alt="Placeholder" />
+			<img {src} class="w-full animate-pulse blur-lg" class:hidden={!loading} alt="Placeholder" />
+		{:else}
+			<div class="bg-base-300 aspect-[3/4] w-full animate-pulse"></div>
 		{/if}
 	</div>
+{:else}
+	<div class="bg-base-300 aspect-[3/4] w-full animate-pulse"></div>
 {/if}
