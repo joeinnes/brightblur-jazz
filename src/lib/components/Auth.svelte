@@ -27,7 +27,9 @@
 			.then(async () => {
 				const me = Account.getMe();
 				await me.ensureLoaded({
-					profile: {}
+					resolve: {
+						profile: true
+					}
 				});
 				if (me?.profile) {
 					me.profile.name = name;

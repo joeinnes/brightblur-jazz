@@ -41,16 +41,21 @@ export const getFile = async (id: ID<FileStream>) => {
 
 export function useProgressiveImg({
 	image,
-	maxWidth
+	maxWidth,
+	targetWidth
 }: {
 	image: ImageDefinition | null | undefined;
 	maxWidth?: number;
+	targetWidth?: number;
 }) {
-	let current = $state<{ src?: string; res?: `${number}x${number}` | 'placeholder' }>();
+	let current = $state<{
+		src?: string;
+		res?: `${number}x${number}` | 'placeholder';
+	}>();
 	const originalSize = $state(image?.originalSize);
 
 	const unsubscribe = image?.subscribe({}, (update) => {
-		const highestRes = update?.highestResAvailable({ maxWidth });
+		const highestRes = update?.highestResAvailable({ maxWidth, targetWidth });
 		if (highestRes) {
 			if (highestRes.res !== current?.res) {
 				const blob = highestRes.stream.toBlob();
@@ -59,7 +64,7 @@ export function useProgressiveImg({
 					current = { src: blobURI, res: highestRes.res };
 
 					// Cleanup previous blob URL
-					setTimeout(() => URL.revokeObjectURL(blobURI), 200);
+					setTimeout(() => URL.revokeObjectURL(blobURI), 2000); // Give firefox time.
 				}
 			}
 		} else {
@@ -82,6 +87,7 @@ export function useProgressiveImg({
 		get res() {
 			return current?.res;
 		},
+
 		originalSize
 	};
 }
@@ -89,9 +95,9 @@ export function useProgressiveImg({
 export async function renderCanvas(
 	canvas: HTMLCanvasElement,
 	src: string,
-	faceSlices: ListOfFaceSlices | null | undefined,
-	naturalDimensions: { w: number; h: number }
+	faceSlices: ListOfFaceSlices | null | undefined
 ) {
+	if (!canvas) return null;
 	const offscreen = document.createElement('canvas');
 	const ctx = offscreen.getContext('2d');
 
@@ -109,8 +115,10 @@ export async function renderCanvas(
 			resolve(r);
 		};
 	});
-	naturalDimensions.w = img.naturalWidth;
-	naturalDimensions.h = img.naturalHeight;
+	const naturalDimensions = {
+		w: img.naturalWidth,
+		h: img.naturalHeight
+	};
 	offscreen.width = img.width;
 	offscreen.height = img.height;
 	canvas.height = canvas.width * (naturalDimensions.h / naturalDimensions.w);
@@ -196,4 +204,5 @@ export async function renderCanvas(
 	await pica.resize(offscreen, canvas, {
 		filter: 'lanczos2'
 	});
+	return null;
 }
