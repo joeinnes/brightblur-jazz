@@ -23,8 +23,10 @@
 	// Get global data for people and photos
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
-			people: [],
-			photos: []
+			resolve: {
+				people: true,
+				photos: true
+			}
 		})
 	);
 
@@ -110,7 +112,7 @@
 				if (profile) {
 					const parentGroup = profile.value._owner.castAs(Group) as Group;
 					for (const member of parentGroup.members) {
-						const userToAdd = await Account.load(member.id, []);
+						const userToAdd = await Account.load(member.id);
 						if (userToAdd) {
 							fileGroup.addMember(userToAdd, member.role);
 						}

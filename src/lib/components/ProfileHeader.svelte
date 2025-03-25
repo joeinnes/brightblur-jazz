@@ -9,7 +9,7 @@
 	import Avatar from './Avatar.svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
 	import Pica from 'pica';
-	import { Image } from '$lib/schema';
+	import { createImage } from 'jazz-browser-media-images';
 
 	let avatarCropperModal: HTMLDialogElement | undefined = $state();
 
@@ -35,69 +35,13 @@
 				const avatarGroup = Group.create();
 				avatarGroup.addMember('everyone', 'reader');
 
-				// Create a canvas with the cropped image
-				const image = document.createElement('img');
-				const url = URL.createObjectURL(avatarFile[0]);
-
-				// Load the image and resize it
-				await new Promise((resolve, reject) => {
-					image.onload = resolve;
-					image.onerror = reject;
-					image.src = url;
+				const photoImage = await createImage(avatarFile[0], {
+					owner: avatarGroup,
+					maxSize: 256
 				});
 
-				// Create source canvas with the original image
-				const sourceCanvas = document.createElement('canvas');
-				const sourceCtx = sourceCanvas.getContext('2d');
-				sourceCanvas.width = image.width;
-				sourceCanvas.height = image.height;
-				sourceCtx?.drawImage(image, 0, 0);
-				URL.revokeObjectURL(url);
-
-				// Resize to max 512px width if needed
-				if (image.width > 512) {
-					const targetCanvas = document.createElement('canvas');
-					targetCanvas.width = 512;
-					targetCanvas.height = Math.round(512 * (image.height / image.width));
-
-					const pica = new Pica({
-						tile: 1024,
-						features: ['all']
-					});
-
-					await pica.resize(sourceCanvas, targetCanvas, {
-						filter: 'lanczos2'
-					});
-
-					// Convert to blob
-					const resizedBlob = await new Promise<Blob>((resolve, reject) => {
-						targetCanvas.toBlob(
-							(blob) => {
-								if (blob) resolve(blob);
-								else reject(new Error('Failed to create resized blob'));
-							},
-							'image/jpeg',
-							0.9
-						);
-					});
-
-					// Create file stream from the resized blob
-					const fileStream = await FileStream.createFromBlob(resizedBlob, {
-						owner: avatarGroup
-					});
-
-					if (profile.current) {
-						profile.current.avatar = fileStream;
-					}
-				} else {
-					// If image is already small enough, use it directly
-					const fileStream = await FileStream.createFromBlob(avatarFile[0], {
-						owner: avatarGroup
-					});
-
-					if (profile.current) {
-						profile.current.avatar = fileStream;
-					}
+				if (profile.current) {
+					profile.current.avatar = photoImage;
 				}
 			} catch (error) {
 				console.error('Error resizing avatar:', error);
@@ -173,7 +117,7 @@
 			<label class="cursor-pointer">
 				<div class="bg-neutral text-neutral-content h-24 w-24 rounded-full">
 					<Avatar
-						id={profile?.current?.avatar?.id}
+						image={profile?.current?.avatar}
 						style="size-24"
 						name={profile.current.name}
 						userId={profile.current.id}

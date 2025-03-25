@@ -2,6 +2,7 @@ import * as faceapi from 'face-api.js';
 import toast from '@natoune/svelte-daisyui-toast';
 import type { FaceData } from './faceDetection';
 import Pica from 'pica';
+import type { ListOfFaceSlices } from '$lib/schema';
 
 export function drawSelectionRectangle(
 	ctx: CanvasRenderingContext2D,
@@ -11,7 +12,7 @@ export function drawSelectionRectangle(
 	currentY: number
 ) {
 	ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
-	ctx.lineWidth = 2; // Static 2px width
+	ctx.lineWidth = 6; // Static 2px width
 	ctx.beginPath();
 	ctx.roundRect(
 		Math.min(startX, currentX),
@@ -23,10 +24,15 @@ export function drawSelectionRectangle(
 	ctx.stroke();
 }
 
-export function drawFaceRectangles(canvas: HTMLCanvasElement, faceList: FaceData[]) {
+export function drawFaceRectangles(
+	canvas: HTMLCanvasElement,
+	faceList: ListOfFaceSlices | undefined | null
+) {
+	if (!faceList) return;
 	const ctx = canvas.getContext('2d');
 	if (!ctx) return;
 	faceList.forEach((faceData) => {
+		if (!faceData?.x || !faceData?.y || !faceData?.width || !faceData?.height) return;
 		const { x, y, width, height } = faceData;
 		drawSelectionRectangle(
 			ctx,
