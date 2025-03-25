@@ -13,7 +13,7 @@
 	let { profile } = $props();
 	let currentlyViewing = $derived(
 		useCoState(BrightBlurProfile, profile.current.id, {
-			user: {}
+			resolve: { user: true }
 		})
 	);
 
@@ -29,14 +29,18 @@
 <div class="tab-content p-4">
 	<ul class="list bg-base-100 rounded-box shadow-md">
 		{#each currentlyViewing.current?._owner?.castAs?.(Group)?.members || [] as member}
-			{#await BrightBlurAccount.load(member.id, { profile: { avatar: [] } }) then person}
+			{#await BrightBlurAccount.load( member.id, { resolve: { profile: { avatar: true } } } ) then person}
 				{#if person}
 					<li>
 						<a href="/profile/{person?.profile?.id}" class="list-row">
-							<Avatar id={person?.profile?.avatar?.id} name={person?.profile?.name} />
+							<Avatar
+								image={person.profile.avatar}
+								name={person.profile.name}
+								userId={person.profile.id}
+							/>
 							<div>
 								<div>
-									{person?.profile.name}
+									{person.profile.name}
 								</div>
 								<div class="text-xs font-semibold uppercase opacity-60">
 									{formatRole(member.role)}
@@ -52,8 +56,9 @@
 							>
 								<button
 									class="btn btn-square btn-ghost"
-									disabled={member.id === currentlyViewing.current?.user?.id &&
-										member.role === 'admin'}
+									disabled={(member.id === currentlyViewing.current?.user?.id &&
+										member.role === 'admin') ||
+										(countAdmins < 2 && member.role === 'admin')}
 									onclick={async (e) => {
 										e.preventDefault();
 										e.stopPropagation();

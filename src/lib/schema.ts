@@ -12,7 +12,7 @@ import {
 
 export class BrightBlurProfile extends Profile {
 	name = co.string;
-	avatar = co.optional.ref(FileStream);
+	avatar = co.optional.ref(ImageDefinition);
 	user = co.optional.ref(Account);
 }
 

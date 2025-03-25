@@ -8,7 +8,7 @@
 	import Avatar from './Avatar.svelte';
 	import { BrightBlurAccount, Photo } from '$lib/schema';
 	import { getUserHue } from '$lib/utils/userUtils';
-	import { renderCanvas, useProgressiveImg } from '$lib/utils/imageData.svelte';
+	import { renderCanvas } from '$lib/utils/imageData.svelte';
 	const { me } = useAccount();
 	const { photo: PhotoProp } = $props();
 	let photoId = $derived(PhotoProp?.value?.id);
@@ -38,7 +38,7 @@
 	<div class="w-full">
 		<div class="mb-2 flex items-center gap-2 px-2">
 			<Avatar
-				id={photographer?.current?.profile?.avatar?.id}
+				image={photographer?.current?.profile?.avatar}
 				name={photographer?.current?.profile?.name}
 				userId={photographer?.current?.profile?.id}
 			/>
@@ -102,7 +102,7 @@
 									setTimeout(() => {
 										URL.revokeObjectURL(url);
 										a.remove();
-									}, 100);
+									}, 200);
 								} catch (e: any) {
 									toast.error(e.message, { duration: 3000 });
 								}
@@ -162,7 +162,7 @@
 									setTimeout(() => {
 										URL.revokeObjectURL(url);
 										a.remove();
-									}, 100);
+									}, 200);
 								} catch (e: any) {
 									toast.error(e.message, { duration: 3000 });
 								}

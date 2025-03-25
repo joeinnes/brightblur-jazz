@@ -1,15 +1,16 @@
 <script lang="ts">
 	import type { BrightBlurProfile } from '$lib/schema';
+	import { useProgressiveImg } from '$lib/utils/imageData.svelte';
 	import { getUserHue } from '$lib/utils/userUtils';
-	import { FileStream, type ID } from 'jazz-tools';
+	import { ImageDefinition, type ID } from 'jazz-tools';
 
 	const {
-		id,
+		image,
 		name = '',
 		userId,
 		style = 'size-10'
 	}: {
-		id: ID<FileStream> | undefined;
+		image: ImageDefinition | null | undefined;
 		name?: string;
 		userId: ID<BrightBlurProfile> | undefined;
 		style?: `size-${number}`;
@@ -17,20 +18,17 @@
 
 	const sizeValue = $derived(parseInt(style.split('-')[1]) || 10);
 	const fontSize = $derived(`${sizeValue * 0.1}rem`);
+	let width = $state(0);
+	const { src } = $derived(useProgressiveImg({ image, targetWidth: width || 1024 }));
 </script>
 
-{#if id}
-	{#await FileStream.loadAsBlob(id) then blob}
-		{#if blob}
-			{@const url = URL.createObjectURL(blob)}
-			<img
-				src={url}
-				onload={() => URL.revokeObjectURL(url)}
-				alt="Profile"
-				class="border-primary {style} rounded-full border-2 object-cover"
-			/>
-		{/if}
-	{/await}
+{#if image}
+	<img
+		{src}
+		alt="Profile"
+		class="border-primary {style} rounded-full border-2 object-cover"
+		bind:clientWidth={width}
+	/>
 {:else}
 	{@const hue = getUserHue(userId)}
 	<div

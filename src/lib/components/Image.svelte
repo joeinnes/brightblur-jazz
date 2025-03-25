@@ -42,13 +42,11 @@
 	);
 
 	$effect(() => {
-		console.log(container, shouldLoad, photo.current);
 		if (container && shouldLoad && photo.current) {
 			const observer = new IntersectionObserver(
 				(entries) => {
 					entries.forEach((entry) => {
 						if (entry.isIntersecting && src) {
-							console.log('intersecting');
 							shouldRender = true;
 							observer.unobserve(entry.target);
 						}

@@ -2,6 +2,7 @@ import { FileStream, ImageDefinition, type ID } from 'jazz-tools';
 import type { ListOfFaceSlices } from '$lib/schema';
 import Pica from 'pica';
 import { onDestroy } from 'svelte';
+import { drawFaceRectangles } from './canvasUtils';
 export function imageDataToFile(imageData: ImageData, filename = 'image.jpeg'): Promise<File> {
 	// Create a temporary canvas to draw the image data
 	const canvas = document.createElement('canvas');
@@ -64,7 +65,7 @@ export function useProgressiveImg({
 					current = { src: blobURI, res: highestRes.res };
 
 					// Cleanup previous blob URL
-					setTimeout(() => URL.revokeObjectURL(blobURI), 2000); // Give firefox time.
+					setTimeout(() => URL.revokeObjectURL(blobURI), 200); // Give firefox time.
 				}
 			}
 		} else {
@@ -124,6 +125,8 @@ export async function renderCanvas(
 	canvas.height = canvas.width * (naturalDimensions.h / naturalDimensions.w);
 	ctx.drawImage(img, 0, 0);
 	// In the renderCanvas function, ensure we're correctly processing face slices
+	drawFaceRectangles(offscreen, faceSlices);
+
 	if (faceSlices) {
 		// Create an array of promises for each slice
 		const slicePromises = faceSlices.map(async (slice) => {
@@ -135,7 +138,7 @@ export async function renderCanvas(
 			const pixelWidth = Math.ceil(slice.width * offscreen.width);
 			const pixelHeight = Math.ceil(slice.height * offscreen.height);
 
-			const lineWidth = Math.floor(Math.max(naturalDimensions.w / 100, 2));
+			/*const lineWidth = Math.floor(Math.max(naturalDimensions.w / 100, 2));
 			ctx.lineWidth = lineWidth;
 
 			// Adjust border position to be fully under the face image
@@ -149,8 +152,7 @@ export async function renderCanvas(
 				pixelHeight - lineWidth,
 				radius
 			);
-			ctx.stroke();
-
+			ctx.stroke();*/
 			// Handle face image loading with timeout to prevent hanging
 			try {
 				// Direct image loading code instead of using useProgressiveImg
@@ -170,7 +172,7 @@ export async function renderCanvas(
 					}
 				}
 
-				if (!imgSrc) throw new Error('No src');
+				if (!imgSrc) return; // Couldn't load this. User likely has no permission to view.
 
 				const img = new Image();
 				await new Promise((resolve, reject) => {

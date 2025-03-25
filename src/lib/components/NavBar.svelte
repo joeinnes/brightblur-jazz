@@ -16,7 +16,7 @@
 			<div role="button" tabindex="0" class="btn btn-ghost">
 				<span>{me?.profile?.name}</span>
 				<div class="circle avatar w-10 rounded-full">
-					<Avatar id={me?.profile?.avatar?.id} name={me?.profile?.name} userId={me?.profile?.id} />
+					<Avatar image={me?.profile?.avatar} name={me?.profile?.name} userId={me?.profile?.id} />
 				</div>
 			</div>
 			<ul class="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
