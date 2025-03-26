@@ -53,6 +53,7 @@
 		filterPhotosByUploader(photoArray, profile?.current?.user?.id)
 	);
 	const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));
+	$inspect(profile.current?._owner.getRoleOf('everyone'));
 </script>
 
 {#if profile.current}
