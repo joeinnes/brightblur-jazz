@@ -27,9 +27,12 @@
 	const createNewPerson = () => {
 		const personOwnershipGroup = Group.create();
 		personOwnershipGroup.addMember('everyone', 'reader');
-		const newProfile = BrightBlurProfile.create({
-			name: newPersonName
-		});
+		const newProfile = BrightBlurProfile.create(
+			{
+				name: newPersonName
+			},
+			{ owner: personOwnershipGroup }
+		);
 		people.push(newProfile);
 		selectedItem = newProfile.id;
 	};
