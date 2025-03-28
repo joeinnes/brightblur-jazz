@@ -2,7 +2,15 @@
 	import Avatar from './Avatar.svelte';
 	import { useAccount } from 'jazz-svelte';
 
-	const { me, logOut } = $derived(useAccount());
+	const { me, logOut } = $derived(
+		useAccount({
+			resolve: {
+				profile: {
+					avatar: true
+				}
+			}
+		})
+	);
 </script>
 
 <div class="navbar bg-base-100 sticky top-0 z-50 mb-4 shadow-sm">
