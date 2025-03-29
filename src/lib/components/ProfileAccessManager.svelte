@@ -73,7 +73,7 @@
 
 											await currentlyViewing.current?._owner?.castAs?.(Group).removeMember(account);
 										} catch (e) {
-											console.log(`That didn't work`, e);
+											console.error(`That didn't work`, e);
 										}
 									}}
 								>
@@ -122,7 +122,7 @@
 												}
 												group.addMember(account, 'admin');
 											} catch (e) {
-												console.log("That didn't work", e);
+												console.error("That didn't work", e);
 											}
 										}}
 									>

@@ -2,7 +2,7 @@
 	import { useAccount, useCoState } from 'jazz-svelte';
 	import { type ID } from 'jazz-tools';
 	import { page } from '$app/state';
-	import { GlobalData, BrightBlurProfile, type FeedOfPhotos, Photo } from '$lib/schema';
+	import { GlobalData, BrightBlurProfile, Photo } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
 	// Import components
