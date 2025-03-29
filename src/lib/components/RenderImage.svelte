@@ -16,21 +16,25 @@
 	let madeAt = $derived(PhotoProp?.madeAt);
 
 	const photo = $derived(
-		useCoState(Photo, photoId, {
-			resolve: {
-				faceSlices: { $each: { person: true } }
-			}
-		})
+		photoId
+			? useCoState(Photo, photoId, {
+					resolve: {
+						faceSlices: { $each: { person: true } }
+					}
+				})
+			: null
 	);
 
 	const photographer = $derived(
-		useCoState(BrightBlurAccount, photographerId, {
-			resolve: {
-				profile: {
-					avatar: true
-				}
-			}
-		})
+		photographerId
+			? useCoState(BrightBlurAccount, photographerId, {
+					resolve: {
+						profile: {
+							avatar: true
+						}
+					}
+				})
+			: null
 	);
 </script>
 

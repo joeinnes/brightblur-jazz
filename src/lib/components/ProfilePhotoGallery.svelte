@@ -24,7 +24,9 @@
 	{#if photos && photos.length}
 		{#each photos as photo, i (photo?.value?.id || i)}
 			{#if photo?.value?.id}
-				<Image id={photo.value.id} containerStyles="aspect-square overflow-hidden" />
+				<a href="/image/{photo.value.id}"
+					><Image id={photo.value.id} containerStyles="aspect-square overflow-hidden" /></a
+				>
 			{/if}
 		{/each}
 	{:else}

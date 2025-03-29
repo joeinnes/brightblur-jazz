@@ -74,4 +74,8 @@
 html {
 	scrollbar-gutter: stable;
 	overflow-x: hidden;
+	font-family:
+		Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow',
+		sans-serif-condensed, sans-serif;
+	font-weight: normal;
 }

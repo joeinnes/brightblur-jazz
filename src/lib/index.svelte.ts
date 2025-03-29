@@ -8,7 +8,7 @@ export function getGlobalData() {
 		const data = useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>);
 		return data.current;
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		const group = Group.create();
 		// group.addMember('everyone', 'reader');
 		const globalData = GlobalData.create({

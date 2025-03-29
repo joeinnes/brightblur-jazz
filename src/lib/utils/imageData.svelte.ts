@@ -35,7 +35,7 @@ export const getFile = async (id: ID<FileStream>) => {
 		if (!blob) throw new Error('No blob');
 		return createImageBitmap(blob);
 	} catch (e) {
-		console.log({ e });
+		console.error({ e });
 		throw new Error('Error loading blob');
 	}
 };

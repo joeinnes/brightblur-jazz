@@ -172,7 +172,7 @@ export function blurFaces(canvases: CanvasSet, faceList: FaceData[]): void {
 			ctx.stroke();
 		});
 	} catch (e: unknown) {
-		console.log(e);
+		console.error(e);
 		if (e instanceof Error) {
 			toast.error(e.message, {
 				duration: 3000

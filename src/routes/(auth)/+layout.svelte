@@ -37,7 +37,7 @@
 			}
 		);
 
-		console.log('SET PUBLIC_GLOBAL_DATA TO', newGlobalData.id);
+		console.info('SET PUBLIC_GLOBAL_DATA TO', newGlobalData.id);
 	}
 	let listOfPeople = $derived(extractAllPeople(globalData));
 
