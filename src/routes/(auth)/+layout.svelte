@@ -14,7 +14,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
 
-	const { me } = useAccount();
+	const { me } = useAccount({ resolve: { profile: true } });
 
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
@@ -44,22 +44,20 @@
 	$effect(() => {
 		// User must have added their own profile to the feed
 		if (listOfPeople !== undefined && me) {
-			me.ensureLoaded({ resolve: { profile: true } }).then((me) => {
-				const myProfile = listOfPeople.find((profile) => {
-					if (profile && profile.value) return profile.value.id === me?.profile?.id;
-					return false;
-				});
-
-				if (myProfile === undefined) {
-					if (me.profile) {
-						globalData.current?.people.push(me.profile);
-					}
-				}
-
-				if (!me.profile.user) {
-					me.profile.user = me;
-				}
+			const myProfile = listOfPeople.find((profile) => {
+				if (profile && profile.value) return profile.value.id === me?.profile?.id;
+				return false;
 			});
+
+			if (myProfile === undefined) {
+				if (me.profile) {
+					globalData.current?.people.push(me.profile);
+				}
+			}
+
+			if (!me.profile.user) {
+				me.profile.user = me;
+			}
 		}
 	});
 </script>
