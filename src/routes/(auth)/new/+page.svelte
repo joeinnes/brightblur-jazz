@@ -98,7 +98,9 @@
 			publicGroup.addMember('everyone', 'reader');
 			const picaInstance = new pica();
 			const blob = await picaInstance.toBlob(offscreenCanvas, 'image/jpeg', 1);
-			const photoImage = await createImage(blob, { owner: publicGroup });
+			const photoImage = await createImage(blob, {
+				owner: publicGroup
+			});
 			// Create list of face slices
 			const listOfFaceSlices = ListOfFaceSlices.create([], publicGroup);
 			// Process each detected face
@@ -129,7 +131,9 @@
 
 				const blob = await picaInstance.toBlob(faceCanvas, 'image/jpeg', 1);
 				// Generate multiple sizes for the face slice
-				const faceImage = await createImage(blob, { owner: fileGroup });
+				const faceImage = await createImage(blob, {
+					owner: fileGroup
+				});
 
 				// Create face slice with the new images array
 				const faceSlice = FaceSlice.create(

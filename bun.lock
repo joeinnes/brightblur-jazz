@@ -21,7 +21,7 @@
         "eslint-plugin-svelte": "^3.3.3",
         "face-api.js": "^0.22.2",
         "globals": "^16.0.0",
-        "jazz-browser-media-images": "^0.10.15",
+        "jazz-browser-media-images": "^0.12.1",
         "jazz-svelte": "^0.12.1",
         "jazz-tools": "^0.12.1",
         "lucide-svelte": "^0.477.0",
@@ -531,11 +531,11 @@
 
     "cojson": ["cojson@0.12.1", "", { "dependencies": { "@noble/ciphers": "^0.1.3", "@noble/curves": "^1.3.0", "@noble/hashes": "^1.4.0", "@opentelemetry/api": "^1.9.0", "@scure/base": "1.2.1", "jazz-crypto-rs": "0.0.6", "neverthrow": "^7.0.1", "queueueue": "^4.1.2" } }, "sha512-Z4xzh2x/V/0Lcq5jQOKvAALc8hTpraUuvd7opzR1ojrMa+BTO/22GyHsMFLOGuopNJduiJ6WGnHizwinAZOpKw=="],
 
-    "cojson-storage": ["cojson-storage@0.10.15", "", { "dependencies": { "cojson": "0.10.15" } }, "sha512-VBK/nMnx6U+sHh0MOOh+K5meUJTbtc1FCCpqZF/V9DcH6wiZp4m7puMHHrMaSjstV3ZrRKuLvrPz6pfzjTU6Vw=="],
+    "cojson-storage": ["cojson-storage@0.12.1", "", { "dependencies": { "cojson": "0.12.1" } }, "sha512-ZjXR7f4i5YFaVivwgkL35S6qqTetd/aW7ce2CvEezBWlHssEslUg/XyONdMIUwlKznaDFoRiy0voI9EsoftAQA=="],
 
-    "cojson-storage-indexeddb": ["cojson-storage-indexeddb@0.10.15", "", { "dependencies": { "cojson": "0.10.15", "cojson-storage": "0.10.15" } }, "sha512-Tn0u9PCkyzUDDdjXvMI/Y4brYKTFSxemHDaufhr7X4GE6dE1TaOb6NIS1rRwUjzOYVtzYRnAmnj+et3Yf3VLKQ=="],
+    "cojson-storage-indexeddb": ["cojson-storage-indexeddb@0.12.1", "", { "dependencies": { "cojson": "0.12.1", "cojson-storage": "0.12.1" } }, "sha512-OXHdE0idcXRJoKBkOeigAS/en0i9Yw/1iDyhvpjU0VkhgL6J+JYddtfrCwg/bcGfO7CiBr/Ov/Gp6rGyJlu7rg=="],
 
-    "cojson-transport-ws": ["cojson-transport-ws@0.10.15", "", { "dependencies": { "cojson": "0.10.15", "typescript": "~5.6.2" } }, "sha512-Wrr+6B7NuPlYlhk7YBMyTgi5S+iSfd1Q2zWeeBatKI0+Ra2/mv/Tlyq/oDM3ftAsj9g0U5iBRNbqFWIW7u+MZw=="],
+    "cojson-transport-ws": ["cojson-transport-ws@0.12.1", "", { "dependencies": { "cojson": "0.12.1", "typescript": "~5.6.2" } }, "sha512-bYD5eUWuwVt8q0/EzW6LT0tYeKL5uZ1HTDwN+Q0Lw71BmGEs5Iz0BKm2bVUxYJCTIA6ctoPYszx+kyIhnWBlRQ=="],
 
     "color-convert": ["color-convert@2.0.1", "", { "dependencies": { "color-name": "~1.1.4" } }, "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ=="],
 
@@ -805,9 +805,9 @@
 
     "jake": ["jake@10.9.2", "", { "dependencies": { "async": "^3.2.3", "chalk": "^4.0.2", "filelist": "^1.0.4", "minimatch": "^3.1.2" }, "bin": { "jake": "bin/cli.js" } }, "sha512-2P4SQ0HrLQ+fw6llpLnOaGAvN2Zu6778SJMrCUwns4fOoG9ayrTiZk3VV8sCPkVZF8ab0zksVpS8FDY5pRCNBA=="],
 
-    "jazz-browser": ["jazz-browser@0.10.15", "", { "dependencies": { "cojson": "0.10.15", "cojson-storage-indexeddb": "0.10.15", "cojson-transport-ws": "0.10.15", "jazz-tools": "0.10.15" } }, "sha512-33QvISjtvvXzwxoTBNp/YfSPOqDA7sdobBG0w4NefkdZrX7nThG4qauaMKpIEecs30KoqiVXPDs6vh6LFLgrdw=="],
+    "jazz-browser": ["jazz-browser@0.12.1", "", { "dependencies": { "cojson": "0.12.1", "cojson-storage-indexeddb": "0.12.1", "cojson-transport-ws": "0.12.1", "jazz-tools": "0.12.1" } }, "sha512-VMLBakW4P5p9tgtF9cfbZbSSSopsHzFd+9kr2Z40gbK3/cxUMckEfemO1jCZvX3GrCVprFBcq+al7KhCvOkckQ=="],
 
-    "jazz-browser-media-images": ["jazz-browser-media-images@0.10.15", "", { "dependencies": { "@types/image-blob-reduce": "^4.1.1", "image-blob-reduce": "^4.1.0", "jazz-browser": "0.10.15", "jazz-tools": "0.10.15", "pica": "^9.0.1", "typescript": "~5.6.2" } }, "sha512-jjwVi9P3Ri5iIwEaAyP6kQ5fKE8IKYmuB7QRnD6NT2uaZjurf3LvpI+boiXLEIZhGD8UBheFocdA/NKaIAwCiA=="],
+    "jazz-browser-media-images": ["jazz-browser-media-images@0.12.1", "", { "dependencies": { "@types/image-blob-reduce": "^4.1.1", "image-blob-reduce": "^4.1.0", "jazz-browser": "0.12.1", "jazz-tools": "0.12.1", "pica": "^9.0.1", "typescript": "~5.6.2" } }, "sha512-Pq4nrSjVayjXvJqd15vJ+vZZkkQMYwFIk8kMIiUZeIrXJAQ6qaaDc7Ok71D6rfJJ9tFnJRinv11dI9A/0gqZPQ=="],
 
     "jazz-crypto-rs": ["jazz-crypto-rs@0.0.6", "", {}, "sha512-+hJM9hPzMjK7Jk9++sUs5mKXlFiCTMDZ2wjO8WsfNpY7RZ+kiYSwkCrKvvvDRHSXPlzoyFQFxrSrXqN0/Fr6Yw=="],
 
@@ -1255,27 +1255,13 @@
 
     "babel-plugin-polyfill-corejs2/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
 
-    "cojson-storage/cojson": ["cojson@0.10.15", "", { "dependencies": { "@noble/ciphers": "^0.1.3", "@noble/curves": "^1.3.0", "@noble/hashes": "^1.4.0", "@opentelemetry/api": "^1.0.0", "@scure/base": "1.2.1", "jazz-crypto-rs": "0.0.6", "neverthrow": "^7.0.1", "queueueue": "^4.1.2" } }, "sha512-LimNUJcKZzXTbU9+Xb6O91OPSRMcCas88AoERuFesu+84kfF3JOjPUGWGIf+m0x3PHmzxy7QiI2WYIYgA4en/Q=="],
-
-    "cojson-storage-indexeddb/cojson": ["cojson@0.10.15", "", { "dependencies": { "@noble/ciphers": "^0.1.3", "@noble/curves": "^1.3.0", "@noble/hashes": "^1.4.0", "@opentelemetry/api": "^1.0.0", "@scure/base": "1.2.1", "jazz-crypto-rs": "0.0.6", "neverthrow": "^7.0.1", "queueueue": "^4.1.2" } }, "sha512-LimNUJcKZzXTbU9+Xb6O91OPSRMcCas88AoERuFesu+84kfF3JOjPUGWGIf+m0x3PHmzxy7QiI2WYIYgA4en/Q=="],
-
-    "cojson-transport-ws/cojson": ["cojson@0.10.15", "", { "dependencies": { "@noble/ciphers": "^0.1.3", "@noble/curves": "^1.3.0", "@noble/hashes": "^1.4.0", "@opentelemetry/api": "^1.0.0", "@scure/base": "1.2.1", "jazz-crypto-rs": "0.0.6", "neverthrow": "^7.0.1", "queueueue": "^4.1.2" } }, "sha512-LimNUJcKZzXTbU9+Xb6O91OPSRMcCas88AoERuFesu+84kfF3JOjPUGWGIf+m0x3PHmzxy7QiI2WYIYgA4en/Q=="],
-
     "cojson-transport-ws/typescript": ["typescript@5.6.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw=="],
 
     "fast-glob/glob-parent": ["glob-parent@5.1.2", "", { "dependencies": { "is-glob": "^4.0.1" } }, "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="],
 
     "filelist/minimatch": ["minimatch@5.1.6", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g=="],
 
-    "jazz-browser/cojson": ["cojson@0.10.15", "", { "dependencies": { "@noble/ciphers": "^0.1.3", "@noble/curves": "^1.3.0", "@noble/hashes": "^1.4.0", "@opentelemetry/api": "^1.0.0", "@scure/base": "1.2.1", "jazz-crypto-rs": "0.0.6", "neverthrow": "^7.0.1", "queueueue": "^4.1.2" } }, "sha512-LimNUJcKZzXTbU9+Xb6O91OPSRMcCas88AoERuFesu+84kfF3JOjPUGWGIf+m0x3PHmzxy7QiI2WYIYgA4en/Q=="],
-
-    "jazz-browser/jazz-tools": ["jazz-tools@0.10.15", "", { "dependencies": { "@scure/bip39": "^1.3.0", "cojson": "0.10.15" } }, "sha512-lt9+bxllAn6fZmOV+8mrdhdEh0RrrVdNKE8c9N+ZEXAAtZlVF6SLvNFKGufLDR8NyuxoO7xbSJiVcJmZdXAL9A=="],
-
-    "jazz-browser-media-images/jazz-tools": ["jazz-tools@0.10.15", "", { "dependencies": { "@scure/bip39": "^1.3.0", "cojson": "0.10.15" } }, "sha512-lt9+bxllAn6fZmOV+8mrdhdEh0RrrVdNKE8c9N+ZEXAAtZlVF6SLvNFKGufLDR8NyuxoO7xbSJiVcJmZdXAL9A=="],
-
     "jazz-browser-media-images/typescript": ["typescript@5.6.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw=="],
-
-    "jazz-svelte/jazz-browser": ["jazz-browser@0.12.1", "", { "dependencies": { "cojson": "0.12.1", "cojson-storage-indexeddb": "0.12.1", "cojson-transport-ws": "0.12.1", "jazz-tools": "0.12.1" } }, "sha512-VMLBakW4P5p9tgtF9cfbZbSSSopsHzFd+9kr2Z40gbK3/cxUMckEfemO1jCZvX3GrCVprFBcq+al7KhCvOkckQ=="],
 
     "micromatch/picomatch": ["picomatch@2.3.1", "", {}, "sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA=="],
 
@@ -1311,16 +1297,6 @@
 
     "filelist/minimatch/brace-expansion": ["brace-expansion@2.0.1", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
 
-    "jazz-browser-media-images/jazz-tools/cojson": ["cojson@0.10.15", "", { "dependencies": { "@noble/ciphers": "^0.1.3", "@noble/curves": "^1.3.0", "@noble/hashes": "^1.4.0", "@opentelemetry/api": "^1.0.0", "@scure/base": "1.2.1", "jazz-crypto-rs": "0.0.6", "neverthrow": "^7.0.1", "queueueue": "^4.1.2" } }, "sha512-LimNUJcKZzXTbU9+Xb6O91OPSRMcCas88AoERuFesu+84kfF3JOjPUGWGIf+m0x3PHmzxy7QiI2WYIYgA4en/Q=="],
-
-    "jazz-svelte/jazz-browser/cojson-storage-indexeddb": ["cojson-storage-indexeddb@0.12.1", "", { "dependencies": { "cojson": "0.12.1", "cojson-storage": "0.12.1" } }, "sha512-OXHdE0idcXRJoKBkOeigAS/en0i9Yw/1iDyhvpjU0VkhgL6J+JYddtfrCwg/bcGfO7CiBr/Ov/Gp6rGyJlu7rg=="],
-
-    "jazz-svelte/jazz-browser/cojson-transport-ws": ["cojson-transport-ws@0.12.1", "", { "dependencies": { "cojson": "0.12.1", "typescript": "~5.6.2" } }, "sha512-bYD5eUWuwVt8q0/EzW6LT0tYeKL5uZ1HTDwN+Q0Lw71BmGEs5Iz0BKm2bVUxYJCTIA6ctoPYszx+kyIhnWBlRQ=="],
-
     "workbox-build/ajv/json-schema-traverse": ["json-schema-traverse@1.0.0", "", {}, "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="],
-
-    "jazz-svelte/jazz-browser/cojson-storage-indexeddb/cojson-storage": ["cojson-storage@0.12.1", "", { "dependencies": { "cojson": "0.12.1" } }, "sha512-ZjXR7f4i5YFaVivwgkL35S6qqTetd/aW7ce2CvEezBWlHssEslUg/XyONdMIUwlKznaDFoRiy0voI9EsoftAQA=="],
-
-    "jazz-svelte/jazz-browser/cojson-transport-ws/typescript": ["typescript@5.6.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw=="],
   }
 }

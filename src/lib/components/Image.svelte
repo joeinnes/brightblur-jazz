@@ -4,7 +4,6 @@
 	import { Photo } from '$lib/schema';
 
 	import { renderCanvas, useProgressiveImg } from '$lib/utils/imageData.svelte';
-	import { onMount } from 'svelte';
 
 	const {
 		id,

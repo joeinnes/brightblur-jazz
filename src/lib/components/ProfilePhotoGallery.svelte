@@ -12,12 +12,6 @@
 		photos?: CoFeedEntry<Photo>[];
 		emptyHint?: string;
 	} = $props();
-
-	// Get all photos sorted by date
-
-	// Filter photos uploaded by this profile
-
-	// Filter photos that contain this person
 </script>
 
 <div class="grid grid-cols-2 gap-2 md:grid-cols-3">
