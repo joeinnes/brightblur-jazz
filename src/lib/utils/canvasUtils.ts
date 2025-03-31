@@ -16,13 +16,13 @@ export function drawSelectionRectangle(
 	ctx.beginPath();
 
 	// Calculate the half line width to inset the stroke properly
-	const halfLineWidth = ctx.lineWidth / 2;
+	const halfLineWidth = Math.ceil(ctx.lineWidth / 2);
 
 	// Calculate the rectangle coordinates with proper inset
-	const x = Math.min(startX, currentX) + halfLineWidth;
-	const y = Math.min(startY, currentY) + halfLineWidth;
-	const width = Math.abs(currentX - startX) - ctx.lineWidth;
-	const height = Math.abs(currentY - startY) - ctx.lineWidth;
+	const x = Math.floor(Math.min(startX, currentX) + halfLineWidth);
+	const y = Math.floor(Math.min(startY, currentY) + halfLineWidth);
+	const width = Math.floor(Math.abs(currentX - startX) - ctx.lineWidth);
+	const height = Math.floor(Math.abs(currentY - startY) - ctx.lineWidth);
 
 	ctx.roundRect(x, y, width, height, 4);
 	ctx.stroke();
