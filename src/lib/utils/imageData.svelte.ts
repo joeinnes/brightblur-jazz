@@ -138,22 +138,6 @@ export async function renderCanvas(
 			const pixelWidth = Math.ceil(slice.width * offscreen.width);
 			const pixelHeight = Math.ceil(slice.height * offscreen.height);
 
-			/*const lineWidth = Math.floor(Math.max(naturalDimensions.w / 100, 2));
-			ctx.lineWidth = lineWidth;
-
-			// Adjust border position to be fully under the face image
-			const radius = Math.floor(pixelWidth / 24);
-
-			ctx.beginPath();
-			ctx.roundRect(
-				pixelX + lineWidth / 2,
-				pixelY + lineWidth / 2,
-				pixelWidth - lineWidth,
-				pixelHeight - lineWidth,
-				radius
-			);
-			ctx.stroke();*/
-			// Handle face image loading with timeout to prevent hanging
 			try {
 				// Direct image loading code instead of using useProgressiveImg
 				let imgSrc: string | undefined;

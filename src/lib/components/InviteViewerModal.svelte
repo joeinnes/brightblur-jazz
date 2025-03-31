@@ -27,8 +27,10 @@
 
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
-			people: [],
-			photos: []
+			resolve: {
+				people: true,
+				photos: true
+			}
 		})
 	);
 

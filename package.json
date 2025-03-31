@@ -28,7 +28,7 @@
 		"eslint-plugin-svelte": "^3.3.3",
 		"face-api.js": "^0.22.2",
 		"globals": "^16.0.0",
-		"jazz-browser-media-images": "^0.10.15",
+		"jazz-browser-media-images": "^0.12.1",
 		"jazz-svelte": "^0.12.1",
 		"jazz-tools": "^0.12.1",
 		"lucide-svelte": "^0.477.0",

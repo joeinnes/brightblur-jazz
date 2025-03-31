@@ -1,6 +1,7 @@
 import type { BrightBlurProfile } from '$lib/schema';
 import toast from '@natoune/svelte-daisyui-toast';
 import * as faceapi from 'face-api.js';
+import { drawFaceRectangles } from './canvasUtils';
 
 type Canvas = HTMLCanvasElement | null;
 export type FaceData = {
@@ -154,23 +155,7 @@ export function blurFaces(canvases: CanvasSet, faceList: FaceData[]): void {
 		);
 
 		// Draw rectangles around faces
-		faceList.forEach((faceData) => {
-			if (!canvases.dom) return;
-			const { x, y, width, height } = faceData;
-			// Convert decimal coordinates to pixels for the DOM canvas
-			const pixelX = x * canvases.dom.width;
-			const pixelY = y * canvases.dom.height;
-			const pixelWidth = width * canvases.dom.width;
-			const pixelHeight = height * canvases.dom.height;
-
-			ctx.lineWidth = pixelWidth / 24;
-			ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue(
-				'--color-primary'
-			);
-			ctx.beginPath();
-			ctx.roundRect(pixelX, pixelY, pixelWidth, pixelHeight, pixelWidth / 24);
-			ctx.stroke();
-		});
+		drawFaceRectangles(canvases.dom, faceList);
 	} catch (e: unknown) {
 		console.error(e);
 		if (e instanceof Error) {

@@ -23,13 +23,20 @@
 			?.members.filter((member) => member.role === 'admin').length || 0
 	);
 
-	let { me } = useAccount();
+	let people = $derived(
+		currentlyViewing.current?._owner?.castAs?.(Group)?.members.map((member) => {
+			return {
+				...member,
+				person: BrightBlurAccount.load(member.id, { resolve: { profile: { avatar: true } } })
+			};
+		})
+	);
 </script>
 
 <div class="tab-content p-4">
 	<ul class="list bg-base-100 rounded-box shadow-md">
-		{#each currentlyViewing.current?._owner?.castAs?.(Group)?.members || [] as member}
-			{#await BrightBlurAccount.load( member.id, { resolve: { profile: { avatar: true } } } ) then person}
+		{#each people || [] as member}
+			{#await member.person then person}
 				{#if person}
 					<li>
 						<a href="/profile/{person?.profile?.id}" class="list-row">

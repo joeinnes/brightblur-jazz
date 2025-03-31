@@ -14,29 +14,23 @@ export function drawSelectionRectangle(
 	ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
 	ctx.lineWidth = ctx.canvas.width * 0.01;
 	ctx.beginPath();
-	
+
 	// Calculate the half line width to inset the stroke properly
 	const halfLineWidth = ctx.lineWidth / 2;
-	
+
 	// Calculate the rectangle coordinates with proper inset
 	const x = Math.min(startX, currentX) + halfLineWidth;
 	const y = Math.min(startY, currentY) + halfLineWidth;
 	const width = Math.abs(currentX - startX) - ctx.lineWidth;
 	const height = Math.abs(currentY - startY) - ctx.lineWidth;
-	
-	ctx.roundRect(
-		x,
-		y,
-		width,
-		height,
-		4
-	);
+
+	ctx.roundRect(x, y, width, height, 4);
 	ctx.stroke();
 }
 
 export function drawFaceRectangles(
 	canvas: HTMLCanvasElement,
-	faceList: ListOfFaceSlices | undefined | null
+	faceList: ListOfFaceSlices | FaceData[] | undefined | null
 ) {
 	if (!faceList) return;
 	const ctx = canvas.getContext('2d');

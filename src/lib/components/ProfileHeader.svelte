@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FileStream, Group } from 'jazz-tools';
+	import { Group } from 'jazz-tools';
 
 	import Cropper from 'svelte-easy-crop';
 
@@ -8,7 +8,6 @@
 	import InviteViewerModal from '$lib/components/InviteViewerModal.svelte';
 	import Avatar from './Avatar.svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
-	import Pica from 'pica';
 	import { createImage } from 'jazz-browser-media-images';
 
 	let avatarCropperModal: HTMLDialogElement | undefined = $state();
