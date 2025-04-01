@@ -12,5 +12,8 @@ export default defineConfig({
 				enabled: false
 			}
 		})
-	]
+	],
+	optimizeDeps: {
+		exclude: ['face-api.js']
+	}
 });

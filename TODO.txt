@@ -1,13 +1,13 @@
 - [ ] Delete photos - PENDING UPSTREAM
 - [ ] Delete FaceSlices - PENDING UPSTREAM
 - [X] Admin to invite as admin
-- [x] Take ownership of account (e.g. child coming of age)
+- [X] Take ownership of account (e.g. child coming of age)
   - No simple flow for this, just add the user as an admin
 - [ ] 'Communities' rather than global stream
-- [x] Toast system for errors and warnings
-- [/] Favicon
+- [X] Toast system for errors and warnings
+- [X] Favicon
   - It's looking good except the main one?
-- [ ] More work on unauthenticated experience
+- [X] More work on unauthenticated experience
 - [ ] Request queues ('can I please look at X's profile?')
 - [X] One off shares
 - [X] Share sheet integration

@@ -1,38 +1,18 @@
-# sv
+# BrightBlur
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+BrightBlur is a photo-sharing app designed for communities. It allows users to upload and share photos, fostering a sense of belonging and interaction within a community. It uses on-device AI to blur faces and protect privacy of users, ensuring that only folks who have been approved as viewers can see the unblurred faces.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Photo Management**: Upload, view, and manage photos with ease.
+- **Profile Access Control**: Admins can invite users and manage access permissions.
+- **Community Engagement**: Participate in communities rather than a global stream.
+- **Privacy Protection**: Blurs faces for privacy and security.
+  
+## License
 
-```bash
-# create a new project in the current directory
-npx sv create
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-# create a new project in my-app
-npx sv create my-app
-```
+## Contact
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+For questions or feedback, please contact [your email](mailto:your-email@example.com).

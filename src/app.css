@@ -79,3 +79,11 @@ html {
 		sans-serif-condensed, sans-serif;
 	font-weight: normal;
 }
+
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+	select,
+	textarea,
+	input {
+		font-size: max(16px, 1em) !important;
+	}
+}
