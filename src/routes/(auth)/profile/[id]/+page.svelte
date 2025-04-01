@@ -20,6 +20,7 @@
 	} from '$lib/utils/profileUtils';
 	import ProfilePhotoGallery from '$lib/components/ProfilePhotoGallery.svelte';
 	import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
+	import CommunitiesList from '$lib/components/CommunitiesList.svelte';
 
 	const { me } = useAccount();
 
@@ -93,9 +94,12 @@
 		{/if}
 
 		<!-- Managed Users Tab -->
-		{#if isOwnProfile}
+		{#if isOwnProfile && me}
 			<input type="radio" name="profile_tabs" class="tab" aria-label="My Managed Users" />
 			<ManagedUsersList managedPeople={myManagedPeople} />
+
+			<input type="radio" name="profile_tabs" class="tab" aria-label="Communities" />
+			<CommunitiesList communities={me.root?.myCommunities} />
 		{/if}
 	</div>
 {/if}
