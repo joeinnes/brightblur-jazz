@@ -57,8 +57,19 @@
 {#if auth.state === 'anonymous' && login}
 	<section class="bg-white">
 		<div class="lg:grid lg:min-h-screen lg:grid-cols-12">
-			<aside class="relative block h-16 lg:order-last lg:col-span-5 lg:h-full xl:col-span-6">
-				<img alt="" src="/rain.svg" class="absolute inset-0 h-full w-full object-cover" />
+			<aside
+				class="relative block h-16 overflow-hidden lg:order-last lg:col-span-5 lg:h-full xl:col-span-6"
+			>
+				<img
+					src="/demo/unblurred.jpg"
+					alt="Unblurred example"
+					class="h-screen w-full object-cover"
+				/>
+				<img
+					src="/demo/blurred.jpg"
+					alt="Blurred example"
+					class="blurred-image absolute inset-0 h-screen w-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+				/>
 			</aside>
 
 			<main
