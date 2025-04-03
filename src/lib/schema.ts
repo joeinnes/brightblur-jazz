@@ -16,17 +16,20 @@ export class BrightBlurProfile extends Profile {
 	user = co.optional.ref(Account);
 }
 
-export class ListOfProfiles extends CoList.Of(co.ref(BrightBlurProfile)) {}
-
 export class BrightBlurAccount extends Account {
-	profiles = co.ref(ListOfProfiles);
 	// Override the base Account.profile property with our BrightBlurProfile
 	profile = co.ref(BrightBlurProfile);
 	root = co.ref(BrightBlurAccountRoot);
 
 	// Create a default profile for every registered user
 	async migrate(this: BrightBlurAccount) {
-		if (!this.profiles || this.profiles.length === 0) {
+		this.ensureLoaded({
+			resolve: {
+				root: true,
+				profile: true
+			}
+		});
+		if (!this.profile) {
 			const profileOwnershipGroup = Group.create();
 			profileOwnershipGroup.addMember('everyone', 'reader');
 			const newProfile = BrightBlurProfile.create(
@@ -38,10 +41,6 @@ export class BrightBlurAccount extends Account {
 					owner: profileOwnershipGroup
 				}
 			);
-			if (!this.profiles) {
-				this.profiles = ListOfProfiles.create([]);
-			}
-			this.profiles.push(newProfile);
 			// Set the profile property to the newly created profile
 			this.profile = newProfile;
 		}
