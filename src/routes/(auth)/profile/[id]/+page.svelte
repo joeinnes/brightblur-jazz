@@ -22,7 +22,15 @@
 	import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
 	import CommunitiesList from '$lib/components/CommunitiesList.svelte';
 
-	const { me } = useAccount();
+	const { me } = $derived(
+		useAccount({
+			resolve: {
+				root: {
+					myCommunities: true
+				}
+			}
+		})
+	);
 
 	// Get profile ID from URL parameter, handle 'me' special case
 	const profileId = $derived(

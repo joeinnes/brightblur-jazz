@@ -9,7 +9,7 @@
 	import { BrightBlurAccount, Photo } from '$lib/schema';
 	import { getUserHue } from '$lib/utils/userUtils';
 	import { renderCanvas } from '$lib/utils/imageData.svelte';
-	const { me } = useAccount();
+	const { me } = $derived(useAccount());
 	const { photo: PhotoProp } = $props();
 	let photoId = $derived(PhotoProp?.value?.id);
 	let photographerId = $derived(PhotoProp?.by?.id);

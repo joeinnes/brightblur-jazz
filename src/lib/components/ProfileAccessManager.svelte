@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Account, Group } from 'jazz-tools';
-	import { useAccount, useCoState } from 'jazz-svelte';
+	import { useCoState } from 'jazz-svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
 
 	import { BrightBlurAccount, BrightBlurProfile } from '$lib/schema';
