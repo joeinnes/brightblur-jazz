@@ -16,13 +16,13 @@ export function drawSelectionRectangle(
 	ctx.beginPath();
 
 	// Calculate the half line width to inset the stroke properly
-	const halfLineWidth = Math.ceil(ctx.lineWidth / 2);
+	const halfLineWidth = Math.round(ctx.lineWidth / 2);
 
 	// Calculate the rectangle coordinates with proper inset
-	const x = Math.floor(Math.min(startX, currentX) + halfLineWidth);
-	const y = Math.floor(Math.min(startY, currentY) + halfLineWidth);
-	const width = Math.floor(Math.abs(currentX - startX) - ctx.lineWidth);
-	const height = Math.floor(Math.abs(currentY - startY) - ctx.lineWidth);
+	const x = Math.round(Math.min(startX, currentX) + halfLineWidth);
+	const y = Math.round(Math.min(startY, currentY) + halfLineWidth);
+	const width = Math.round(Math.abs(currentX - startX) - ctx.lineWidth);
+	const height = Math.round(Math.abs(currentY - startY) - ctx.lineWidth);
 
 	ctx.roundRect(x, y, width, height, 4);
 	ctx.stroke();
@@ -38,13 +38,17 @@ export function drawFaceRectangles(
 	faceList.forEach((faceData) => {
 		if (!faceData?.x || !faceData?.y || !faceData?.width || !faceData?.height) return;
 		const { x, y, width, height } = faceData;
-		drawSelectionRectangle(
-			ctx,
-			x * canvas.width,
-			y * canvas.height,
-			(x + width) * canvas.width,
-			(y + height) * canvas.height
-		);
+
+		// Calculate coordinates with bounds checking
+		const startX = Math.max(0, x * canvas.width);
+		const startY = Math.max(0, y * canvas.height);
+		const endX = Math.min(canvas.width, (x + width) * canvas.width);
+		const endY = Math.min(canvas.height, (y + height) * canvas.height);
+
+		// Only draw if we have a valid rectangle
+		if (endX > startX && endY > startY) {
+			drawSelectionRectangle(ctx, startX, startY, endX, endY);
+		}
 	});
 }
 // Take a blob, and return a full size canvas
@@ -110,11 +114,20 @@ export async function renderBlurredCanvas(
 					const smallCtx = smallCanvas.getContext('2d');
 					if (!smallCtx) throw new Error('Something went wrong.');
 
-					// Convert decimal coordinates to pixels for this canvas
-					const pixelX = Math.floor(x * targetCanvas.width);
-					const pixelY = Math.floor(y * targetCanvas.height);
-					const pixelWidth = Math.ceil(width * targetCanvas.width);
-					const pixelHeight = Math.ceil(height * targetCanvas.height);
+					// Convert decimal coordinates to pixels with bounds checking
+					const pixelX = Math.max(0, Math.round(x * targetCanvas.width));
+					const pixelY = Math.max(0, Math.round(y * targetCanvas.height));
+					const pixelWidth = Math.min(
+						targetCanvas.width - pixelX,
+						Math.round(width * targetCanvas.width)
+					);
+					const pixelHeight = Math.min(
+						targetCanvas.height - pixelY,
+						Math.round(height * targetCanvas.height)
+					);
+
+					// Only proceed if we have valid dimensions
+					if (pixelWidth <= 0 || pixelHeight <= 0) return;
 
 					// Draw the face onto the small canvas
 					smallCtx.imageSmoothingEnabled = false; // Disable image smoothing for pixelated effect

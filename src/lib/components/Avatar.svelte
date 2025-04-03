@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { BrightBlurProfile } from '$lib/schema';
+	import type { BrightBlurProfile, Community } from '$lib/schema';
 	import { useProgressiveImg } from '$lib/utils/imageData.svelte';
 	import { getUserHue } from '$lib/utils/userUtils';
 	import { ImageDefinition, type ID } from 'jazz-tools';
@@ -12,7 +12,7 @@
 	}: {
 		image: ImageDefinition | null | undefined;
 		name?: string;
-		userId: ID<BrightBlurProfile> | undefined;
+		userId: ID<BrightBlurProfile> | ID<Community> | undefined;
 		style?: `size-${number}`;
 	} = $props();
 

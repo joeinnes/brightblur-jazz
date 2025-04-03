@@ -1,14 +1,4 @@
-import {
-	Account,
-	Profile,
-	co,
-	FileStream,
-	CoMap,
-	CoList,
-	Group,
-	CoFeed,
-	ImageDefinition
-} from 'jazz-tools';
+import { Account, Profile, co, CoMap, CoList, Group, CoFeed, ImageDefinition } from 'jazz-tools';
 
 export class BrightBlurProfile extends Profile {
 	name = co.string;
@@ -44,18 +34,30 @@ export class BrightBlurAccount extends Account {
 			// Set the profile property to the newly created profile
 			this.profile = newProfile;
 		}
+		if (!this.root) {
+			this.root = BrightBlurAccountRoot.create({
+				myCommunities: ListOfCommunities.create([])
+			});
+		}
+		if (!this.root.myCommunities) {
+			this.root.myCommunities = ListOfCommunities.create([]);
+		}
+		if (this.root.myCommunities.length === 0) {
+			const communityGroup = Group.create();
+			const community = Community.create({
+				name: 'My Community',
+				description: 'This is my community',
+				photos: FeedOfPhotos.create([], { owner: communityGroup }),
+				members: FeedOfProfiles.create([], { owner: communityGroup })
+			});
+			this.root.myCommunities.push(community);
+		}
 	}
 }
 
 export class BrightBlurAccountRoot extends CoMap {
 	myCommunities = co.ref(ListOfCommunities); // This is here so the user can discover what communities they are a part of.
 }
-
-export class Image extends CoMap {
-	size = co.number; // Changed from width to size to represent the width of the image (320, 1024, 2048, 4096, or original)
-	file = co.ref(FileStream);
-}
-export class ListOfImages extends CoList.Of(co.ref(Image)) {}
 
 export class Photo extends CoMap {
 	faceSlices = co.optional.ref(ListOfFaceSlices);
@@ -68,6 +70,9 @@ export class FeedOfProfiles extends CoFeed.Of(co.ref(BrightBlurProfile)) {}
 export class Community extends CoMap {
 	name = co.string;
 	description = co.string;
+	image = co.optional.ref(ImageDefinition);
+	photos = co.ref(FeedOfPhotos);
+	members = co.ref(FeedOfProfiles);
 }
 
 export class ListOfCommunities extends CoList.Of(co.ref(Community)) {}

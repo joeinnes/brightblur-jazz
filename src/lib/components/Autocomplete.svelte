@@ -21,7 +21,9 @@
 	let newPersonName = $state('');
 	let addPersonModal = $state<HTMLDialogElement>();
 	let filteredItems = $derived(
-		items.filter((item) => item.label.toLowerCase().includes(value.toLowerCase()))
+		value.length > 2
+			? items.filter((item) => item.label.toLowerCase().includes(value.toLowerCase()))
+			: []
 	);
 
 	const createNewPerson = () => {
@@ -67,7 +69,8 @@
 					{item.label}
 				</button>
 			</li>
-		{:else}
+		{/each}
+		{#if value.length > 2}
 			<li>
 				<button
 					type="button"
@@ -79,7 +82,9 @@
 					}}><UserPlus />Add {value}</button
 				>
 			</li>
-		{/each}
+		{:else}
+			<li class="p-2">Type to search...</li>
+		{/if}
 	</ul>
 </div>
 

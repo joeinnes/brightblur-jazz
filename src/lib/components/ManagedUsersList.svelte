@@ -10,7 +10,7 @@
 			<li>
 				<a href={`/profile/${person?.value?.id}`} class="list-row">
 					<div class="mb-2 flex items-center gap-2">
-						<Avatar image={person.value.avatar} userId={person.value.id} />
+						<Avatar image={person.value.avatar} userId={person.value.id} name={person.value.name} />
 						{person.value.name}
 					</div>
 				</a>
