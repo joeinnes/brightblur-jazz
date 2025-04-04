@@ -2,7 +2,7 @@
 	import { useAccount, useCoState } from 'jazz-svelte';
 	import { type ID } from 'jazz-tools';
 	import { page } from '$app/state';
-	import { BrightBlurProfile, Photo, Community, BrightBlurAccount } from '$lib/schema';
+	import { BrightBlurProfile, Photo, Community, BrightBlurAccount, GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
 	// Import components
@@ -42,33 +42,26 @@
 	const canAdminCommunity = $derived(
 		communityId && community.current && me?.canAdmin(community.current)
 	);
-	/*
-	// Get global data for people
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
 			resolve: { photos: true, people: true }
 		})
 	);
 
-	// Get all people and filter for managed people
-	let allPeople = $derived(extractAllPeople(globalData));
-	let myManagedPeople = $derived(
-		allPeople && filterManagedPeople(allPeople, me?.id, me?.profile?.id)
-	);
-
 	const photoArray = $derived(extractSortedPhotos(globalData?.current?.photos || undefined));
-
-	 const uploadedPhotos: CoFeedEntry<Photo>[] = $derived(
-		filterPhotosByUploader(photoArray, profile?.current?.user?.id)
-	);
-const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
 </script>
 
 {#if community.current}
 	<CommunityHeader {community} {canAdminCommunity} />
 	<div class="tabs tabs-border">
-		<!-- Photo Gallery - Uploads Tab -->
-		<input type="radio" name="community_tabs" class="tab" aria-label="Members" checked={true} />
+		<input type="radio" name="profile_tabs" class="tab" aria-label="Uploads" checked={true} />
+		<div class="tab-content p-4">
+			<ProfilePhotoGallery
+				photos={photoArray}
+				emptyHint="There are no photos in this community yet."
+			/>
+		</div>
+		<input type="radio" name="profile_tabs" class="tab" aria-label="Members" checked={true} />
 		<CommunityAccessManager {community} admin={canAdminCommunity || false} />
 	</div>
 {/if}

@@ -210,3 +210,6 @@
 		</div>
 	</div>
 </dialog>
+<div class="px-4 py-2">
+	<InviteViewerModal item={community.current} onInviteSuccess={() => {}} />
+</div>

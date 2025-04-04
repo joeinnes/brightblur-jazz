@@ -3,20 +3,22 @@
 	import { Account, Group, type ID } from 'jazz-tools';
 	import toast from '@natoune/svelte-daisyui-toast';
 
-	import { BrightBlurAccount, BrightBlurProfile, GlobalData } from '$lib/schema';
+	import { BrightBlurAccount, BrightBlurProfile, Community, GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
 
 	// Props
 	let {
-		profile,
+		item,
 		onInviteSuccess = () => {
 			toast.success('Added successfully!');
-		}
+		},
+		buttonText = 'Invite someone'
 	}: {
-		profile: { current: BrightBlurProfile };
+		item: BrightBlurProfile | Community;
 		onInviteSuccess?: () => void;
+		buttonText?: string;
 	} = $props();
 
 	// State variables
@@ -39,9 +41,7 @@
 		listOfPeople
 			.filter(
 				(el) =>
-					!profile.current._owner
-						.castAs(Group)
-						.members.find((member) => member.id === el.value?.user?.id) &&
+					!item._owner.castAs(Group).members.find((member) => member.id === el.value?.user?.id) &&
 					el?.value?.user &&
 					el?.value?.name.toLowerCase().includes(searchValue.toLowerCase())
 			)
@@ -50,8 +50,8 @@
 	// Add user to profile's access group
 	const addUserAccess = async (accountId: ID<BrightBlurAccount>) => {
 		try {
-			if (!profile?.current?._owner) throw new Error("Couldn't find owner.");
-			const ownerGroup = profile.current._owner.castAs(Group);
+			if (!item._owner) throw new Error("Couldn't find owner.");
+			const ownerGroup = item._owner.castAs(Group);
 			const account = await Account.load(accountId, {});
 			if (!account) throw new Error('Account not found');
 			ownerGroup.addMember(account, 'reader');
@@ -64,7 +64,6 @@
 			onInviteSuccess();
 		} catch (error: any) {
 			toast.error(error.message, { duration: 3000 });
-
 			console.error('Error adding user access:', error);
 		}
 	};
@@ -80,7 +79,7 @@
 
 <button class="btn btn-primary" onclick={openModal}>
 	<UserPlus size={18} />
-	Invite A Viewer
+	{buttonText}
 </button>
 
 <dialog class="modal" bind:this={inviteModal}>

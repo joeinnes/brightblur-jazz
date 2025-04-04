@@ -171,7 +171,11 @@
 			{#if isOwnProfile || canAdminProfile}
 				<div>
 					<!-- Keep this div to avoid the modal trigger being block-width -->
-					<InviteViewerModal {profile} onInviteSuccess={() => {}} />
+					<InviteViewerModal
+						item={profile.current}
+						onInviteSuccess={() => {}}
+						buttonText="Invite a viewer"
+					/>
 				</div>
 			{/if}
 		</div>
