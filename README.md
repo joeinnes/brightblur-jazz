@@ -11,7 +11,7 @@ BrightBlur is a photo-sharing app designed for communities. It allows users to u
   
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is NOT licensed. You may not use this project for any purpose.
 
 ## Contact
 
