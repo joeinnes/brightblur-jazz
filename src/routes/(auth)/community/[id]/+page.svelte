@@ -64,7 +64,6 @@
 const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
 </script>
 
-{community.current?.id} - co_zaZ3YPZsj2ycRBErph7gA6EPEJd
 {#if community.current}
 	<CommunityHeader {community} {canAdminCommunity} />
 	<div class="tabs tabs-border">
