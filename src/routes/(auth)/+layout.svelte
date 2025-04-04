@@ -14,7 +14,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
 
-	const { me } = useAccount({ resolve: { profile: true } });
+	const { me } = $derived(useAccount({ resolve: { profile: true } }));
 
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
