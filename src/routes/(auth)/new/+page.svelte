@@ -2,14 +2,17 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { Group, type ID, Account } from 'jazz-tools';
-	import { useCoState } from 'jazz-svelte';
+	import { useCoState, useAccount } from 'jazz-svelte';
 	import { createImage } from 'jazz-browser-media-images';
 	import * as faceapi from 'face-api.js';
 	import toast from '@natoune/svelte-daisyui-toast';
 
+	import CircleX from 'lucide-svelte/icons/circle-x';
+	import ChevronDown from 'lucide-svelte/icons/chevron-down';
+
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
-	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData } from '$lib/schema';
+	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData, Community } from '$lib/schema';
 	import { imageDataToFile } from '$lib/utils/imageData.svelte';
 	import { processImageForFaces, type FaceData } from '$lib/utils/faceDetection';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
@@ -20,6 +23,7 @@
 	import PreviewCanvas from '$lib/components/PreviewCanvas.svelte';
 	import pica from 'pica';
 
+	let { me } = $derived(useAccount({ resolve: { root: { myCommunities: true } } }));
 	// Get global data for people and photos
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
@@ -44,9 +48,10 @@
 		offscreen: undefined // Holds a full size version of the DOM canvas
 	});
 
+	let isOpen = $state(false);
 	// Face detection results
 	let faceList: FaceData[] = $state([]);
-
+	let selectedCommunities: Array<Community | null> = $state([]);
 	// Component state
 	let ready: {
 		img: boolean;
@@ -192,16 +197,18 @@
 {#if ready.faceapi}
 	<form onsubmit={submitHandler} class="mb-24">
 		<!-- mb-24 is needed to ensure the dock doesn't cover the submit button -->
-		{#if ready.preview !== 'ready'}
-			<ImageUpload readyState={ready.preview} bind:croppedBlob />
-		{/if}
 
-		<PreviewCanvas
-			bind:canvas={canvases.dom}
-			bind:faceList
-			originalCanvas={canvases.original}
-			readyState={ready.preview}
-		/>
+		<div class:hidden={ready.preview === 'ready'}>
+			<ImageUpload readyState={ready.preview} bind:croppedBlob />
+		</div>
+		<div class:hidden={ready.preview !== 'ready'}>
+			<PreviewCanvas
+				bind:canvas={canvases.dom}
+				bind:faceList
+				originalCanvas={canvases.original}
+				readyState={ready.preview}
+			/>
+		</div>
 
 		<div class="p-2">
 			{#if ready.preview === 'ready'}
@@ -256,6 +263,67 @@
 					{/each}
 				</ul>
 			{/if}
+			<div>
+				<details bind:open={isOpen}>
+					<summary class="input m-1 w-full"
+						>{#each selectedCommunities as selected}<button
+								class="badge badge-sm badge-secondary"
+								onclick={(e) => {
+									e.preventDefault();
+									selectedCommunities = selectedCommunities.filter(
+										(selectedCommunity) => selectedCommunity !== selected
+									);
+								}}
+							>
+								{selected?.name} <CircleX class="size-4" /></button
+							>{:else}<span class="badge badge-sm badge-secondary">Public</span>{/each}<ChevronDown
+							class="ms-auto size-4 transform transition-transform {isOpen ? 'rotate-180' : ''}"
+						/></summary
+					>
+					<ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+						{#each me?.root?.myCommunities || [] as communityPromise}
+							{#if communityPromise}
+								{#await communityPromise.ensureLoaded({ resolve: { members: true, photos: true } })}
+									<li>Loading...</li>
+								{:then community}
+									<li>
+										<label
+											><input
+												type="checkbox"
+												class="checkbox checkbox-xs"
+												checked={selectedCommunities && selectedCommunities?.length === 0
+													? true
+													: false}
+												onclick={(e) => {
+													e.preventDefault();
+													if (selectedCommunities && selectedCommunities.length === 0) return;
+													selectedCommunities = [];
+												}}
+											/>Public</label
+										>
+									</li>
+									{#if community}
+										<li>
+											<label
+												><input
+													type="checkbox"
+													class="checkbox checkbox-xs"
+													bind:group={selectedCommunities}
+													value={community}
+												/>{community.name}</label
+											>
+										</li>
+									{/if}
+								{/await}
+							{/if}
+						{/each}
+					</ul>
+				</details>
+			</div>
+			<small class="opacity-60">
+				Select the communities you want to share this photo with. This doesn't affect which faces
+				are blurred.
+			</small>
 			<button class="btn btn-primary mt-4" type="submit">Submit</button>
 		</div>
 	</form>
