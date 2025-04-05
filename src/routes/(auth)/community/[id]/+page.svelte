@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useAccount, useCoState } from 'jazz-svelte';
-	import { type ID } from 'jazz-tools';
+	import { Account, Group, type ID } from 'jazz-tools';
 	import { page } from '$app/state';
 	import { BrightBlurProfile, Photo, Community, BrightBlurAccount, GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
@@ -54,7 +54,7 @@
 		photoArray && community?.current?.id
 			? photoArray.filter((photo) => {
 					if (!photo || !photo.value) return;
-					return photo?.value?._owner?.getParentGroups().some((el) => {
+					return photo?.value?._owner?.getParentGroups().some((el: Group) => {
 						return el.id === community?.current?._owner.id;
 					});
 				})

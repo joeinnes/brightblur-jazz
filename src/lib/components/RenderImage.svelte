@@ -209,7 +209,7 @@
 
 		<div class="flex gap-1 px-2">
 			{#if photo?.current?.faceSlices}
-				{#each photo.current.faceSlices.sort((a, b) => {
+				{#each photo.current.faceSlices.toSorted((a, b) => {
 					if (!a?.person?.name) return 1;
 					if (!b?.person?.name) return -1;
 					return a?.person?.name.localeCompare(b?.person?.name || '');
