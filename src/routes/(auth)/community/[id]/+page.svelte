@@ -49,6 +49,12 @@
 	);
 
 	const photoArray = $derived(extractSortedPhotos(globalData?.current?.photos || undefined));
+
+	const filteredPhotoArray = $derived(
+		photoArray.filter((photo) => {
+			return photo.current?._owner.getParentGroups()?.includes(community.current?._owner);
+		})
+	);
 </script>
 
 {#if community.current}
@@ -57,7 +63,7 @@
 		<input type="radio" name="profile_tabs" class="tab" aria-label="Uploads" checked={true} />
 		<div class="tab-content p-4">
 			<ProfilePhotoGallery
-				photos={photoArray}
+				photos={filteredPhotoArray}
 				emptyHint="There are no photos in this community yet."
 			/>
 		</div>
