@@ -36,6 +36,14 @@
 				})
 			: null
 	);
+
+	let sortedFaceSlices = $derived(
+		photo?.current?.faceSlices?.toSorted((a, b) => {
+			if (!a?.person?.name) return 1;
+			if (!b?.person?.name) return -1;
+			return a?.person?.name.localeCompare(b?.person?.name || '');
+		}) || []
+	);
 </script>
 
 {#if photo && photographer}
@@ -208,25 +216,19 @@
 		<!--<button class="btn btn-error" onclick={() => photos.splice(i, 1)}>Delete</button>-->
 
 		<div class="flex gap-1 px-2">
-			{#if photo?.current?.faceSlices}
-				{#each photo.current.faceSlices.toSorted((a, b) => {
-					if (!a?.person?.name) return 1;
-					if (!b?.person?.name) return -1;
-					return a?.person?.name.localeCompare(b?.person?.name || '');
-				}) as slice}
-					{#if slice?.person?.name}
-						{@const hue = getUserHue(slice.person.id)}
-						<a href="/profile/{slice.person.id}">
-							<div
-								class="badge badge-sm border-0"
-								style="background-color: oklch(49.8% 0.0763 {hue}); color: oklch(90% 0.21 {hue});"
-							>
-								<User class="mr-0.5 w-[1em]" />{slice.person.name}
-							</div>
-						</a>
-					{/if}
-				{/each}
-			{/if}
+			{#each sortedFaceSlices as slice}
+				{#if slice?.person?.name}
+					{@const hue = getUserHue(slice.person.id)}
+					<a href="/profile/{slice.person.id}">
+						<div
+							class="badge badge-sm border-0"
+							style="background-color: oklch(49.8% 0.0763 {hue}); color: oklch(90% 0.21 {hue});"
+						>
+							<User class="mr-0.5 w-[1em]" />{slice.person.name}
+						</div>
+					</a>
+				{/if}
+			{/each}
 		</div>
 	</div>
 {/if}

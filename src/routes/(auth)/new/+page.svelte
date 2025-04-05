@@ -204,7 +204,6 @@
 				ready.faceapi = false;
 			});
 	});
-	$inspect(faceList);
 </script>
 
 {#if ready.faceapi}

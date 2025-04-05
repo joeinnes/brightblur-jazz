@@ -129,63 +129,75 @@ export async function renderCanvas(
 
 	// In renderCanvas function, update the face slice rendering section:
 	if (faceSlices) {
-	  const slicePromises = faceSlices.map(async (slice) => {
-	    if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return null;
-	
-	    // Add 1px buffer to prevent edge artifacts
-	    const pixelX = Math.max(0, Math.round(slice.x * offscreen.width) - 1);
-	    const pixelY = Math.max(0, Math.round(slice.y * offscreen.height) - 1);
-	    const pixelWidth = Math.min(offscreen.width - pixelX, Math.round(slice.width * offscreen.width) + 2);
-	    const pixelHeight = Math.min(offscreen.height - pixelY, Math.round(slice.height * offscreen.height) + 2);
-	
-	    try {
-	      // Direct image loading code instead of using useProgressiveImg
-	      let imgSrc: string | undefined;
-	
-	      if (slice.image) {
-	        // Request a slightly larger image to avoid edge artifacts
-	        const highestRes = slice.image.highestResAvailable({
-	          maxWidth: canvas.width * 20
-	        });
-	        if (highestRes) {
-	          const blob = highestRes.stream.toBlob();
-	          if (blob) {
-	            imgSrc = URL.createObjectURL(blob);
-	          }
-	        } else if (slice.image.placeholderDataURL) {
-	          imgSrc = slice.image.placeholderDataURL;
-	        }
-	      }
-	
-	      if (!imgSrc) return; // Couldn't load this. User likely has no permission to view.
-	
-	      const img = new Image();
-	      await new Promise((resolve, reject) => {
-	        img.src = imgSrc;
-	        img.onload = () => {
-	          resolve(null);
-	          // Clean up the blob URL after we're done with it
-	          setTimeout(() => URL.revokeObjectURL(imgSrc), 200);
-	        };
-	        img.onerror = reject;
-	      });
-	
-	      // Apply image rendering with high quality settings
-	      ctx.imageSmoothingEnabled = true;
-	      ctx.imageSmoothingQuality = 'high';
-	
-	      // Draw the image with precise dimensions
-	      // Draw with 1px overlap to prevent seams
-	      ctx.drawImage(
-	        img,
-	        0, 0, img.naturalWidth, img.naturalHeight,
-	        pixelX, pixelY, pixelWidth, pixelHeight
-	      );
-	    } catch (e) {
-	      console.error('Error loading face slice:', e);
-	    }
-	  });
-	  await Promise.allSettled(slicePromises);
+		const slicePromises = faceSlices.map(async (slice) => {
+			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return null;
+
+			// Add 1px buffer to prevent edge artifacts
+			const pixelX = Math.max(0, Math.round(slice.x * offscreen.width) - 1);
+			const pixelY = Math.max(0, Math.round(slice.y * offscreen.height) - 1);
+			const pixelWidth = Math.min(
+				offscreen.width - pixelX,
+				Math.round(slice.width * offscreen.width) + 2
+			);
+			const pixelHeight = Math.min(
+				offscreen.height - pixelY,
+				Math.round(slice.height * offscreen.height) + 2
+			);
+
+			try {
+				// Direct image loading code instead of using useProgressiveImg
+				let imgSrc: string | undefined;
+
+				if (slice.image) {
+					// Request a slightly larger image to avoid edge artifacts
+					const highestRes = slice.image.highestResAvailable({
+						targetWidth: canvas.width * slice.width
+					});
+					if (highestRes) {
+						const blob = highestRes.stream.toBlob();
+						if (blob) {
+							imgSrc = URL.createObjectURL(blob);
+						}
+					} else if (slice.image.placeholderDataURL) {
+						imgSrc = slice.image.placeholderDataURL;
+					}
+				}
+
+				if (!imgSrc) return; // Couldn't load this. User likely has no permission to view.
+
+				const img = new Image();
+				await new Promise((resolve, reject) => {
+					img.src = imgSrc;
+					img.onload = () => {
+						resolve(null);
+						// Clean up the blob URL after we're done with it
+						setTimeout(() => URL.revokeObjectURL(imgSrc), 200);
+					};
+					img.onerror = reject;
+				});
+
+				// Apply image rendering with high quality settings
+				ctx.imageSmoothingEnabled = true;
+				ctx.imageSmoothingQuality = 'high';
+
+				// Draw the image with precise dimensions
+				// Draw with 1px overlap to prevent seams
+				ctx.drawImage(
+					img,
+					0,
+					0,
+					img.naturalWidth,
+					img.naturalHeight,
+					pixelX,
+					pixelY,
+					pixelWidth,
+					pixelHeight
+				);
+			} catch (e) {
+				console.error('Error loading face slice:', e);
+			}
+		});
+		await Promise.allSettled(slicePromises);
 	}
 	const pica = new Pica({
 		tile: 1024,

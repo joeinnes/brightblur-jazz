@@ -39,6 +39,7 @@
 		"svelte": "^5.25.3",
 		"svelte-check": "^4.1.5",
 		"svelte-easy-crop": "^4.0.1",
+		"svelte-intersection-observer-action": "^0.0.5",
 		"tailwindcss": "^4.0.17",
 		"typescript": "^5.8.2",
 		"typescript-eslint": "^8.28.0",
