@@ -51,9 +51,14 @@
 	const photoArray = $derived(extractSortedPhotos(globalData?.current?.photos || undefined));
 
 	const filteredPhotoArray = $derived(
-		photoArray.filter((photo) => {
-			return photo.current?._owner.getParentGroups()?.includes(community.current?._owner);
-		})
+		photoArray && community?.current?.id
+			? photoArray.filter((photo) => {
+					if (!photo || !photo.value) return;
+					return photo?.value?._owner?.getParentGroups().some((el) => {
+						return el.id === community?.current?._owner.id;
+					});
+				})
+			: []
 	);
 </script>
 
@@ -67,7 +72,7 @@
 				emptyHint="There are no photos in this community yet."
 			/>
 		</div>
-		<input type="radio" name="profile_tabs" class="tab" aria-label="Members" checked={true} />
+		<input type="radio" name="profile_tabs" class="tab" aria-label="Members" />
 		<CommunityAccessManager {community} admin={canAdminCommunity || false} />
 	</div>
 {/if}

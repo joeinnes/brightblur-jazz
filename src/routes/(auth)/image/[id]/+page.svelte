@@ -11,6 +11,7 @@
 		...meta,
 		value: photo.current
 	});
+	$inspect(photo.current?._owner.getParentGroups());
 </script>
 
 <RenderImage photo={photoProp} />

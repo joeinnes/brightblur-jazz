@@ -207,9 +207,13 @@
 
 		<!--<button class="btn btn-error" onclick={() => photos.splice(i, 1)}>Delete</button>-->
 
-		<div class="px-2">
+		<div class="flex gap-1 px-2">
 			{#if photo?.current?.faceSlices}
-				{#each photo.current.faceSlices as slice}
+				{#each photo.current.faceSlices.sort((a, b) => {
+					if (!a?.person?.name) return 1;
+					if (!b?.person?.name) return -1;
+					return a?.person?.name.localeCompare(b?.person?.name || '');
+				}) as slice}
 					{#if slice?.person?.name}
 						{@const hue = getUserHue(slice.person.id)}
 						<a href="/profile/{slice.person.id}">

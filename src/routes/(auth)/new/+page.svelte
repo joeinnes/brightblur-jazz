@@ -100,7 +100,13 @@
 			await renderBlurredCanvas(canvas, offscreenCanvas, faceList);
 
 			const publicGroup = Group.create();
-			publicGroup.addMember('everyone', 'reader');
+			if (selectedCommunities.length === 0) {
+				publicGroup.addMember('everyone', 'reader');
+			} else {
+				for (const community of selectedCommunities) {
+					if (community) publicGroup.extend(community._owner.castAs(Group), 'reader');
+				}
+			}
 			const picaInstance = new pica();
 			const blob = await picaInstance.toBlob(offscreenCanvas, 'image/jpeg', 1);
 			const photoImage = await createImage(blob, {
@@ -115,7 +121,13 @@
 				// Setup access groups
 				const fileGroup = Group.create();
 				const sliceGroup = Group.create();
-				sliceGroup.addMember('everyone', 'reader');
+				if (selectedCommunities.length === 0) {
+					sliceGroup.addMember('everyone', 'reader');
+				} else {
+					for (const community of selectedCommunities) {
+						if (community) sliceGroup.extend(community._owner.castAs(Group), 'reader');
+					}
+				}
 				if (profile) {
 					const parentGroup = profile.value._owner.castAs(Group) as Group;
 					for (const member of parentGroup.members) {
@@ -192,10 +204,11 @@
 				ready.faceapi = false;
 			});
 	});
+	$inspect(faceList);
 </script>
 
 {#if ready.faceapi}
-	<form onsubmit={submitHandler} class="mb-24">
+	<form onsubmit={submitHandler} class="">
 		<!-- mb-24 is needed to ensure the dock doesn't cover the submit button -->
 
 		<div class:hidden={ready.preview === 'ready'}>
@@ -214,6 +227,7 @@
 			{#if ready.preview === 'ready'}
 				<small class="opacity-60">Draw on the picture to add an area to blur</small>
 
+				<h3 class="text-lg font-semibold">Faces</h3>
 				<ul class="list bg-base-100 rounded-box shadow-md">
 					{#each faceList as face, i}
 						{@const imgSize = 'size-20'}
@@ -262,69 +276,72 @@
 						</li>
 					{/each}
 				</ul>
-			{/if}
-			<div>
-				<details bind:open={isOpen}>
-					<summary class="input m-1 w-full"
-						>{#each selectedCommunities as selected}<button
-								class="badge badge-sm badge-secondary"
-								onclick={(e) => {
-									e.preventDefault();
-									selectedCommunities = selectedCommunities.filter(
-										(selectedCommunity) => selectedCommunity !== selected
-									);
-								}}
-							>
-								{selected?.name} <CircleX class="size-4" /></button
-							>{:else}<span class="badge badge-sm badge-secondary">Public</span>{/each}<ChevronDown
-							class="ms-auto size-4 transform transition-transform {isOpen ? 'rotate-180' : ''}"
-						/></summary
-					>
-					<ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-						{#each me?.root?.myCommunities || [] as communityPromise}
-							{#if communityPromise}
-								{#await communityPromise.ensureLoaded({ resolve: { members: true, photos: true } })}
-									<li>Loading...</li>
-								{:then community}
-									<li>
-										<label
-											><input
-												type="checkbox"
-												class="checkbox checkbox-xs"
-												checked={selectedCommunities && selectedCommunities?.length === 0
-													? true
-													: false}
-												onclick={(e) => {
-													e.preventDefault();
-													if (selectedCommunities && selectedCommunities.length === 0) return;
-													selectedCommunities = [];
-												}}
-											/>Public</label
-										>
-									</li>
-									{#if community}
+
+				<div>
+					<h3 class="text-lg font-semibold">Communities</h3>
+					<details bind:open={isOpen}>
+						<summary class="input m-1 w-full"
+							>{#each selectedCommunities as selected}<button
+									class="badge badge-sm badge-secondary"
+									onclick={(e) => {
+										e.preventDefault();
+										selectedCommunities = selectedCommunities.filter(
+											(selectedCommunity) => selectedCommunity !== selected
+										);
+									}}
+								>
+									{selected?.name} <CircleX class="size-4" /></button
+								>{:else}<span class="badge badge-sm badge-secondary">Public</span
+								>{/each}<ChevronDown
+								class="ms-auto size-4 transform transition-transform {isOpen ? 'rotate-180' : ''}"
+							/></summary
+						>
+						<ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+							{#each me?.root?.myCommunities || [] as communityPromise}
+								{#if communityPromise}
+									{#await communityPromise.ensureLoaded( { resolve: { members: true, photos: true } } )}
+										<li>Loading...</li>
+									{:then community}
 										<li>
 											<label
 												><input
 													type="checkbox"
 													class="checkbox checkbox-xs"
-													bind:group={selectedCommunities}
-													value={community}
-												/>{community.name}</label
+													checked={selectedCommunities && selectedCommunities?.length === 0
+														? true
+														: false}
+													onclick={(e) => {
+														e.preventDefault();
+														if (selectedCommunities && selectedCommunities.length === 0) return;
+														selectedCommunities = [];
+													}}
+												/>Public</label
 											>
 										</li>
-									{/if}
-								{/await}
-							{/if}
-						{/each}
-					</ul>
-				</details>
-			</div>
-			<small class="opacity-60">
-				Select the communities you want to share this photo with. This doesn't affect which faces
-				are blurred.
-			</small>
-			<button class="btn btn-primary mt-4" type="submit">Submit</button>
+										{#if community}
+											<li>
+												<label
+													><input
+														type="checkbox"
+														class="checkbox checkbox-xs"
+														bind:group={selectedCommunities}
+														value={community}
+													/>{community.name}</label
+												>
+											</li>
+										{/if}
+									{/await}
+								{/if}
+							{/each}
+						</ul>
+					</details>
+				</div>
+				<p class="text-sm opacity-60">
+					Select the communities you want to share this photo with. This doesn't affect which faces
+					are blurred.
+				</p>
+				<button class="btn btn-primary mt-4" type="submit">Submit</button>
+			{/if}
 		</div>
 	</form>
 {/if}

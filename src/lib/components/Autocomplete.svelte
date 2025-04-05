@@ -38,6 +38,11 @@
 		people.push(newProfile);
 		selectedItem = newProfile.id;
 	};
+	const selectOption = ({ label, value: val }: { label: string; value: ID<BrightBlurProfile> }) => {
+		value = label;
+		selectedItem = val;
+		(document.activeElement as HTMLElement).blur();
+	};
 </script>
 
 <div class="dropdown w-full">
@@ -60,11 +65,8 @@
 			<li>
 				<button
 					type="button"
-					onclick={() => {
-						selectedItem = item.value;
-						value = item.label;
-						(document.activeElement as HTMLElement).blur();
-					}}
+					onmousedown={() => selectOption(item)}
+					ontouchstart={() => selectOption(item)}
 				>
 					{item.label}
 				</button>
