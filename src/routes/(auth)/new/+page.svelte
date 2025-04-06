@@ -198,7 +198,11 @@
 		faceapi.nets.tinyFaceDetector
 			.loadFromUri('/models')
 			.then(() => {
-				ready.faceapi = true;
+				faceapi.nets.faceLandmark68Net.loadFromUri('/models').then(() => {
+					faceapi.nets.faceRecognitionNet.loadFromUri('/models').then(() => {
+						ready.faceapi = true;
+					});
+				});
 			})
 			.catch(() => {
 				ready.faceapi = false;
@@ -298,7 +302,7 @@
 						<ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
 							{#each me?.root?.myCommunities || [] as communityPromise}
 								{#if communityPromise}
-									{#await communityPromise.ensureLoaded( { resolve: { members: true, photos: true } } )}
+									{#await communityPromise}
 										<li>Loading...</li>
 									{:then community}
 										<li>

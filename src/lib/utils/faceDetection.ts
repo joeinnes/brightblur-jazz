@@ -27,15 +27,19 @@ export async function processImageForFaces(canvas: Canvas): Promise<FaceData[]> 
 	const ctx = canvas.getContext('2d');
 	if (!ctx) throw new Error('Could not get canvas context');
 	// Detect faces
-	const detections = await faceapi.detectAllFaces(
-		canvas,
-		new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.4 })
-	);
+	const detections = await faceapi
+		.detectAllFaces(
+			canvas,
+			new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.4 })
+		)
+		.withFaceLandmarks()
+		.withFaceDescriptors();
 
 	// Extract face data
 	const faceList: FaceData[] = [];
+	console.log(detections);
 	detections.forEach((detection) => {
-		const box = detection.box;
+		const box = detection.detection.box;
 		if (canvas) {
 			// Convert to decimal coordinates (0-1 range)
 			const x = box.x / canvas.width;
