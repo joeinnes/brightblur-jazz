@@ -4,7 +4,6 @@
 	import { Photo } from '$lib/schema';
 	import { intersect } from 'svelte-intersection-observer-action';
 	import { renderCanvas, useProgressiveImg } from '$lib/utils/imageData.svelte';
-	import { fade } from 'svelte/transition';
 	import { untrack } from 'svelte';
 
 	const {
@@ -46,16 +45,32 @@
 
 	let container: HTMLDivElement | undefined = $state();
 
-	// Memoize placeholder to prevent recalculation
-	const { src: placeholder } = $derived(
-		useProgressiveImg({ image: untrack(() => photo.current?.image), targetWidth: 16 })
+	// Only update when shouldRender or width changes
+	const { src } = $derived(
+		useProgressiveImg({
+			image: photo.current?.image,
+			targetWidth: shouldRender ? width : 16
+		})
 	);
 
-	// Only update when shouldRender or width changes
-	const { src, res } = $derived(
-		useProgressiveImg({
-			image: untrack(() => photo.current?.image),
-			targetWidth: shouldRender ? width : 16
+	const fsMap = $derived(
+		photo.current?.faceSlices?.map((fs) => {
+			let src = '';
+			const bestRes = fs.image.highestResAvailable({ targetWidth: canvas?.width || 16 * fs.width });
+			if (bestRes) {
+				const blob = bestRes.stream.toBlob();
+				if (blob) {
+					src = URL.createObjectURL(blob);
+
+					// Remember to revoke the URL when no longer needed
+					setTimeout(() => URL.revokeObjectURL(src), 200);
+				}
+			}
+
+			return {
+				...fs,
+				src
+			};
 		})
 	);
 
@@ -70,33 +85,6 @@
 		threshold: 0.1
 	};
 
-	// Optimize this derived value
-	let currentImageWidth = $derived(res ? parseInt(res.split('x')[0], 10) : undefined);
-
-	// Optimize effect to run only when necessary
-	$effect(() => {
-		if (
-			!canvas ||
-			!src ||
-			!currentImageWidth ||
-			isNaN(currentImageWidth) ||
-			currentImageWidth <= width ||
-			!shouldRender
-		) {
-			return;
-		}
-
-		// Avoid logging in production
-		// console.log('rendering', res);
-
-		renderCanvas(canvas, src, faceSlices)
-			.then(() => {
-				loading = false;
-				ready = true;
-			})
-			.catch((e) => {});
-	});
-
 	const handleImageLoad = (event: Event) => {
 		const img = event.target as HTMLImageElement;
 		if (img?.naturalWidth && img?.naturalHeight) {
@@ -107,12 +95,28 @@
 
 {#if id && photo?.current?.id}
 	<div
-		class="{containerStyles} flex w-full items-center justify-center"
+		class="{containerStyles} relative flex w-full items-center justify-center"
 		style="aspect-ratio: {aspectRatio}"
 		bind:this={container}
 		bind:clientWidth={width}
 		use:intersect={options}
 	>
+		<img {src} alt="Background" class="absolute z-10 w-full" onload={handleImageLoad} />
+		{#each fsMap || [] as fs}
+			<div
+				class="border-primary absolute z-20 rounded"
+				class:border-primary={!fs.src}
+				class:border-2={!fs.src}
+				style="
+					top: {Math.round(100 * fs.y * 100) / 100}%; 
+					left: {Math.round(100 * fs.x * 100) / 100}%; 
+					width: {Math.round(100 * fs.width * 100) / 100}%; 
+					height: {Math.round(100 * fs.height * 100) / 100}%;"
+			>
+				<img src={fs.src} alt="Face" class="h-full w-full object-cover" />
+			</div>
+		{/each}
+		<!--
 		{#if res && src && shouldRender}
 			<canvas
 				bind:this={canvas}
@@ -132,7 +136,7 @@
 			{/if}
 		{:else}
 			<div class="bg-base-300 aspect-[3/4] w-full animate-pulse"></div>
-		{/if}
+		{/if}-->
 	</div>
 {:else}
 	<div class="bg-base-300 aspect-[3/4] w-full animate-pulse"></div>
