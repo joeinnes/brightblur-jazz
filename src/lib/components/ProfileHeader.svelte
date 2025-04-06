@@ -183,8 +183,8 @@
 </div>
 
 <dialog class="modal w-full" bind:this={avatarCropperModal}>
-	<div class="modal-box flex h-[100dvh] w-full max-w-full flex-col items-center p-0">
-		<div class="relative h-full w-5/6 flex-1">
+	<div class="modal-box flex h-[100dvh] w-full max-w-full flex-col items-center p-2">
+		<div class="relative h-full w-full flex-1">
 			<Cropper
 				bind:this={cropInstance}
 				image={avatarFile && avatarFile[0] ? URL.createObjectURL(avatarFile[0]) : undefined}
@@ -192,6 +192,10 @@
 				oncropcomplete={(e) => (croppedAreaPixels = e.pixels)}
 			/>
 		</div>
+		<p class="px-2 text-sm">
+			Avatars are always viewable by everyone. Click <strong>Cancel</strong> if you do not want to upload
+			a publicly viewable image.
+		</p>
 		<div class="flex gap-2 py-4">
 			<button
 				class="btn btn-primary"

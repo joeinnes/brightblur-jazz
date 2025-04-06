@@ -99,7 +99,7 @@
 
 {#if id && photo?.current?.id}
 	<div
-		class="{containerStyles} relative flex w-full items-center justify-center"
+		class="{containerStyles} relative flex items-center justify-center"
 		style="aspect-ratio: {aspectRatio}"
 		bind:this={container}
 		bind:clientWidth={width}
@@ -117,7 +117,7 @@
 					top: calc({100 * fs.y}% - 0.5px); 
 					left: calc({100 * fs.x}% - 0.5px); 
 					width: calc({100 * fs.width}% + 1px); 
-					height: calc({100 * fs.height} + 1px)%;"
+					height: calc({100 * fs.height}% + 1px);"
 			>
 				{#if fs?.src}
 					<img

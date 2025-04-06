@@ -31,7 +31,7 @@
 
 <RenderImage photo={photoProp} />
 <div class="flex gap-1 p-2">
-	{#if publishedInCommunities}
+	{#if publishedInCommunities && publishedInCommunities.length > 0}
 		Published in
 		{#each publishedInCommunities as community}<span class="badge badge-sm badge-primary"
 				>{community?.name}</span
