@@ -46,7 +46,7 @@
 	let container: HTMLDivElement | undefined = $state();
 
 	// Only update when shouldRender or width changes
-	const { src } = $derived(
+	const { res, src } = $derived(
 		useProgressiveImg({
 			image: photo.current?.image,
 			targetWidth: shouldRender ? width : 16
@@ -55,21 +55,22 @@
 
 	const fsMap = $derived(
 		photo.current?.faceSlices?.map((fs) => {
+			if (!fs.image) return { ...fs, src: undefined, res: undefined };
 			let src = '';
+			let res = '';
 			const bestRes = fs.image.highestResAvailable({ targetWidth: canvas?.width || 16 * fs.width });
 			if (bestRes) {
 				const blob = bestRes.stream.toBlob();
 				if (blob) {
 					src = URL.createObjectURL(blob);
-
-					// Remember to revoke the URL when no longer needed
-					setTimeout(() => URL.revokeObjectURL(src), 200);
+					res = bestRes.res;
 				}
 			}
 
 			return {
 				...fs,
-				src
+				src,
+				res
 			};
 		})
 	);
@@ -90,6 +91,9 @@
 		if (img?.naturalWidth && img?.naturalHeight) {
 			aspectRatio = `${img.naturalWidth}/${img.naturalHeight}`;
 		}
+		if (res !== 'placeholder') {
+			ready = true;
+		}
 	};
 </script>
 
@@ -101,42 +105,30 @@
 		bind:clientWidth={width}
 		use:intersect={options}
 	>
-		<img {src} alt="Background" class="absolute z-10 w-full" onload={handleImageLoad} />
+		<img {src} alt="Background" class="absolute -z-10 w-full" onload={handleImageLoad} />
 		{#each fsMap || [] as fs}
 			<div
-				class="border-primary absolute z-20 rounded"
-				class:border-primary={!fs.src}
-				class:border-2={!fs.src}
+				class="border-primary absolute z-0 transition-opacity duration-200 {ready
+					? 'opacity-100'
+					: 'opacity-0'} rounded"
+				class:border-primary={!fs?.src || res === 'placeholder' || fs?.res === 'placeholder'}
+				class:border-2={!fs?.src || fs?.res === 'placeholder' || res === 'placeholder'}
 				style="
-					top: {Math.round(100 * fs.y * 100) / 100}%; 
-					left: {Math.round(100 * fs.x * 100) / 100}%; 
-					width: {Math.round(100 * fs.width * 100) / 100}%; 
-					height: {Math.round(100 * fs.height * 100) / 100}%;"
+					top: calc({100 * fs.y}% - 0.5px); 
+					left: calc({100 * fs.x}% - 0.5px); 
+					width: calc({100 * fs.width}% + 1px); 
+					height: calc({100 * fs.height} + 1px)%;"
 			>
-				<img src={fs.src} alt="Face" class="h-full w-full object-cover" />
+				{#if fs?.src}
+					<img
+						src={fs.src}
+						alt="Face"
+						class="h-full w-full object-cover"
+						onload={() => URL.revokeObjectURL(fs.src)}
+					/>
+				{/if}
 			</div>
 		{/each}
-		<!--
-		{#if res && src && shouldRender}
-			<canvas
-				bind:this={canvas}
-				class="absolute -z-20 w-full object-cover shadow-md"
-				{width}
-				style="aspect-ratio: {aspectRatio}"
-			></canvas>
-			{#if !ready}
-				<img
-					src={placeholder}
-					onload={handleImageLoad}
-					class="absolute -z-10 w-full animate-pulse blur-lg"
-					out:fade
-					style="aspect-ratio: {aspectRatio}"
-					alt="Placeholder"
-				/>
-			{/if}
-		{:else}
-			<div class="bg-base-300 aspect-[3/4] w-full animate-pulse"></div>
-		{/if}-->
 	</div>
 {:else}
 	<div class="bg-base-300 aspect-[3/4] w-full animate-pulse"></div>
