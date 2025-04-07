@@ -1,4 +1,5 @@
 import { Account, Profile, co, CoMap, CoList, Group, CoFeed, ImageDefinition } from 'jazz-tools';
+import { Account, Profile, co, CoMap, CoList, Group, CoFeed, ImageDefinition } from 'jazz-tools';
 
 export class BrightBlurProfile extends Profile {
 	name = co.string;
@@ -28,24 +29,15 @@ export class BrightBlurAccount extends Account {
 			// Set the profile property to the newly created profile
 			this.profile = newProfile;
 		}
-
-		if (this.root === undefined) {
-			console.log('new root');
+		if (!this.root) {
 			this.root = BrightBlurAccountRoot.create({
 				myCommunities: ListOfCommunities.create([])
 			});
 		}
-		await this.ensureLoaded({
-			resolve: {
-				root: {
-					myCommunities: true
-				}
-			}
-		});
-		if (this.root === null) return;
-
-		if (!this.root.myCommunities || this.root.myCommunities.length === 0) {
+		if (!this.root.myCommunities) {
 			this.root.myCommunities = ListOfCommunities.create([]);
+		}
+		if (this.root.myCommunities.length === 0) {
 			const communityGroup = Group.create();
 			const community = Community.create({
 				name: 'My Community',
@@ -73,6 +65,9 @@ export class FeedOfProfiles extends CoFeed.Of(co.ref(BrightBlurProfile)) {}
 export class Community extends CoMap {
 	name = co.string;
 	description = co.string;
+	image = co.optional.ref(ImageDefinition);
+	photos = co.ref(FeedOfPhotos);
+	members = co.ref(FeedOfProfiles);
 	image = co.optional.ref(ImageDefinition);
 	photos = co.ref(FeedOfPhotos);
 	members = co.ref(FeedOfProfiles);

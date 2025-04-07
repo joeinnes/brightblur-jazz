@@ -128,6 +128,7 @@ export async function renderCanvas(
 	drawFaceRectangles(offscreen, faceSlices);
 
 	// In renderCanvas function, update the face slice rendering section:
+	// In renderCanvas function, update the face slice rendering section:
 	if (faceSlices) {
 		const slicePromises = faceSlices.map(async (slice) => {
 			if (!slice?.x || !slice?.y || !slice?.width || !slice?.height) return null;
@@ -151,7 +152,7 @@ export async function renderCanvas(
 				if (slice.image) {
 					// Request a slightly larger image to avoid edge artifacts
 					const highestRes = slice.image.highestResAvailable({
-						targetWidth: canvas.width * slice.width
+						maxWidth: canvas.width * 20
 					});
 					if (highestRes) {
 						const blob = highestRes.stream.toBlob();
