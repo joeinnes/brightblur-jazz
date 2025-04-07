@@ -29,15 +29,24 @@ export class BrightBlurAccount extends Account {
 			// Set the profile property to the newly created profile
 			this.profile = newProfile;
 		}
-		if (!this.root) {
+
+		if (this.root === undefined) {
+			console.log('new root');
 			this.root = BrightBlurAccountRoot.create({
 				myCommunities: ListOfCommunities.create([])
 			});
 		}
-		if (!this.root.myCommunities) {
+		await this.ensureLoaded({
+			resolve: {
+				root: {
+					myCommunities: true
+				}
+			}
+		});
+		if (this.root === null) return;
+
+		if (!this.root.myCommunities || this.root.myCommunities.length === 0) {
 			this.root.myCommunities = ListOfCommunities.create([]);
-		}
-		if (this.root.myCommunities.length === 0) {
 			const communityGroup = Group.create();
 			const community = Community.create({
 				name: 'My Community',

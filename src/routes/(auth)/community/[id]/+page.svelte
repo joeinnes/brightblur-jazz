@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { useAccount, useCoState } from 'jazz-svelte';
-	import { Account, Group, type ID } from 'jazz-tools';
+	import { type ID } from 'jazz-tools';
 	import { page } from '$app/state';
-	import { BrightBlurProfile, Photo, Community, BrightBlurAccount, GlobalData } from '$lib/schema';
+	import { BrightBlurProfile, Photo, Community, BrightBlurAccount } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
 	// Import components
@@ -42,37 +42,34 @@
 	const canAdminCommunity = $derived(
 		communityId && community.current && me?.canAdmin(community.current)
 	);
+	/*
+	// Get global data for people
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
 			resolve: { photos: true, people: true }
 		})
 	);
 
+	// Get all people and filter for managed people
+	let allPeople = $derived(extractAllPeople(globalData));
+	let myManagedPeople = $derived(
+		allPeople && filterManagedPeople(allPeople, me?.id, me?.profile?.id)
+	);
+
 	const photoArray = $derived(extractSortedPhotos(globalData?.current?.photos || undefined));
 
-	const filteredPhotoArray = $derived(
-		photoArray && community?.current?.id
-			? photoArray.filter((photo) => {
-					if (!photo || !photo.value) return;
-					return photo?.value?._owner?.getParentGroups().some((el: Group) => {
-						return el.id === community?.current?._owner.id;
-					});
-				})
-			: []
+	 const uploadedPhotos: CoFeedEntry<Photo>[] = $derived(
+		filterPhotosByUploader(photoArray, profile?.current?.user?.id)
 	);
+const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
 </script>
 
+{community.current?.id} - co_zaZ3YPZsj2ycRBErph7gA6EPEJd
 {#if community.current}
 	<CommunityHeader {community} {canAdminCommunity} />
 	<div class="tabs tabs-border">
-		<input type="radio" name="profile_tabs" class="tab" aria-label="Uploads" checked={true} />
-		<div class="tab-content p-4">
-			<ProfilePhotoGallery
-				photos={filteredPhotoArray}
-				emptyHint="There are no photos in this community yet."
-			/>
-		</div>
-		<input type="radio" name="profile_tabs" class="tab" aria-label="Members" />
+		<!-- Photo Gallery - Uploads Tab -->
+		<input type="radio" name="community_tabs" class="tab" aria-label="Members" checked={true} />
 		<CommunityAccessManager {community} admin={canAdminCommunity || false} />
 	</div>
 {/if}
