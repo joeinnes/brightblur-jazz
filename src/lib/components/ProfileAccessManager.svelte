@@ -58,7 +58,7 @@
 								data-tip={member.id === currentlyViewing.current?.user?.id
 									? 'You cannot remove yourself from this profile'
 									: countAdmins < 2 && member.role === 'admin'
-										? 'You cannot remove the last admin from this profile'
+										? "Can't remove last admin"
 										: ''}
 							>
 								<button
@@ -72,7 +72,7 @@
 										if (member.id === currentlyViewing.current?.user?.id) {
 											throw new Error('You cannot remove yourself from this profile');
 										} else if (countAdmins < 2 && member.role === 'admin') {
-											throw new Error('You cannot remove the last admin from this profile');
+											throw new Error("Can't remove last admin");
 										}
 										try {
 											const account = await Account.load(member.account.id, {});
@@ -96,7 +96,7 @@
 											if (member.id === currentlyViewing.current?.user?.id) {
 												throw new Error('You cannot remove yourself from this profile');
 											} else if (countAdmins < 2 && member.role === 'admin') {
-												throw new Error('You cannot remove the last admin from this profile');
+												throw new Error("Can't remove last admin");
 											}
 											const group = currentlyViewing.current?._owner?.castAs?.(Group);
 											if (!group) {

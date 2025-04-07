@@ -66,6 +66,7 @@
 	let croppedBlob: Blob | undefined = $state();
 
 	let originalCanvas = $derived(blobToCanvas(croppedBlob));
+	let submitting = $state(false);
 
 	// Update the face list when the cropped blob changes
 	$effect(() => {
@@ -90,6 +91,7 @@
 
 	// Handle form submission
 	const submitHandler = async (e: Event) => {
+		submitting = true;
 		e.preventDefault();
 		try {
 			const canvas = await originalCanvas;
@@ -190,6 +192,8 @@
 			if (e instanceof Error) {
 				toast.error(e.message, { duration: 3000 });
 			}
+		} finally {
+			submitting = false;
 		}
 	};
 
@@ -231,7 +235,7 @@
 				<small class="opacity-60">Draw on the picture to add an area to blur</small>
 
 				<h3 class="text-lg font-semibold">Faces</h3>
-				<ul class="list bg-base-100 rounded-box shadow-md">
+				<ul class="list">
 					{#each faceList as face, i}
 						{@const imgSize = 'size-20'}
 						<li class="list-row items-center">
@@ -274,8 +278,11 @@
 									drawFaceRectangles(canvases.dom, faceList);
 								}}
 							>
-								Don't blur
+								<CircleX />
 							</button>
+						</li>
+					{:else}<li class="list-row">
+							No faces detected. You can draw faces on the picture to add them.
 						</li>
 					{/each}
 				</ul>
@@ -300,27 +307,30 @@
 							/></summary
 						>
 						<ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+							<li>
+								<!-- I know about the warnings. I want to use a label element to control the input to increase the click target size. I probably want to fix this in future to do something a bit more accessible. -->
+								<!-- svelte-ignore a11y_click_events_have_key_events -->
+								<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+								<label
+									onclick={(e) => {
+										e.preventDefault();
+										if (selectedCommunities && selectedCommunities.length === 0) return;
+										selectedCommunities = [];
+									}}
+									><input
+										type="checkbox"
+										class="checkbox checkbox-xs"
+										checked={!selectedCommunities || selectedCommunities?.length === 0
+											? true
+											: false}
+									/>Public</label
+								>
+							</li>
 							{#each me?.root?.myCommunities || [] as communityPromise}
 								{#if communityPromise}
 									{#await communityPromise}
 										<li>Loading...</li>
 									{:then community}
-										<li>
-											<label
-												><input
-													type="checkbox"
-													class="checkbox checkbox-xs"
-													checked={selectedCommunities && selectedCommunities?.length === 0
-														? true
-														: false}
-													onclick={(e) => {
-														e.preventDefault();
-														if (selectedCommunities && selectedCommunities.length === 0) return;
-														selectedCommunities = [];
-													}}
-												/>Public</label
-											>
-										</li>
 										{#if community}
 											<li>
 												<label
@@ -343,7 +353,7 @@
 					Select the communities you want to share this photo with. This doesn't affect which faces
 					are blurred.
 				</p>
-				<button class="btn btn-primary mt-4" type="submit">Submit</button>
+				<button class="btn btn-primary mt-4" type="submit" disabled={submitting}>Submit</button>
 			{/if}
 		</div>
 	</form>

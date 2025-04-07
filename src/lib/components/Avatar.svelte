@@ -18,28 +18,25 @@
 
 	const sizeValue = $derived(parseInt(style.split('-')[1]) || 10);
 	const fontSize = $derived(`${sizeValue * 0.1}rem`);
-	let width = $state(0);
-	const { src } = $derived(useProgressiveImg({ image, targetWidth: width || 1024 }));
+	let width = $state(16);
+	const { src } = $derived(useProgressiveImg({ image, targetWidth: width || 16 }));
 </script>
 
-{#if image}
-	<img
-		{src}
-		alt="Profile"
-		class="border-primary {style} rounded-full border-2 object-cover"
-		bind:clientWidth={width}
-	/>
-{:else}
-	{@const hue = getUserHue(userId)}
-	<div
-		class="border-primary text-secondary-content {style} avatar avatar-placeholder flex items-center justify-center rounded-full border-2"
-		style={`font-size: ${fontSize}; background-color: oklch(49.8% 0.0763 ${hue}); color: oklch(90% 0.21 ${hue});`}
-	>
-		<div class="flex h-full w-full items-center justify-center text-center leading-none">
-			{name
-				.split(' ')
-				.map((el: string) => el[0])
-				.join('')}
+<div bind:clientWidth={width}>
+	{#if image}
+		<img {src} alt="Profile" class="border-primary {style} rounded-full border-2 object-cover" />
+	{:else}
+		{@const hue = getUserHue(userId)}
+		<div
+			class="border-primary text-secondary-content {style} avatar avatar-placeholder flex items-center justify-center rounded-full border-2"
+			style={`font-size: ${fontSize}; background-color: oklch(49.8% 0.0763 ${hue}); color: oklch(90% 0.21 ${hue});`}
+		>
+			<div class="flex h-full w-full items-center justify-center text-center leading-none">
+				{name
+					.split(' ')
+					.map((el: string) => el[0])
+					.join('')}
+			</div>
 		</div>
-	</div>
-{/if}
+	{/if}
+</div>

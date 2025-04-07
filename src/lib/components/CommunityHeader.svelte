@@ -140,11 +140,11 @@
 			</label>
 		</div>
 
-		<div class="flex flex-grow flex-col gap-2">
+		<div class="flex w-full flex-grow flex-col gap-2 text-left">
 			{#if canAdminCommunity}
 				{#if !editName}
 					<button
-						class="btn btn-ghost justify-start px-2 text-3xl font-bold"
+						class="btn btn-ghost w-full justify-start px-2 text-left text-3xl font-bold"
 						onclick={() => (editName = true)}
 					>
 						{community.current.name}
