@@ -42,9 +42,9 @@
 	};
 </script>
 
-<label for="picture" class="cursor-pointer p-4">
+<label for="picture" class="cursor-pointer">
 	<div class="grid w-full items-center gap-1.5">
-		<div class="bg-primary-content text-primary p-4 shadow">
+		<div class="bg-primary-content text-primary rounded-2xl p-4">
 			<div
 				class="border-primary flex aspect-square w-full flex-col items-center justify-center gap-5 border-8 border-dashed"
 			>
@@ -61,4 +61,4 @@
 	</div>
 </label>
 
-<CropperModal {imageAspect} bind:cropperModal {originalFile} bind:croppedBlob />
+<CropperModal {imageAspect} bind:cropperModal {originalFile} bind:croppedBlob bind:readyState />

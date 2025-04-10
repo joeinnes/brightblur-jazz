@@ -4,23 +4,20 @@
 	import House from 'lucide-svelte/icons/house';
 </script>
 
-<footer class="dock">
+<footer class="dock z-40">
 	<a href="/" class="dock-item">
 		<div class="dock-content">
 			<House class="dock-icon" />
-			<span class="dock-label">Home</span>
 		</div>
 	</a>
 	<a href="/new" class="dock-item bg-primary text-primary-content rounded-box">
 		<div class="dock-content">
 			<Camera class="dock-icon" />
-			<span class="dock-label">New</span>
 		</div>
 	</a>
 	<a href="/profile/me" class="dock-item">
 		<div class="dock-content">
 			<CircleUserRound class="dock-icon" />
-			<span class="dock-label">Profile</span>
 		</div>
 	</a>
 </footer>

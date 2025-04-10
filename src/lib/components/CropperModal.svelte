@@ -7,7 +7,8 @@
 		imageAspect,
 		cropperModal = $bindable(),
 		originalFile,
-		croppedBlob = $bindable()
+		croppedBlob = $bindable(),
+		readyState = $bindable()
 	} = $props();
 
 	let cropInstance: Cropper | undefined = $state();
@@ -20,6 +21,7 @@
 
 	// Handle crop completion
 	const handleCropComplete = async () => {
+		readyState = 'working';
 		try {
 			if (!originalFile) throw new Error('Something went wrong.');
 			croppedBlob = await cropImage(originalFile, croppedAreaPixels);
@@ -35,7 +37,10 @@
 <dialog class="modal w-full" bind:this={cropperModal}>
 	<div class="modal-box flex flex-col items-center">
 		<!-- flex h-[100dvh] w-full max-w-full flex-col items-center rounded-none p-0">-->
-		<div class="relative w-full flex-1" style="aspect-ratio: {imageAspect}">
+		<div
+			class="relative w-full flex-1 overflow-hidden rounded-2xl"
+			style="aspect-ratio: {imageAspect}"
+		>
 			<Cropper
 				bind:this={cropInstance}
 				image={originalFile ? URL.createObjectURL(originalFile) : undefined}
@@ -43,11 +48,10 @@
 				oncropcomplete={(e) => (croppedAreaPixels = e.pixels)}
 			/>
 		</div>
-		<div class="flex gap-2 bg-transparent py-4">
-			<button type="button" class="btn btn-primary" onclick={handleCropComplete}> OK </button>
+		<div class="flex w-full justify-end gap-2 bg-transparent pt-4">
 			<button
 				type="button"
-				class="btn btn-error"
+				class="btn"
 				onclick={() => {
 					originalFile = undefined;
 					cropperModal?.close();
@@ -55,6 +59,7 @@
 			>
 				Cancel
 			</button>
+			<button type="button" class="btn btn-primary" onclick={handleCropComplete}> OK </button>
 		</div>
 	</div>
 </dialog>

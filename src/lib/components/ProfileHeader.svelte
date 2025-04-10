@@ -110,7 +110,7 @@
 	};
 </script>
 
-<div class="card-body gap-4 px-2 py-0">
+<div class="container">
 	<div class="flex items-center gap-4">
 		<div class="avatar placeholder">
 			<label class="cursor-pointer">
@@ -141,33 +141,6 @@
 		</div>
 
 		<div class="flex flex-grow flex-col gap-2">
-			{#if canAdminProfile}
-				{#if !editName}
-					<button
-						class="btn btn-ghost justify-start px-2 text-3xl font-bold"
-						onclick={() => (editName = true)}
-					>
-						{profile.current.name}
-					</button>
-					{#if !isOwnProfile}
-						<div class="badge badge-primary">You can administer this profile</div>
-					{/if}
-				{:else}
-					<div class="join w-full">
-						<!-- Svelte thinks that profile.current.name is not reactive. I assume there's some Jazz action in the background here. -->
-						<input
-							type="text"
-							class="input input-lg join-item w-full text-3xl font-bold"
-							bind:value={profile.current.name}
-							onblur={() => (editName = false)}
-						/>
-						<button class="btn btn-lg join-item" onclick={() => (editName = false)}> Save </button>
-					</div>
-				{/if}
-			{:else}
-				<h1 class="text-3xl font-bold">{profile.current.name}</h1>
-			{/if}
-
 			{#if isOwnProfile || canAdminProfile}
 				<div>
 					<!-- Keep this div to avoid the modal trigger being block-width -->

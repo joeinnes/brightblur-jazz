@@ -3,11 +3,9 @@
 	import { useAccount, useCoState } from 'jazz-svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
 	import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
-	import User from 'lucide-svelte/icons/user';
 	import Image from './Image.svelte';
 	import Avatar from './Avatar.svelte';
 	import { BrightBlurAccount, Photo } from '$lib/schema';
-	import { getUserHue } from '$lib/utils/userUtils';
 	import { renderCanvas } from '$lib/utils/imageData.svelte';
 	const { me } = $derived(useAccount());
 	const { photo: PhotoProp } = $props();
@@ -36,40 +34,29 @@
 				})
 			: null
 	);
-
-	let sortedFaceSlices = $derived(
-		photo?.current?.faceSlices?.toSorted((a, b) => {
-			if (!a?.person?.name) return 1;
-			if (!b?.person?.name) return -1;
-			return a?.person?.name.localeCompare(b?.person?.name || '');
-		}) || []
-	);
 </script>
 
 {#if photo && photographer}
-	<div class="w-full">
-		<div class="mb-2 flex items-center gap-2 px-2">
-			<Avatar
-				image={photographer?.current?.profile?.avatar}
-				name={photographer?.current?.profile?.name}
-				userId={photographer?.current?.profile?.id}
-			/>
+	<div class="relative w-full overflow-hidden rounded-2xl">
+		<div
+			class="text-base-100 from-primary/90 absolute bottom-0 z-30 flex w-full items-center gap-2 bg-linear-to-t to-transparent p-2 pt-6"
+		>
+			<a href="/profile/{photographer?.current?.profile?.id}">
+				<Avatar
+					image={photographer?.current?.profile?.avatar}
+					name={photographer?.current?.profile?.name}
+					userId={photographer?.current?.profile?.id}
+				/>
+			</a>
 			<hgroup>
-				<h3 class="mb-0 leading-2 font-bold">
-					<a href="/profile/{photographer?.current?.profile?.id}">
-						@{photographer?.current?.profile?.name}
-					</a>
-				</h3>
-				<small class="opacity-60">
+				<h3 class="mb-0 leading-2 font-semibold" style="text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);">
 					{madeAt.toLocaleDateString('en-GB', {
-						hour: '2-digit',
-						minute: '2-digit',
 						weekday: 'short',
 						year: 'numeric',
 						month: 'short',
 						day: 'numeric'
 					})}
-				</small>
+				</h3>
 			</hgroup>
 			<div class="dropdown dropdown-end ms-auto">
 				<div role="button" tabindex="0" class="btn btn-square btn-outline btn-sm btn- ms-auto">
@@ -207,28 +194,12 @@
 			</div>
 		</div>
 
-		<figure class="relative my-2">
+		<figure class="relative">
 			{#if photoId}
 				<Image id={photoId} />
 			{/if}
 		</figure>
 
 		<!--<button class="btn btn-error" onclick={() => photos.splice(i, 1)}>Delete</button>-->
-
-		<div class="flex gap-1 px-2">
-			{#each sortedFaceSlices as slice}
-				{#if slice?.person?.name}
-					{@const hue = getUserHue(slice.person.id)}
-					<a href="/profile/{slice.person.id}">
-						<div
-							class="badge badge-sm border-0"
-							style="background-color: oklch(49.8% 0.0763 {hue}); color: oklch(90% 0.21 {hue});"
-						>
-							<User class="mr-0.5 w-[1em]" />{slice.person.name}
-						</div>
-					</a>
-				{/if}
-			{/each}
-		</div>
 	</div>
 {/if}

@@ -91,15 +91,15 @@
 		<div class="modal-action">
 			<form method="dialog">
 				<!-- if there is a button in form, it will close the modal -->
-				<button class="btn btn-primary" onclick={createCommunity}>Save</button>
 				<button
-					class="btn btn-error"
+					class="btn"
 					onclick={() => {
 						name = '';
 						description = '';
 						creationModal?.close();
 					}}>Cancel</button
 				>
+				<button class="btn btn-primary" onclick={createCommunity}>Save</button>
 			</form>
 		</div>
 	</div>

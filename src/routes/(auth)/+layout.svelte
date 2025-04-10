@@ -10,8 +10,6 @@
 
 	const { children } = $props();
 
-	import NavBar from '$lib/components/NavBar.svelte';
-	import Footer from '$lib/components/Footer.svelte';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
 
 	const { me } = $derived(useAccount({ resolve: { profile: true } }));
@@ -70,11 +68,5 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col">
-	<NavBar />
-
-	<main class="container mx-auto mb-24 max-w-xl flex-1">
-		{@render children()}
-	</main>
-
-	<Footer />
+	{@render children()}
 </div>

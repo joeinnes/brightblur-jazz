@@ -142,29 +142,6 @@
 
 		<div class="flex w-full flex-grow flex-col gap-2 text-left">
 			{#if canAdminCommunity}
-				{#if !editName}
-					<button
-						class="btn btn-ghost w-full justify-start px-2 text-left text-3xl font-bold"
-						onclick={() => (editName = true)}
-					>
-						{community.current.name}
-					</button>
-				{:else}
-					<div class="join w-full">
-						<!-- Svelte thinks that profile.current.name is not reactive. I assume there's some Jazz action in the background here. -->
-						<input
-							type="text"
-							class="input input-lg join-item w-full text-3xl font-bold"
-							bind:value={community.current.name}
-							onblur={() => (editName = false)}
-						/>
-						<button class="btn btn-lg join-item" onclick={() => (editName = false)}> Save </button>
-					</div>
-				{/if}
-			{:else}
-				<h1 class="text-3xl font-bold">{community.current.name}</h1>
-			{/if}
-			{#if canAdminCommunity}
 				<div class="badge badge-primary">
 					You're an admin
 					<!-- Keep this div to avoid the modal trigger being block-width -->
@@ -174,9 +151,8 @@
 		</div>
 	</div>
 	<textarea
-		class="px-2 opacity-70"
+		class="textarea"
 		onchange={(e) => {
-			console.log('yo');
 			community.current.description = e.currentTarget.value;
 		}}>{community.current.description}</textarea
 	>

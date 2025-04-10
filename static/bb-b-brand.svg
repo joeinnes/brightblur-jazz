@@ -3,7 +3,7 @@
   <defs>
     <linearGradient id="primary" gradientUnits="userSpaceOnUse" bx:pinned="true">
       <title>Primary</title>
-      <stop style="stop-color: rgb(0, 184, 194);"/>
+      <stop style="stop-color: oklch(65% 0.22 295);"/>
     </linearGradient>
     <linearGradient id="color-0" gradientUnits="userSpaceOnUse" bx:pinned="true">
       <title>Foreground</title>

@@ -62,14 +62,57 @@
 		filterPhotosByUploader(photoArray, profile?.current?.user?.id)
 	);
 const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
+	let communityNameModal: HTMLDialogElement | undefined = $state();
+	let prevName = $state('');
 </script>
 
-{community.current?.id} - co_zaZ3YPZsj2ycRBErph7gA6EPEJd
-{#if community.current}
-	<CommunityHeader {community} {canAdminCommunity} />
-	<div class="tabs tabs-border">
-		<!-- Photo Gallery - Uploads Tab -->
-		<input type="radio" name="community_tabs" class="tab" aria-label="Members" checked={true} />
-		<CommunityAccessManager {community} admin={canAdminCommunity || false} />
+<div class="navbar bg-base-100 sticky top-0 z-50 mb-2 gap-2 px-4">
+	<div class="navbar-start">
+		<button
+			class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
+			onclick={() => window.history.back()}>&larr;</button
+		>
 	</div>
-{/if}
+	<div class="navbar-center px-2">
+		{#if canAdminCommunity && community.current?.name !== undefined}
+			<button
+				class="btn btn-ghost justify-start px-2 text-lg font-bold"
+				onclick={() => {
+					prevName = community.current?.name || '';
+					communityNameModal?.showModal();
+				}}
+			>
+				{community.current?.name}
+			</button>
+		{:else}<h3 class="text-lg font-bold">{community.current?.name}</h3>{/if}
+	</div>
+	<div class="navbar-end"></div>
+</div>
+<dialog class="modal" bind:this={communityNameModal}>
+	<div class="modal-box">
+		<h3 class="mb-2 text-lg font-bold">Community name</h3>
+		{#if community.current?.name}
+			<input type="text" class="input join-item" bind:value={community.current.name} />
+			<div class="modal-action">
+				<form method="dialog">
+					<!-- if there is a button in form, it will close the modal -->
+					<button class="btn" onclick={() => {
+          
+          // @ts-ignore checked on line 94
+          community.current.name = prevName}}>Cancel</button>
+					<button class="btn btn-primary">Save</button>
+				</form>
+			</div>
+		{/if}
+	</div>
+</dialog>
+<main class="container mx-auto mb-24 max-w-xl flex-1 px-4">
+	{#if community.current}
+		<CommunityHeader {community} {canAdminCommunity} />
+		<div class="tabs tabs-border">
+			<!-- Photo Gallery - Uploads Tab -->
+			<input type="radio" name="community_tabs" class="tab" aria-label="Members" checked={true} />
+			<CommunityAccessManager {community} admin={canAdminCommunity || false} />
+		</div>
+	{/if}
+</main>

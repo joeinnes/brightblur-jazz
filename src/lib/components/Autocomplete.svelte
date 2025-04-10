@@ -3,6 +3,7 @@
 	import { BrightBlurProfile } from '$lib/schema';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
 	import { imageDataToFile } from '$lib/utils/imageData.svelte';
+	import Avatar from './Avatar.svelte';
 	let {
 		selectedItem = $bindable(),
 		placeholder = '',
@@ -47,7 +48,7 @@
 
 <div class="dropdown w-full">
 	<input
-		class="input input-bordered w-full"
+		class="input input-bordered join-item w-full"
 		{placeholder}
 		bind:value
 		tabindex="0"
@@ -59,12 +60,13 @@
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<ul
 		tabindex="0"
-		class="dropdown-content menu bg-base-100 rounded-box z-1 max-h-80 w-full flex-nowrap overflow-auto p-2 shadow"
+		class="dropdown-content menu bg-base-100 rounded-box z-1 max-h-80 w-full flex-nowrap space-y-1 overflow-auto p-2 shadow"
 	>
 		{#each filteredItems as item}
 			<li>
 				<button
 					type="button"
+					class="btn btn-ghost rounded-box justify-start"
 					onmousedown={() => selectOption(item)}
 					ontouchstart={() => selectOption(item)}
 				>
@@ -76,7 +78,7 @@
 			<li>
 				<button
 					type="button"
-					class="btn btn-sm btn-secondary"
+					class="btn btn-primary rounded-box"
 					onmousedown={(e) => {
 						e.preventDefault();
 						newPersonName = value;
@@ -93,38 +95,43 @@
 <dialog class="modal" bind:this={addPersonModal} id="addPersonModal">
 	<div class="modal-box">
 		<h3 class="text-lg font-bold">Who is this?</h3>
-		<div class="flex items-center gap-2">
+		<div>
 			{#await imageDataToFile(imageData) then imageFile}
 				{@const url = URL.createObjectURL(imageFile)}<img
-					class="rounded-box size-20"
+					class="rounded-box w-full"
 					src={url}
 					onload={() => URL.revokeObjectURL(url)}
 					alt="Face of {newPersonName}"
 				/>{/await}
 			<div class="flex flex-1 flex-col">
 				<label for="newPersonName" class="label">Name</label>
-				<input type="text" bind:value={newPersonName} class="input w-full" id="newPersonName" />
+				<input
+					type="text"
+					bind:value={newPersonName}
+					class="input rounded-box w-full"
+					id="newPersonName"
+				/>
 			</div>
-		</div>
-		<p class="py-4 text-sm opacity-60">
-			When you tag a new person, you will be given the access to manage that profile as an admin.
-			Once that person creates an account, you can transfer the profile to that person.
-		</p>
-		<div class="modal-action">
-			<form method="dialog">
-				<!-- if there is a button in form, it will close the modal -->
-				<button class="btn">Close</button>
-			</form>
-			<form method="dialog">
-				<!-- if there is a button in form, it will close the modal -->
-				<button
-					class="btn btn-primary"
-					onclick={() => {
-						createNewPerson();
-						newPersonName = '';
-					}}>Add This Profile</button
-				>
-			</form>
+			<p class="py-4 text-sm opacity-60">
+				When you tag a new person, you will be given the access to manage that profile as an admin.
+				Once that person creates an account, you can transfer the profile to that person.
+			</p>
+			<div class="modal-action">
+				<form method="dialog">
+					<!-- if there is a button in form, it will close the modal -->
+					<button class="btn rounded-box">Close</button>
+				</form>
+				<form method="dialog">
+					<!-- if there is a button in form, it will close the modal -->
+					<button
+						class="btn btn-primary rounded-box"
+						onclick={() => {
+							createNewPerson();
+							newPersonName = '';
+						}}>Add This Profile</button
+					>
+				</form>
+			</div>
 		</div>
 	</div>
 </dialog>

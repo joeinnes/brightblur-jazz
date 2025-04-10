@@ -13,17 +13,16 @@
 	);
 </script>
 
-<div class="navbar bg-base-100 sticky top-0 z-50 mb-4 shadow-sm">
+<div class="navbar bg-base-100 sticky top-0 z-50 mb-2 px-4">
 	<div class="flex-1">
-		<a class="flex items-center gap-1 text-xl font-black" href="/"
-			><img src="/bb-b-brand.svg" alt="Logo" class="h-8 w-8" />BrightBlur</a
+		<a class="flex items-center gap-1 text-2xl font-bold" href="/"
+			><img src="/bb-b-brand.svg" alt="Logo" class="mr-1 h-12 w-12" />BrightBlur</a
 		>
 	</div>
 	<div class="flex-none">
 		<div class="dropdown dropdown-end">
-			<div role="button" tabindex="0" class="btn btn-ghost">
-				<span>{me?.profile?.name}</span>
-				<div class="circle avatar w-10 rounded-full">
+			<div role="button" tabindex="0" class="">
+				<div class="circle avatar w-12 rounded-full">
 					<Avatar image={me?.profile?.avatar} name={me?.profile?.name} userId={me?.profile?.id} />
 				</div>
 			</div>

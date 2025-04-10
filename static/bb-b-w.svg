@@ -7,7 +7,7 @@
     </linearGradient>
     <linearGradient id="color-0" gradientUnits="userSpaceOnUse" bx:pinned="true">
       <title>Foreground</title>
-      <stop style="stop-color: rgb(255, 255, 255);"/>
+      <stop style="stop-color: oklch(96% 0.015 295);"/>
     </linearGradient>
   </defs>
   <path fill-rule="evenodd" clip-rule="evenodd" d="M445.73,35.592c67.819,28.774,117.623,75.567,151.911,137.869   c-33.281,47.994-64.773,97.778-98.934,144.891C481.521,223.626,463.068,130.169,445.73,35.592z" style="fill: url('#color-0');"/>

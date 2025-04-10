@@ -214,14 +214,24 @@
 	});
 </script>
 
-{#if ready.faceapi}
-	<form onsubmit={submitHandler} class="">
+<div class="navbar bg-base-100 sticky top-0 z-50 mb-2 px-4">
+	<div class="navbar-start">
+		<button
+			class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
+			onclick={() => window.history.back()}>&larr;</button
+		>
+	</div>
+	<div class="navbar-center"><h3 class="text-lg font-bold">New Photo</h3></div>
+	<div class="navbar-end"></div>
+</div>
+<form onsubmit={submitHandler} class="container mx-auto max-w-xl flex-1 px-4" id="form">
+	{#if ready.faceapi}
 		<!-- mb-24 is needed to ensure the dock doesn't cover the submit button -->
 
 		<div class:hidden={ready.preview === 'ready'}>
 			<ImageUpload readyState={ready.preview} bind:croppedBlob />
 		</div>
-		<div class:hidden={ready.preview !== 'ready'}>
+		<div class:hidden={ready.preview !== 'ready'} class="overflow-hidden rounded-2xl">
 			<PreviewCanvas
 				bind:canvas={canvases.dom}
 				bind:faceList
@@ -230,15 +240,15 @@
 			/>
 		</div>
 
-		<div class="p-2">
+		<div>
 			{#if ready.preview === 'ready'}
 				<small class="opacity-60">Draw on the picture to add an area to blur</small>
 
-				<h3 class="text-lg font-semibold">Faces</h3>
-				<ul class="list">
+				<h3 class="text-lg font-semibold">Faces detected</h3>
+				<ul class="list p-0">
 					{#each faceList as face, i}
 						{@const imgSize = 'size-20'}
-						<li class="list-row items-center">
+						<li class="list-row items-center px-0 py-2 first-of-type:pt-0">
 							<div class="select-none">
 								{#await imageDataToFile(face.originalImageData)}
 									<img class="{imgSize} rounded-box skeleton" alt="loading..." />
@@ -251,7 +261,7 @@
 										onload={() => URL.revokeObjectURL(url)}
 									/>{/await}
 							</div>
-							<div>
+							<div class="join">
 								{#if listOfPeople && listOfPeople.length > 0}
 									<Autocomplete
 										bind:selectedItem={faceList[i].person.id}
@@ -267,19 +277,20 @@
 										placeholder="Who is this?"
 									/>
 								{/if}
+
+								<button
+									type="button"
+									class="btn join-item"
+									onclick={async () => {
+										if (!canvases.original || !canvases.dom) return null;
+										faceList.splice(i, 1);
+										await renderBlurredCanvas(canvases.original, canvases.dom, faceList);
+										drawFaceRectangles(canvases.dom, faceList);
+									}}
+								>
+									<CircleX />
+								</button>
 							</div>
-							<button
-								type="button"
-								class="btn btn-neutral"
-								onclick={async () => {
-									if (!canvases.original || !canvases.dom) return null;
-									faceList.splice(i, 1);
-									await renderBlurredCanvas(canvases.original, canvases.dom, faceList);
-									drawFaceRectangles(canvases.dom, faceList);
-								}}
-							>
-								<CircleX />
-							</button>
 						</li>
 					{:else}<li class="list-row">
 							No faces detected. You can draw faces on the picture to add them.
@@ -290,9 +301,9 @@
 				<div>
 					<h3 class="text-lg font-semibold">Communities</h3>
 					<details bind:open={isOpen}>
-						<summary class="input m-1 w-full"
+						<summary class="input bg-base-200 m-1 w-full"
 							>{#each selectedCommunities as selected}<button
-									class="badge badge-sm badge-secondary"
+									class="badge badge-primary"
 									onclick={(e) => {
 										e.preventDefault();
 										selectedCommunities = selectedCommunities.filter(
@@ -301,8 +312,7 @@
 									}}
 								>
 									{selected?.name} <CircleX class="size-4" /></button
-								>{:else}<span class="badge badge-sm badge-secondary">Public</span
-								>{/each}<ChevronDown
+								>{:else}<span class="badge badge-primary">Public</span>{/each}<ChevronDown
 								class="ms-auto size-4 transform transition-transform {isOpen ? 'rotate-180' : ''}"
 							/></summary
 						>
@@ -353,8 +363,15 @@
 					Select the communities you want to share this photo with. This doesn't affect which faces
 					are blurred.
 				</p>
-				<button class="btn btn-primary mt-4" type="submit" disabled={submitting}>Submit</button>
 			{/if}
 		</div>
-	</form>
-{/if}
+	{/if}
+</form>
+<div class="p-4">
+	<button
+		class="btn btn-primary btn-block"
+		type="submit"
+		disabled={submitting || ready.preview !== 'ready'}
+		form="form">Share</button
+	>
+</div>

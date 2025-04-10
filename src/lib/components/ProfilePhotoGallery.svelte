@@ -19,7 +19,7 @@
 		{#each photos as photo, i (photo?.value?.id || i)}
 			{#if photo?.value?.id}
 				<div class="mb-2 break-inside-avoid">
-					<a href="/image/{photo.value.id}" class="block">
+					<a href="/image/{photo.value.id}" class="rounded-box block overflow-hidden">
 						<Image id={photo.value.id} containerStyles="w-full" />
 					</a>
 				</div>
