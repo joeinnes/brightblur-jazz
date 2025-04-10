@@ -14,7 +14,7 @@ export default defineConfig({
 		})
 	],
 	optimizeDeps: {
-		exclude: ['face-api.js']
+		include: ['face-api.js']
 	},
 	ssr: {
 		noExternal: ['face-api.js']
