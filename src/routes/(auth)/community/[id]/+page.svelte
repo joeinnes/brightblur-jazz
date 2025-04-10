@@ -96,10 +96,13 @@ const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
 			<div class="modal-action">
 				<form method="dialog">
 					<!-- if there is a button in form, it will close the modal -->
-					<button class="btn" onclick={() => {
-          
-          // @ts-ignore checked on line 94
-          community.current.name = prevName}}>Cancel</button>
+					<button
+						class="btn"
+						onclick={() => {
+							// @ts-ignore checked on line 94
+							community.current.name = prevName;
+						}}>Cancel</button
+					>
 					<button class="btn btn-primary">Save</button>
 				</form>
 			</div>

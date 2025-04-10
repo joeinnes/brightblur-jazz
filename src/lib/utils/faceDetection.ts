@@ -26,7 +26,7 @@ export async function processImageForFaces(canvas: Canvas): Promise<FaceData[]> 
 	const ctx = canvas.getContext('2d');
 	if (!ctx) throw new Error('Could not get canvas context');
 	// Detect faces
-	const faceapi = await import ('face-api.js');
+	const faceapi = await import('face-api.js');
 	const detections = await faceapi
 		.detectAllFaces(
 			canvas,

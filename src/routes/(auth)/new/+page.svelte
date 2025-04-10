@@ -62,7 +62,7 @@
 		preview: 'no image'
 	});
 
-let faceapi = $state();
+	let faceapi = $state();
 
 	let croppedBlob: Blob | undefined = $state();
 
@@ -200,7 +200,7 @@ let faceapi = $state();
 
 	// Initialize face detection on component mount
 	onMount(async () => {
-faceapi = await import ('face-api.js');
+		faceapi = await import('face-api.js');
 		faceapi.nets.tinyFaceDetector
 			.loadFromUri('/models')
 			.then(() => {

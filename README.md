@@ -8,7 +8,7 @@ BrightBlur is a photo-sharing app designed for communities. It allows users to u
 - **Profile Access Control**: Admins can invite users and manage access permissions.
 - **Community Engagement**: Participate in communities rather than a global stream.
 - **Privacy Protection**: Blurs faces for privacy and security.
-  
+
 ## License
 
 This project is NOT licensed. You may not use this project for any purpose.

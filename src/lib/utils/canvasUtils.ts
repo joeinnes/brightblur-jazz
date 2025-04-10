@@ -1,4 +1,3 @@
-import * as faceapi from 'face-api.js';
 import toast from '@natoune/svelte-daisyui-toast';
 import type { FaceData } from './faceDetection';
 import Pica from 'pica';
@@ -57,21 +56,23 @@ export async function blobToCanvas(blob: Blob | undefined): Promise<HTMLCanvasEl
 		try {
 			const canvas = document.createElement('canvas');
 			if (!blob) return canvas; // Garbage In, Garbage Out
-			faceapi
-				.bufferToImage(blob)
-				.then((img) => {
-					const displaySize = { width: img.width, height: img.height };
-					// Setup original canvas
-					canvas.width = displaySize.width;
-					canvas.height = displaySize.height;
-					const originalCtx = canvas.getContext('2d');
-					if (!originalCtx) throw new Error('Could not get original canvas context');
-					originalCtx.drawImage(img, 0, 0, displaySize.width, displaySize.height);
-					resolve(canvas);
-				})
-				.catch((e) => {
-					throw new Error(e);
-				});
+			import('face-api.js').then((faceapi) => {
+				faceapi
+					.bufferToImage(blob)
+					.then((img) => {
+						const displaySize = { width: img.width, height: img.height };
+						// Setup original canvas
+						canvas.width = displaySize.width;
+						canvas.height = displaySize.height;
+						const originalCtx = canvas.getContext('2d');
+						if (!originalCtx) throw new Error('Could not get original canvas context');
+						originalCtx.drawImage(img, 0, 0, displaySize.width, displaySize.height);
+						resolve(canvas);
+					})
+					.catch((e) => {
+						throw new Error(e);
+					});
+			});
 		} catch (e) {
 			reject(e);
 		}
