@@ -70,7 +70,10 @@
 	<div class="navbar-start">
 		<button
 			class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
-			onclick={() => window.history.back()}>&larr;</button
+			onclick={() => {
+				window.history.back();
+				window.scrollTo(0, 0);
+			}}>&larr;</button
 		>
 	</div>
 	<div class="navbar-center px-2">

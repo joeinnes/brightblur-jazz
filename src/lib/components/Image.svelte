@@ -105,7 +105,13 @@
 		bind:clientWidth={width}
 		use:intersect={options}
 	>
-		<img {src} alt="Background" class="absolute -z-10 w-full" onload={handleImageLoad} />
+		<img
+			{src}
+			alt="Background"
+			class="absolute -z-10 w-full"
+			class:blur-lg={res === 'placeholder'}
+			onload={handleImageLoad}
+		/>
 		{#each fsMap || [] as fs}
 			<div
 				class="border-primary absolute z-0 transition-opacity duration-200 {ready
