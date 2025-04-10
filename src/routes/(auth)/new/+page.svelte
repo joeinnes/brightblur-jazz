@@ -4,7 +4,6 @@
 	import { Group, type ID, Account } from 'jazz-tools';
 	import { useCoState, useAccount } from 'jazz-svelte';
 	import { createImage } from 'jazz-browser-media-images';
-	import * as faceapi from 'face-api.js';
 	import toast from '@natoune/svelte-daisyui-toast';
 
 	import CircleX from 'lucide-svelte/icons/circle-x';
@@ -62,6 +61,8 @@
 		faceapi: false,
 		preview: 'no image'
 	});
+
+let faceapi = $state();
 
 	let croppedBlob: Blob | undefined = $state();
 
@@ -198,7 +199,8 @@
 	};
 
 	// Initialize face detection on component mount
-	onMount(() => {
+	onMount(async () => {
+faceapi = await import ('face-api.js');
 		faceapi.nets.tinyFaceDetector
 			.loadFromUri('/models')
 			.then(() => {
