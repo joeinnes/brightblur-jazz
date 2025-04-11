@@ -67,15 +67,7 @@
 				</hgroup>
 			</a>
 
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div
-				class="dropdown dropdown-top dropdown-end ms-auto"
-				onclick={(e) => {
-					e.stopPropagation();
-					e.preventDefault();
-				}}
-			>
+			<div class="dropdown dropdown-top dropdown-end ms-auto">
 				<div role="button" tabindex="0" class="btn btn-square btn-outline btn-sm ms-auto">
 					<MingcuteSettings3Line size={1.7} />
 				</div>

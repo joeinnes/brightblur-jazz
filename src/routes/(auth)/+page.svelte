@@ -30,9 +30,7 @@
 	>
 	<div class="grid gap-4">
 		{#each photoArray as photo, i (photo?.value?.id || i)}
-			<a href="/image/{photo?.value?.id}">
-				<RenderImage {photo} />
-			</a>
+			<RenderImage {photo} />
 		{:else}
 			<div class="p-4">
 				<p class="pb-2">It's a bit quiet round here.</p>
