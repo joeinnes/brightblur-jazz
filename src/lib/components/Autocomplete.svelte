@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { Group, type ID } from 'jazz-tools';
 	import { BrightBlurProfile } from '$lib/schema';
-	import UserPlus from 'lucide-svelte/icons/user-plus';
 	import { imageDataToFile } from '$lib/utils/imageData.svelte';
-	import Avatar from './Avatar.svelte';
+	import MingcuteUserAdd2Line from '../../icons/MingcuteUserAdd2Line.svelte';
 	let {
 		selectedItem = $bindable(),
 		placeholder = '',
@@ -83,7 +82,7 @@
 						e.preventDefault();
 						newPersonName = value;
 						addPersonModal?.showModal();
-					}}><UserPlus />Add {value}</button
+					}}><MingcuteUserAdd2Line size={1.5} />Add {value}</button
 				>
 			</li>
 		{:else}

@@ -5,8 +5,8 @@
 
 	import { BrightBlurAccount, BrightBlurProfile, Community, GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
-	import UserPlus from 'lucide-svelte/icons/user-plus';
 	import { extractAllPeople } from '$lib/utils/profileUtils';
+	import MingcuteUserAdd2Line from '../../icons/MingcuteUserAdd2Line.svelte';
 
 	// Props
 	let {
@@ -78,7 +78,8 @@
 </script>
 
 <button class="btn btn-primary" onclick={openModal}>
-	<UserPlus size={18} />
+	<MingcuteUserAdd2Line size={1.5} />
+
 	{buttonText}
 </button>
 

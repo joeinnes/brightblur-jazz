@@ -3,7 +3,7 @@
 	import RenderImage from '$lib/components/RenderImage.svelte';
 	import { Photo } from '$lib/schema';
 	import { useAccount, useCoState } from 'jazz-svelte';
-	import { Group, type ID } from 'jazz-tools';
+	import { type ID } from 'jazz-tools';
 	const photoId = $derived(page.params.id) as ID<Photo> | undefined;
 	const photo = $derived(useCoState(Photo, photoId, {}));
 	const meta = $derived(photo.current?._edits.image);
@@ -27,8 +27,9 @@
 				me?.root.myCommunities?.find((community) => community?._owner.id === parentGroup.id)
 			)
 	);
-	import User from 'lucide-svelte/icons/user';
 	import { getUserHue } from '$lib/utils/userUtils';
+	import NavBar from '$lib/components/NavBar.svelte';
+	import MingcuteUser3Line from '../../../../icons/MingcuteUser3Line.svelte';
 	let sortedFaceSlices = $derived(
 		photo?.current?.faceSlices?.toSorted((a, b) => {
 			if (!a?.person?.name) return 1;
@@ -38,32 +39,21 @@
 	);
 </script>
 
-<div class="navbar bg-base-100 sticky top-0 z-50 mb-2 px-4">
-	<div class="navbar-start">
-		<button
-			class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
-			onclick={() => {
-				window.history.back();
-				window.scrollTo(0, 0);
-			}}>&larr;</button
-		>
-	</div>
-	<div class="navbar-center"><h3 class="text-lg font-bold">View Photo</h3></div>
-	<div class="navbar-end"></div>
-</div>
-<main class="container mx-auto mb-24 max-w-xl flex-1 px-4">
+<NavBar><h3 class="text-lg font-bold">View Photo</h3></NavBar>
+
+<main class="container mx-auto max-w-xl flex-1 px-4">
 	<RenderImage photo={photoProp} />
 
-	<div class="flex gap-1 px-2">
+	<div class="flex gap-1 py-2">
 		{#each sortedFaceSlices as slice}
 			{#if slice?.person?.name}
 				{@const hue = getUserHue(slice.person.id)}
 				<a href="/profile/{slice.person.id}">
 					<div
-						class="badge badge-sm border-0"
-						style="background-color: oklch(49.8% 0.0763 {hue}); color: oklch(90% 0.21 {hue});"
+						class="badge border-0"
+						style="background-color: oklch(0.87 0.2064 {hue}); color: oklch(5% 0.21 {hue});"
 					>
-						<User class="mr-0.5 w-[1em]" />{slice.person.name}
+						<MingcuteUser3Line size={1} class="mr-0.5" />{slice.person.name}
 					</div>
 				</a>
 			{/if}

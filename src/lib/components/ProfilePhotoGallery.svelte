@@ -18,7 +18,7 @@
 	<div class="columns-2 gap-2 md:columns-3">
 		{#each photos as photo, i (photo?.value?.id || i)}
 			{#if photo?.value?.id}
-				<div class="mb-2 break-inside-avoid">
+				<div class="isolate mb-2 break-inside-avoid">
 					<a href="/image/{photo.value.id}" class="rounded-box block overflow-hidden">
 						<Image id={photo.value.id} containerStyles="w-full" />
 					</a>
@@ -27,5 +27,5 @@
 		{/each}
 	</div>
 {:else}
-	<div class="col-span-3">{emptyHint}</div>
+	<div class="col-span-2 p-4 md:col-span-2">{emptyHint}</div>
 {/if}

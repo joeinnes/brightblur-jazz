@@ -21,6 +21,12 @@
 	import ProfilePhotoGallery from '$lib/components/ProfilePhotoGallery.svelte';
 	import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
 	import CommunitiesList from '$lib/components/CommunitiesList.svelte';
+	import NavBar from '$lib/components/NavBar.svelte';
+	import MingcuteGrid2Line from '../../../../icons/MingcuteGrid2Line.svelte';
+	import MingcuteUserLockLine from '../../../../icons/MingcuteUserLockLine.svelte';
+	import MingcuteUserVisibleLine from '../../../../icons/MingcuteUserVisibleLine.svelte';
+	import MingcuteGroup3Line from '../../../../icons/MingcuteGroup3Line.svelte';
+	import MingcuteUser4Line from '../../../../icons/MingcuteUser4Line.svelte';
 
 	const { me } = $derived(
 		useAccount({
@@ -66,31 +72,19 @@
 	let prevName = $state('');
 </script>
 
-<div class="navbar bg-base-100 sticky top-0 z-50 mb-2 gap-2 px-4">
-	<div class="navbar-start">
+<NavBar>
+	{#if canAdminProfile && profile.current?.name}
 		<button
-			class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
+			class="btn btn-ghost justify-start px-2 text-lg font-bold"
 			onclick={() => {
-				window.history.back();
-				window.scrollTo(0, 0);
-			}}>&larr;</button
+				prevName = profile.current?.name || '';
+				profileNameModal?.showModal();
+			}}
 		>
-	</div>
-	<div class="navbar-center px-2">
-		{#if canAdminProfile && profile.current?.name}
-			<button
-				class="btn btn-ghost justify-start px-2 text-lg font-bold"
-				onclick={() => {
-					prevName = profile.current?.name || '';
-					profileNameModal?.showModal();
-				}}
-			>
-				{profile.current?.name}
-			</button>
-		{:else}<h3 class="text-lg font-bold">{profile.current?.name}</h3>{/if}
-	</div>
-	<div class="navbar-end"></div>
-</div>
+			{profile.current?.name}
+		</button>
+	{:else}<h3 class="text-lg font-bold">{profile.current?.name}</h3>{/if}
+</NavBar>
 
 <dialog class="modal" bind:this={profileNameModal}>
 	<div class="modal-box">
@@ -118,9 +112,12 @@
 	{#if profile.current}
 		<ProfileHeader {profile} {isOwnProfile} {canAdminProfile} />
 
-		<div class="tabs tabs-border">
+		<div class="tabs tabs-box mt-4 justify-between">
 			<!-- Photo Gallery - Uploads Tab -->
-			<input type="radio" name="profile_tabs" class="tab" aria-label="Uploads" checked={true} />
+			<label class="tab">
+				<MingcuteGrid2Line size={2} />
+				<input type="radio" name="profile_tabs" checked={true} />
+			</label>
 			<div class="tab-content">
 				<ProfilePhotoGallery
 					photos={uploadedPhotos}
@@ -131,12 +128,10 @@
 			</div>
 
 			<!-- Photo Gallery - Photos Of User Tab -->
-			<input
-				type="radio"
-				name="profile_tabs"
-				class="tab"
-				aria-label="Photos of {profile.current?.name || 'user'}"
-			/>
+			<label class="tab">
+				<MingcuteUser4Line size={2} />
+				<input type="radio" name="profile_tabs" />
+			</label>
 			<div class="tab-content">
 				<ProfilePhotoGallery
 					photos={photosOfProfile}
@@ -148,18 +143,34 @@
 
 			<!-- Access Management Tab -->
 			{#if isOwnProfile || canAdminProfile}
-				<input type="radio" name="profile_tabs" class="tab" aria-label="Manage Access" />
+				<label class="tab">
+					<MingcuteUserLockLine size={2} />
+					<input type="radio" name="profile_tabs" />
+				</label>
 				<ProfileAccessManager {profile} />
 			{/if}
 
 			<!-- Managed Users Tab -->
 			{#if isOwnProfile && me}
-				<input type="radio" name="profile_tabs" class="tab" aria-label="My Managed Users" />
+				<label class="tab"
+					><MingcuteUserVisibleLine size={2} />
+					<input type="radio" name="profile_tabs" />
+				</label>
 				<ManagedUsersList managedPeople={myManagedPeople} />
 
-				<input type="radio" name="profile_tabs" class="tab" aria-label="Communities" />
+				<label class="tab">
+					<MingcuteGroup3Line size={2} />
+					<input type="radio" name="profile_tabs" />
+				</label>
 				<CommunitiesList communities={me.root?.myCommunities} />
 			{/if}
 		</div>
 	{/if}
 </div>
+
+<style lang="postcss">
+	@reference "tailwindcss";
+	.tab {
+		@apply mb-2;
+	}
+</style>

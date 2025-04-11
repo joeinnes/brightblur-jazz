@@ -5,10 +5,7 @@
 	import { useCoState, useAccount } from 'jazz-svelte';
 	import { createImage } from 'jazz-browser-media-images';
 	import toast from '@natoune/svelte-daisyui-toast';
-
-	import CircleX from 'lucide-svelte/icons/circle-x';
-	import ChevronDown from 'lucide-svelte/icons/chevron-down';
-
+	import { Tween } from 'svelte/motion';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
 	import { Photo, FaceSlice, ListOfFaceSlices, GlobalData, Community } from '$lib/schema';
@@ -21,6 +18,10 @@
 	import ImageUpload from '$lib/components/ImageUpload.svelte';
 	import PreviewCanvas from '$lib/components/PreviewCanvas.svelte';
 	import pica from 'pica';
+	import NavBar from '$lib/components/NavBar.svelte';
+	import MingcuteCloseCircleLine from '../../../icons/MingcuteCloseCircleLine.svelte';
+	import MingcuteDownLine from '../../../icons/MingcuteDownLine.svelte';
+	import MingcuteCheckLine from '../../../icons/MingcuteCheckLine.svelte';
 
 	let { me } = $derived(useAccount({ resolve: { root: { myCommunities: true } } }));
 	// Get global data for people and photos
@@ -61,8 +62,6 @@
 		faceapi: false,
 		preview: 'no image'
 	});
-
-	let faceapi = $state();
 
 	let croppedBlob: Blob | undefined = $state();
 
@@ -184,10 +183,7 @@
 
 			// Add photo to global data (feed)
 			globalData.current?.photos.push(photo);
-			toast.success('Photo uploaded successfully!', {
-				duration: 3000
-			});
-			await goto('/');
+			success = true;
 		} catch (e: unknown) {
 			console.error('Error submitting photo:', e);
 			if (e instanceof Error) {
@@ -200,7 +196,7 @@
 
 	// Initialize face detection on component mount
 	onMount(async () => {
-		faceapi = await import('face-api.js');
+		const faceapi = await import('face-api.js');
 		faceapi.nets.tinyFaceDetector
 			.loadFromUri('/models')
 			.then(() => {
@@ -214,169 +210,191 @@
 				ready.faceapi = false;
 			});
 	});
+	let success = $state(false);
+	let progressToNavigate = new Tween(0, {
+		duration: 5000
+	});
+	$effect(() => {
+		if (success) {
+			progressToNavigate.set(360).then(() => {
+				setTimeout(() => goto('/'), 200);
+			});
+		}
+	});
 </script>
 
-<div class="navbar bg-base-100 sticky top-0 z-50 mb-2 px-4">
-	<div class="navbar-start">
+<NavBar><h3 class="text-lg font-bold">New Photo</h3></NavBar>
+
+{#if success}
+	<div class="flex-1 pt-20">
+		<div class="flex flex-col items-center justify-center text-center">
+			<div
+				class="relative mb-8 rounded-full p-4 text-center"
+				style="background-image: conic-gradient(var(--color-success) {progressToNavigate.current}deg, var(--color-base-200) {progressToNavigate.current}deg);"
+			>
+				<div class="rounded-full bg-white">
+					<div
+						class="bg-success/50 text-base-100 mx-auto flex flex-col items-center justify-center rounded-full p-4 text-center"
+					>
+						<MingcuteCheckLine class="size-[40vw]" />
+					</div>
+				</div>
+			</div>
+			<div class="max-w-md">
+				<h1 class="text-4xl font-bold">Photo shared!</h1>
+				<p class="py-6 text-xl">Only people with approval will see unblurred faces</p>
+				<a href="/" class="btn btn-primary btn-xl">Done</a>
+			</div>
+		</div>
+	</div>
+{:else}
+	<form onsubmit={submitHandler} class="container mx-auto max-w-xl flex-1 px-4" id="form">
+		{#if ready.faceapi}
+			<div class:hidden={ready.preview === 'ready'}>
+				<ImageUpload readyState={ready.preview} bind:croppedBlob />
+			</div>
+			<div class:hidden={ready.preview !== 'ready'} class="overflow-hidden rounded-2xl">
+				<PreviewCanvas
+					bind:canvas={canvases.dom}
+					bind:faceList
+					originalCanvas={canvases.original}
+					readyState={ready.preview}
+				/>
+			</div>
+
+			<div>
+				{#if ready.preview === 'ready'}
+					<small class="opacity-60">Draw on the picture to add an area to blur</small>
+
+					<h3 class="text-lg font-semibold">Faces detected</h3>
+					<ul class="list p-0">
+						{#each faceList as face, i}
+							{@const imgSize = 'size-20'}
+							<li class="list-row items-center px-0 py-2 first-of-type:pt-0">
+								<div class="select-none">
+									{#await imageDataToFile(face.originalImageData)}
+										<img class="{imgSize} rounded-box skeleton" alt="loading..." />
+									{:then imageFile}
+										{@const url = URL.createObjectURL(imageFile)}
+										<img
+											class="{imgSize} rounded-box object-cover"
+											src={url}
+											alt="Face {i + 1}"
+											onload={() => URL.revokeObjectURL(url)}
+										/>{/await}
+								</div>
+								<div class="join">
+									{#if listOfPeople && listOfPeople.length > 0}
+										<Autocomplete
+											bind:selectedItem={faceList[i].person.id}
+											imageData={face.originalImageData}
+											{listOfPeople}
+											people={globalData.current?.people}
+											items={listOfPeople
+												.filter((profile) => !!profile.value)
+												.map((profile) => ({
+													value: profile.value.id,
+													label: profile.value.name
+												}))}
+											placeholder="Who is this?"
+										/>
+									{/if}
+
+									<button
+										type="button"
+										class="btn join-item"
+										onclick={async () => {
+											if (!canvases.original || !canvases.dom) return null;
+											faceList.splice(i, 1);
+											await renderBlurredCanvas(canvases.original, canvases.dom, faceList);
+											drawFaceRectangles(canvases.dom, faceList);
+										}}
+									>
+										<MingcuteCloseCircleLine size={2} />
+									</button>
+								</div>
+							</li>
+						{:else}<li class="list-row">
+								No faces detected. You can draw faces on the picture to add them.
+							</li>
+						{/each}
+					</ul>
+
+					<div>
+						<h3 class="text-lg font-semibold">Communities</h3>
+						<details bind:open={isOpen}>
+							<summary class="input bg-base-200 m-1 w-full"
+								>{#each selectedCommunities as selected}<button
+										class="badge badge-primary cursor-pointer"
+										onclick={(e) => {
+											e.preventDefault();
+											selectedCommunities = selectedCommunities.filter(
+												(selectedCommunity) => selectedCommunity !== selected
+											);
+										}}
+									>
+										{selected?.name} <MingcuteCloseCircleLine class="size-4" /></button
+									>{:else}<span class="badge badge-primary">Public</span>{/each}<MingcuteDownLine
+									class="ms-auto size-4 transform transition-transform {isOpen ? 'rotate-180' : ''}"
+								/></summary
+							>
+							<ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+								<li>
+									<!-- I know about the warnings. I want to use a label element to control the input to increase the click target size. I probably want to fix this in future to do something a bit more accessible. -->
+									<!-- svelte-ignore a11y_click_events_have_key_events -->
+									<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+									<label
+										onclick={(e) => {
+											e.preventDefault();
+											if (selectedCommunities && selectedCommunities.length === 0) return;
+											selectedCommunities = [];
+										}}
+										><input
+											type="checkbox"
+											class="checkbox checkbox-xs"
+											checked={!selectedCommunities || selectedCommunities?.length === 0
+												? true
+												: false}
+										/>Public</label
+									>
+								</li>
+								{#each me?.root?.myCommunities || [] as communityPromise}
+									{#if communityPromise}
+										{#await communityPromise}
+											<li>Loading...</li>
+										{:then community}
+											{#if community}
+												<li>
+													<label
+														><input
+															type="checkbox"
+															class="checkbox checkbox-xs"
+															bind:group={selectedCommunities}
+															value={community}
+														/>{community.name}</label
+													>
+												</li>
+											{/if}
+										{/await}
+									{/if}
+								{/each}
+							</ul>
+						</details>
+					</div>
+					<p class="text-sm opacity-60">
+						Select the communities you want to share this photo with. This doesn't affect which
+						faces are blurred.
+					</p>
+				{/if}
+			</div>
+		{/if}
+	</form>
+	<div class="p-4">
 		<button
-			class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
-			onclick={() => {
-				window.history.back();
-				window.scrollTo(0, 0);
-			}}>&larr;</button
+			class="btn btn-primary btn-block"
+			type="submit"
+			disabled={submitting || ready.preview !== 'ready'}
+			form="form">Share</button
 		>
 	</div>
-	<div class="navbar-center"><h3 class="text-lg font-bold">New Photo</h3></div>
-	<div class="navbar-end"></div>
-</div>
-<form onsubmit={submitHandler} class="container mx-auto max-w-xl flex-1 px-4" id="form">
-	{#if ready.faceapi}
-		<!-- mb-24 is needed to ensure the dock doesn't cover the submit button -->
-
-		<div class:hidden={ready.preview === 'ready'}>
-			<ImageUpload readyState={ready.preview} bind:croppedBlob />
-		</div>
-		<div class:hidden={ready.preview !== 'ready'} class="overflow-hidden rounded-2xl">
-			<PreviewCanvas
-				bind:canvas={canvases.dom}
-				bind:faceList
-				originalCanvas={canvases.original}
-				readyState={ready.preview}
-			/>
-		</div>
-
-		<div>
-			{#if ready.preview === 'ready'}
-				<small class="opacity-60">Draw on the picture to add an area to blur</small>
-
-				<h3 class="text-lg font-semibold">Faces detected</h3>
-				<ul class="list p-0">
-					{#each faceList as face, i}
-						{@const imgSize = 'size-20'}
-						<li class="list-row items-center px-0 py-2 first-of-type:pt-0">
-							<div class="select-none">
-								{#await imageDataToFile(face.originalImageData)}
-									<img class="{imgSize} rounded-box skeleton" alt="loading..." />
-								{:then imageFile}
-									{@const url = URL.createObjectURL(imageFile)}
-									<img
-										class="{imgSize} rounded-box object-cover"
-										src={url}
-										alt="Face {i + 1}"
-										onload={() => URL.revokeObjectURL(url)}
-									/>{/await}
-							</div>
-							<div class="join">
-								{#if listOfPeople && listOfPeople.length > 0}
-									<Autocomplete
-										bind:selectedItem={faceList[i].person.id}
-										imageData={face.originalImageData}
-										{listOfPeople}
-										people={globalData.current?.people}
-										items={listOfPeople
-											.filter((profile) => !!profile.value)
-											.map((profile) => ({
-												value: profile.value.id,
-												label: profile.value.name
-											}))}
-										placeholder="Who is this?"
-									/>
-								{/if}
-
-								<button
-									type="button"
-									class="btn join-item"
-									onclick={async () => {
-										if (!canvases.original || !canvases.dom) return null;
-										faceList.splice(i, 1);
-										await renderBlurredCanvas(canvases.original, canvases.dom, faceList);
-										drawFaceRectangles(canvases.dom, faceList);
-									}}
-								>
-									<CircleX />
-								</button>
-							</div>
-						</li>
-					{:else}<li class="list-row">
-							No faces detected. You can draw faces on the picture to add them.
-						</li>
-					{/each}
-				</ul>
-
-				<div>
-					<h3 class="text-lg font-semibold">Communities</h3>
-					<details bind:open={isOpen}>
-						<summary class="input bg-base-200 m-1 w-full"
-							>{#each selectedCommunities as selected}<button
-									class="badge badge-primary"
-									onclick={(e) => {
-										e.preventDefault();
-										selectedCommunities = selectedCommunities.filter(
-											(selectedCommunity) => selectedCommunity !== selected
-										);
-									}}
-								>
-									{selected?.name} <CircleX class="size-4" /></button
-								>{:else}<span class="badge badge-primary">Public</span>{/each}<ChevronDown
-								class="ms-auto size-4 transform transition-transform {isOpen ? 'rotate-180' : ''}"
-							/></summary
-						>
-						<ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-							<li>
-								<!-- I know about the warnings. I want to use a label element to control the input to increase the click target size. I probably want to fix this in future to do something a bit more accessible. -->
-								<!-- svelte-ignore a11y_click_events_have_key_events -->
-								<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-								<label
-									onclick={(e) => {
-										e.preventDefault();
-										if (selectedCommunities && selectedCommunities.length === 0) return;
-										selectedCommunities = [];
-									}}
-									><input
-										type="checkbox"
-										class="checkbox checkbox-xs"
-										checked={!selectedCommunities || selectedCommunities?.length === 0
-											? true
-											: false}
-									/>Public</label
-								>
-							</li>
-							{#each me?.root?.myCommunities || [] as communityPromise}
-								{#if communityPromise}
-									{#await communityPromise}
-										<li>Loading...</li>
-									{:then community}
-										{#if community}
-											<li>
-												<label
-													><input
-														type="checkbox"
-														class="checkbox checkbox-xs"
-														bind:group={selectedCommunities}
-														value={community}
-													/>{community.name}</label
-												>
-											</li>
-										{/if}
-									{/await}
-								{/if}
-							{/each}
-						</ul>
-					</details>
-				</div>
-				<p class="text-sm opacity-60">
-					Select the communities you want to share this photo with. This doesn't affect which faces
-					are blurred.
-				</p>
-			{/if}
-		</div>
-	{/if}
-</form>
-<div class="p-4">
-	<button
-		class="btn btn-primary btn-block"
-		type="submit"
-		disabled={submitting || ready.preview !== 'ready'}
-		form="form">Share</button
-	>
-</div>
+{/if}

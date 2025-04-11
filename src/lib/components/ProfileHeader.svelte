@@ -2,20 +2,17 @@
 	import { Group } from 'jazz-tools';
 
 	import Cropper from 'svelte-easy-crop';
-
-	import Camera from 'lucide-svelte/icons/camera';
-
 	import InviteViewerModal from '$lib/components/InviteViewerModal.svelte';
 	import Avatar from './Avatar.svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
 	import { createImage } from 'jazz-browser-media-images';
+	import MingcuteCamera2AiLine from '../../icons/MingcuteCamera2AiLine.svelte';
 
 	let avatarCropperModal: HTMLDialogElement | undefined = $state();
 
 	let { profile, isOwnProfile, canAdminProfile } = $props();
 
 	let avatarFile: FileList | undefined = $state();
-	let editName = $state(false);
 	let croppedAreaPixels = $state({
 		x: 0,
 		y: 0,
@@ -133,7 +130,7 @@
 					<div class=" absolute -right-1 -bottom-2">
 						<div class="btn btn-circle btn-xs text-base-content bg-base-200 p-1">
 							<!-- Use a div here, it's not actually an interactive element, it just triggers the hidden input because it's inside the label -->
-							<Camera />
+							<MingcuteCamera2AiLine size={1.5} />
 						</div>
 					</div>
 				{/if}

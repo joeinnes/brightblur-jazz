@@ -5,10 +5,10 @@
 
 	import { BrightBlurAccount, BrightBlurProfile } from '$lib/schema';
 	import { formatRole } from '$lib/utils/profileUtils';
-	import UserRoundMinus from 'lucide-svelte/icons/user-round-minus';
-	import ShieldOff from 'lucide-svelte/icons/shield-off';
-	import ShieldPlus from 'lucide-svelte/icons/shield-plus';
 	import Avatar from './Avatar.svelte';
+	import MingcuteUserRemove2Line from '../../icons/MingcuteUserRemove2Line.svelte';
+	import MingcuteUserSecurityRemoveLine from '../../icons/MingcuteUserSecurityRemoveLine.svelte';
+	import MingcuteUserSecurityLine from '../../icons/MingcuteUserSecurityLine.svelte';
 
 	let { profile } = $props();
 	let currentlyViewing = $derived(
@@ -75,16 +75,16 @@
 											throw new Error("Can't remove last admin");
 										}
 										try {
-											const account = await Account.load(member.account.id, {});
-											if (!account) throw new Error("Couldn't find account.");
-
-											await currentlyViewing.current?._owner?.castAs?.(Group).removeMember(account);
+											await currentlyViewing.current?._owner
+												?.castAs?.(Group)
+												.removeMember(member.account);
+											console.log(currentlyViewing.current?._owner?.castAs?.(Group)?.members);
 										} catch (e) {
 											console.error(`That didn't work`, e);
 										}
 									}}
 								>
-									<UserRoundMinus />
+									<MingcuteUserRemove2Line size={2} />
 								</button>
 								{#if member.role === 'admin'}
 									<button
@@ -107,7 +107,7 @@
 											await group.removeMember(member.account);
 										}}
 									>
-										<ShieldOff />
+										<MingcuteUserSecurityRemoveLine size={2} />
 									</button>
 								{:else}
 									<button
@@ -133,7 +133,7 @@
 											}
 										}}
 									>
-										<ShieldPlus />
+										<MingcuteUserSecurityLine size={2} />
 									</button>
 								{/if}
 							</div>

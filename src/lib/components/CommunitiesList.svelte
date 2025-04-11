@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Community, type ListOfCommunities } from '$lib/schema';
-	import Users from 'lucide-svelte/icons/users';
 	import Avatar from './Avatar.svelte';
 	import { Group } from 'jazz-tools';
 	import toast from '@natoune/svelte-daisyui-toast';
 	import { useAccount } from 'jazz-svelte';
+	import MingcuteGroup3Line from '../../icons/MingcuteGroup3Line.svelte';
 
 	let {
 		communities
@@ -12,21 +12,10 @@
 		communities: ListOfCommunities | undefined | null;
 	} = $props();
 
-	let { me } = $derived(
-		useAccount({
-			resolve: {
-				root: {
-					myCommunities: true
-				}
-			}
-		})
-	);
-
 	let creationModal: HTMLDialogElement | undefined = $state();
 	let name = $state('');
 	let description = $state('');
 	const createCommunity = () => {
-		console.log('createCommunity');
 		const communityOwnerGroup = Group.create();
 		const community = Community.create(
 			{
@@ -63,8 +52,10 @@
 			<li class="list-row">You aren't a member of any communities.</li>
 		{/each}
 		<li class="list-row">
-			<button class="btn btn-primary" onclick={() => creationModal?.showModal()}
-				><Users />Create a Community</button
+			<button
+				class="btn btn-primary btn-block col-span-2"
+				onclick={() => creationModal?.showModal()}
+				><MingcuteGroup3Line size={1.5} />Create a Community</button
 			>
 		</li>
 	</ul>

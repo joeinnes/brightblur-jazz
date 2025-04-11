@@ -4,10 +4,10 @@
 
 	import { BrightBlurAccount, Community } from '$lib/schema';
 	import { formatRole } from '$lib/utils/profileUtils';
-	import UserRoundMinus from 'lucide-svelte/icons/user-round-minus';
-	import ShieldOff from 'lucide-svelte/icons/shield-off';
-	import ShieldPlus from 'lucide-svelte/icons/shield-plus';
 	import Avatar from './Avatar.svelte';
+	import MingcuteUserRemove2Line from '../../icons/MingcuteUserRemove2Line.svelte';
+	import MingcuteUserSecurityLine from '../../icons/MingcuteUserSecurityLine.svelte';
+	import MingcuteUserSecurityRemoveLine from '../../icons/MingcuteUserSecurityRemoveLine.svelte';
 
 	let {
 		community,
@@ -34,7 +34,7 @@
 	);
 </script>
 
-<div class="tab-content p-4">
+<div class="tab-content py-4">
 	{#if community && people}
 		<ul class="list bg-base-100 rounded-box shadow-md">
 			{#each people as member}
@@ -79,7 +79,7 @@
 												}
 											}}
 										>
-											<UserRoundMinus />
+											<MingcuteUserRemove2Line size={2} />
 										</button>
 										{#if member.role === 'admin'}
 											<button
@@ -101,7 +101,7 @@
 													await group.removeMember(member.account);
 												}}
 											>
-												<ShieldOff />
+												<MingcuteUserSecurityRemoveLine size={2} />
 											</button>
 										{:else}
 											<button
@@ -126,7 +126,7 @@
 													}
 												}}
 											>
-												<ShieldPlus />
+												<MingcuteUserSecurityLine size={2} />
 											</button>
 										{/if}
 									</div>

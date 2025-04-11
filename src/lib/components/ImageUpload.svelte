@@ -1,9 +1,9 @@
 <script lang="ts">
 	import toast from '@natoune/svelte-daisyui-toast';
 
-	import ImagePlus from 'lucide-svelte/icons/image-plus';
-	import LoadingSpinner from 'lucide-svelte/icons/loader-pinwheel';
 	import CropperModal from './CropperModal.svelte';
+	import MingcutePicLine from '../../icons/MingcutePicLine.svelte';
+	import MingcuteMomentLine from '../../icons/MingcuteMomentLine.svelte';
 
 	let { readyState, croppedBlob = $bindable() } = $props();
 	let imageAspect: number | undefined = $state();
@@ -50,9 +50,9 @@
 			>
 				<div class={(readyState === 'working' && 'animate-spin') || ''}>
 					{#if readyState === 'working'}
-						<LoadingSpinner class="h-[25dvw] w-[25dvw]" />
+						<MingcuteMomentLine class="h-[25dvw] w-[25dvw]" />
 					{:else}
-						<ImagePlus class="h-[25dvw] w-[25dvw]" />
+						<MingcutePicLine class="h-[25dvw] w-[25dvw]" />
 					{/if}
 				</div>
 			</div>

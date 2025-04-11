@@ -22,6 +22,7 @@
 	import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
 	import CommunityHeader from '$lib/components/CommunityHeader.svelte';
 	import CommunityAccessManager from '$lib/components/CommunityAccessManager.svelte';
+	import NavBar from '$lib/components/NavBar.svelte';
 
 	const { me } = $derived(
 		useAccount({
@@ -66,31 +67,19 @@ const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
 	let prevName = $state('');
 </script>
 
-<div class="navbar bg-base-100 sticky top-0 z-50 mb-2 gap-2 px-4">
-	<div class="navbar-start">
+<NavBar>
+	{#if canAdminCommunity && community.current?.name !== undefined}
 		<button
-			class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
+			class="btn btn-ghost justify-start px-2 text-lg font-bold"
 			onclick={() => {
-				window.history.back();
-				window.scrollTo(0, 0);
-			}}>&larr;</button
+				prevName = community.current?.name || '';
+				communityNameModal?.showModal();
+			}}
 		>
-	</div>
-	<div class="navbar-center px-2">
-		{#if canAdminCommunity && community.current?.name !== undefined}
-			<button
-				class="btn btn-ghost justify-start px-2 text-lg font-bold"
-				onclick={() => {
-					prevName = community.current?.name || '';
-					communityNameModal?.showModal();
-				}}
-			>
-				{community.current?.name}
-			</button>
-		{:else}<h3 class="text-lg font-bold">{community.current?.name}</h3>{/if}
-	</div>
-	<div class="navbar-end"></div>
-</div>
+			{community.current?.name}
+		</button>
+	{:else}<h3 class="text-lg font-bold">{community.current?.name}</h3>{/if}
+</NavBar>
 <dialog class="modal" bind:this={communityNameModal}>
 	<div class="modal-box">
 		<h3 class="mb-2 text-lg font-bold">Community name</h3>
@@ -112,7 +101,7 @@ const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
 		{/if}
 	</div>
 </dialog>
-<main class="container mx-auto mb-24 max-w-xl flex-1 px-4">
+<main class="container mx-auto max-w-xl flex-1 px-4">
 	{#if community.current}
 		<CommunityHeader {community} {canAdminCommunity} />
 		<div class="tabs tabs-border">

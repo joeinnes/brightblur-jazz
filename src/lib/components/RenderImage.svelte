@@ -2,11 +2,11 @@
 	import { Group } from 'jazz-tools';
 	import { useAccount, useCoState } from 'jazz-svelte';
 	import toast from '@natoune/svelte-daisyui-toast';
-	import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
 	import Image from './Image.svelte';
 	import Avatar from './Avatar.svelte';
 	import { BrightBlurAccount, Photo } from '$lib/schema';
 	import { renderCanvas } from '$lib/utils/imageData.svelte';
+	import MingcuteSettings3Line from '../../icons/MingcuteSettings3Line.svelte';
 	const { me } = $derived(useAccount());
 	const { photo: PhotoProp } = $props();
 	let photoId = $derived(PhotoProp?.value?.id);
@@ -39,30 +39,49 @@
 {#if photo && photographer}
 	<div class="relative w-full overflow-hidden rounded-2xl">
 		<div
-			class="text-base-100 from-primary/90 absolute bottom-0 z-30 flex w-full items-center gap-2 bg-linear-to-t to-transparent p-2 pt-6"
+			class="text-base-100 absolute bottom-0 z-30 flex w-full items-center gap-2 bg-linear-to-t from-[oklch(38%_0.16_295)]/90 to-transparent p-2"
 		>
-			<a href="/profile/{photographer?.current?.profile?.id}">
+			<a
+				href="/profile/{photographer?.current?.profile?.id}"
+				class="border-base-100 rounded-full border"
+			>
 				<Avatar
 					image={photographer?.current?.profile?.avatar}
 					name={photographer?.current?.profile?.name}
 					userId={photographer?.current?.profile?.id}
 				/>
 			</a>
-			<hgroup>
-				<h3 class="mb-0 leading-2 font-semibold" style="text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);">
-					{madeAt.toLocaleDateString('en-GB', {
-						weekday: 'short',
-						year: 'numeric',
-						month: 'short',
-						day: 'numeric'
-					})}
-				</h3>
-			</hgroup>
-			<div class="dropdown dropdown-end ms-auto">
-				<div role="button" tabindex="0" class="btn btn-square btn-outline btn-sm btn- ms-auto">
-					<EllipsisVertical />
+			<a href="/image/{photo?.current?.id}">
+				<hgroup>
+					<h3
+						class="mb-0 leading-2 font-semibold"
+						style="text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);"
+					>
+						{madeAt.toLocaleDateString('en-GB', {
+							weekday: 'short',
+							year: 'numeric',
+							month: 'short',
+							day: 'numeric'
+						})}
+					</h3>
+				</hgroup>
+			</a>
+
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div
+				class="dropdown dropdown-top dropdown-end ms-auto"
+				onclick={(e) => {
+					e.stopPropagation();
+					e.preventDefault();
+				}}
+			>
+				<div role="button" tabindex="0" class="btn btn-square btn-outline btn-sm ms-auto">
+					<MingcuteSettings3Line size={1.7} />
 				</div>
-				<ul class="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-64 gap-1 p-2 shadow">
+				<ul
+					class="menu dropdown-content bg-base-100 text-base-content rounded-box z-1 mb-3 w-64 gap-1 p-2 shadow"
+				>
 					<li>
 						<button
 							onclick={async () => {
@@ -199,7 +218,5 @@
 				<Image id={photoId} />
 			{/if}
 		</figure>
-
-		<!--<button class="btn btn-error" onclick={() => photos.splice(i, 1)}>Delete</button>-->
 	</div>
 {/if}
