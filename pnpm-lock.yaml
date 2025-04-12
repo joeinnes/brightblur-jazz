@@ -59,18 +59,12 @@ importers:
       jazz-browser-media-images:
         specifier: ^0.13.5
         version: 0.13.5
-      jazz-nodejs:
-        specifier: ^0.13.5
-        version: 0.13.5
       jazz-svelte:
         specifier: ^0.13.5
         version: 0.13.5(svelte@5.26.2)
       jazz-tools:
         specifier: ^0.13.5
         version: 0.13.5
-      lucide-svelte:
-        specifier: ^0.487.0
-        version: 0.487.0(svelte@5.26.2)
       pica:
         specifier: ^9.0.1
         version: 9.0.1
@@ -1972,9 +1966,6 @@ packages:
   jazz-crypto-rs@0.0.7:
     resolution: {integrity: sha512-Pzs8Zu1zgKVURkBVvqqF1B2r78FaSZdwPbmeCWx0Nb3nibzPuB/kSKEO7LJsKnb3P5HO0v+lTIJ53mGC5H1urQ==}
 
-  jazz-nodejs@0.13.5:
-    resolution: {integrity: sha512-KcK7Wlov5iFxiiE27iv0MUpWn17kWq7eDnfxtrMBBCow6UfWdX19WUE7qH+y38rYOhCgOkae79iMrDcJpesCcA==}
-
   jazz-svelte@0.13.5:
     resolution: {integrity: sha512-Tec1vrVJBICTqb9IJDyffHYRj20qEiwTQQySX8hEIT+fifltF1tatnxh/EuomiFIkxbpUByPt/pGGU+34sBgAA==}
     peerDependencies:
@@ -2141,11 +2132,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  lucide-svelte@0.487.0:
-    resolution: {integrity: sha512-ags7npK5Nv6AI9LBpAbijpmHxcO9hOeP0/7yJ72++AOBWmwB0X7LqNQFJk1PBe4wM0UsgklWQdyRZyx8s9xyXg==}
-    peerDependencies:
-      svelte: ^3 || ^4 || ^5.0.0-next.42
 
   magic-string@0.25.9:
     resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
@@ -4980,12 +4966,6 @@ snapshots:
 
   jazz-crypto-rs@0.0.7: {}
 
-  jazz-nodejs@0.13.5:
-    dependencies:
-      cojson: 0.13.5
-      cojson-transport-ws: 0.13.5
-      jazz-tools: 0.13.5
-
   jazz-svelte@0.13.5(svelte@5.26.2):
     dependencies:
       cojson: 0.13.5
@@ -5112,10 +5092,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  lucide-svelte@0.487.0(svelte@5.26.2):
-    dependencies:
-      svelte: 5.26.2
 
   magic-string@0.25.9:
     dependencies:

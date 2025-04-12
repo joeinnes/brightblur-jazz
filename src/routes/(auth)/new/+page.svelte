@@ -288,14 +288,6 @@
 										<Autocomplete
 											bind:selectedItem={faceList[i].person.id}
 											imageData={face.originalImageData}
-											{listOfPeople}
-											people={globalData.current?.people}
-											items={listOfPeople
-												.filter((profile) => !!profile.value)
-												.map((profile) => ({
-													value: profile.value.id,
-													label: profile.value.name
-												}))}
 											placeholder="Who is this?"
 										/>
 									{/if}

@@ -32,17 +32,22 @@ export class BrightBlurAccount extends Account {
 		if (this.root === undefined) {
 			console.log('new root');
 			this.root = BrightBlurAccountRoot.create({
-				myCommunities: ListOfCommunities.create([])
+				myCommunities: ListOfCommunities.create([]),
+				myContacts: ListOfContacts.create([])
 			});
 		}
 		await this.ensureLoaded({
 			resolve: {
 				root: {
-					myCommunities: true
+					myCommunities: true,
+					myContacts: true
 				}
 			}
 		});
 		if (this.root === null) return;
+		if (!this.root.myContacts) {
+			this.root.myContacts = ListOfContacts.create([]);
+		}
 
 		if (!this.root.myCommunities || this.root.myCommunities.length === 0) {
 			this.root.myCommunities = ListOfCommunities.create([]);
@@ -62,7 +67,8 @@ export class BrightBlurAccount extends Account {
 }
 
 export class BrightBlurAccountRoot extends CoMap {
-	myCommunities = co.ref(ListOfCommunities); // This is here so the user can discover what communities they are a part of.
+	myCommunities = co.ref(ListOfCommunities);
+	myContacts = co.ref(ListOfContacts); // This is here so the user can discover what communities they are a part of.
 }
 
 export class Photo extends CoMap {
@@ -80,6 +86,7 @@ export class Community extends CoMap {
 }
 
 export class ListOfCommunities extends CoList.Of(co.ref(Community)) {}
+export class ListOfContacts extends CoList.Of(co.ref(BrightBlurProfile)) {}
 
 export class GlobalData extends CoMap {
 	photos = co.ref(FeedOfPhotos);
