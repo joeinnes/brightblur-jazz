@@ -51,12 +51,19 @@
 	let searchResults = $derived(
 		listOfPeople
 			.map((el) => el.value)
-			.filter((el) => el?.name.toLowerCase().includes(newPersonName.toLowerCase()))
+			.filter((el) => {
+				return el?.name.toLowerCase().includes(newPersonName.toLowerCase());
+			})
+			.sort((a, b) => a?.name?.localeCompare(b?.name))
 	);
 	let taggablePeople = $derived([me?.profile, ...(me?.root?.myContacts || [])]);
 	let filteredItems = $derived(
 		value.length > 2
-			? taggablePeople.filter((item) => item?.name.toLowerCase().includes(value.toLowerCase()))
+			? taggablePeople
+					.filter((item) => item?.name.toLowerCase().includes(value.toLowerCase()))
+					.sort((a, b) =>
+						a?.name === undefined || b?.name === undefined ? 0 : a?.name?.localeCompare(b?.name)
+					)
 			: []
 	);
 

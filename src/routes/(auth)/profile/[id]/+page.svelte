@@ -162,7 +162,9 @@
 					<MingcuteGroup3Line size={2} />
 					<input type="radio" name="profile_tabs" />
 				</label>
-				<CommunitiesList communities={me.root?.myCommunities} />
+				<div class="tab-content p-4">
+					<CommunitiesList communities={me.root?.myCommunities} />
+				</div>
 			{/if}
 		</div>
 	{/if}

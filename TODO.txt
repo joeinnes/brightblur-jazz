@@ -11,4 +11,17 @@
 - [ ] Request queues ('can I please look at X's profile?')
 - [X] One off shares
 - [X] Share sheet integration
-- [ ] Register global feeds on the server
+
+
+# What's blocking MVP?
+- [ ] Deleting CoValues
+  - MVP can launch with soft-delete/tombstoning.
+- [ ] Request architecture ('request to view' and 'approve/reject' workflow)
+  - I wonder if Inboxes can achieve this?
+- [ ] 'Claiming profiles' and inviting by email
+  - Requires a mechanism for discarding the default profile created on account creation.
+- [X] Lazy loading of images is broken. Needs fixing.
+
+# What's Next?
+- [ ] Remove co_z from all the IDs that are user visible
+- [ ] Single-use invitation links for particular images/FaceSlices
