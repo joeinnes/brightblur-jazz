@@ -4,6 +4,7 @@ export class BrightBlurProfile extends Profile {
 	name = co.string;
 	avatar = co.optional.ref(ImageDefinition);
 	user = co.optional.ref(Account);
+	isDeleted = co.optional.boolean;
 }
 
 export class BrightBlurAccount extends Account {
@@ -30,7 +31,6 @@ export class BrightBlurAccount extends Account {
 		}
 
 		if (this.root === undefined) {
-			console.log('new root');
 			this.root = BrightBlurAccountRoot.create({
 				myCommunities: ListOfCommunities.create([]),
 				myContacts: ListOfContacts.create([])
@@ -74,6 +74,7 @@ export class BrightBlurAccountRoot extends CoMap {
 export class Photo extends CoMap {
 	faceSlices = co.optional.ref(ListOfFaceSlices);
 	image = co.ref(ImageDefinition);
+	isDeleted = co.optional.boolean;
 }
 
 export class FeedOfPhotos extends CoFeed.Of(co.ref(Photo)) {}
@@ -83,10 +84,25 @@ export class Community extends CoMap {
 	name = co.string;
 	description = co.string;
 	image = co.optional.ref(ImageDefinition);
+	isDeleted = co.optional.boolean;
 }
 
-export class ListOfCommunities extends CoList.Of(co.ref(Community)) {}
-export class ListOfContacts extends CoList.Of(co.ref(BrightBlurProfile)) {}
+export class ListOfCommunities extends CoList.Of(co.ref(Community)) {
+	get sorted() {
+		return this.sort((a, b) => {
+			if (a?.name === undefined || b?.name === undefined) return 0;
+			return a.name.localeCompare(b.name);
+		});
+	}
+}
+export class ListOfContacts extends CoList.Of(co.ref(BrightBlurProfile)) {
+	get sorted() {
+		return this.sort((a, b) => {
+			if (a?.name === undefined || b?.name === undefined) return 0;
+			return a.name.localeCompare(b.name);
+		});
+	}
+}
 
 export class GlobalData extends CoMap {
 	photos = co.ref(FeedOfPhotos);
@@ -100,6 +116,7 @@ export class FaceSlice extends CoMap {
 	width = co.number;
 	person = co.optional.ref(BrightBlurProfile);
 	image = co.ref(ImageDefinition);
+	isDeleted = co.optional.boolean;
 }
 
 export class ListOfFaceSlices extends CoList.Of(co.ref(FaceSlice)) {}
