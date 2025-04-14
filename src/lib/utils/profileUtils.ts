@@ -5,7 +5,7 @@ import type { FaceSlice, BrightBlurProfile, Photo, FeedOfPhotos } from '$lib/sch
 import { GlobalData } from '$lib/schema';
 
 /**
- * Extracts all people from the global data feed
+ * Extracts all people from the global data feed and sorts them by name
  */
 export function extractAllPeople(globalData: { current?: GlobalData | null }) {
 	const people = [];

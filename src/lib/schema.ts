@@ -89,7 +89,7 @@ export class Community extends CoMap {
 
 export class ListOfCommunities extends CoList.Of(co.ref(Community)) {
 	get sorted() {
-		return this.sort((a, b) => {
+		return this.toSorted((a, b) => {
 			if (a?.name === undefined || b?.name === undefined) return 0;
 			return a.name.localeCompare(b.name);
 		});
@@ -97,7 +97,7 @@ export class ListOfCommunities extends CoList.Of(co.ref(Community)) {
 }
 export class ListOfContacts extends CoList.Of(co.ref(BrightBlurProfile)) {
 	get sorted() {
-		return this.sort((a, b) => {
+		return this.toSorted((a, b) => {
 			if (a?.name === undefined || b?.name === undefined) return 0;
 			return a.name.localeCompare(b.name);
 		});
@@ -119,4 +119,11 @@ export class FaceSlice extends CoMap {
 	isDeleted = co.optional.boolean;
 }
 
-export class ListOfFaceSlices extends CoList.Of(co.ref(FaceSlice)) {}
+export class ListOfFaceSlices extends CoList.Of(co.ref(FaceSlice)) {
+	get sorted() {
+		return this.toSorted((a, b) => {
+			if (a?.person?.name === undefined || b?.person?.name === undefined) return 0;
+			return a.person?.name.localeCompare(b.person.name);
+		});
+	}
+}

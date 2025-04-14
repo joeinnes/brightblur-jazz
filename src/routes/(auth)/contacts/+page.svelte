@@ -46,7 +46,7 @@
 	</label>
 	{#if me && me.root && me.root.myContacts}
 		<ul class="list bg-base-100 rounded-box shadow-md">
-			{#each (searchResults || me.root.myContacts).toSorted( (a, b) => a?.name?.localeCompare(b?.name) ) as contact, i}
+			{#each searchResults || me.root.myContacts.sorted as contact, i}
 				<li class="list-row">
 					<div>
 						<Avatar image={contact?.avatar} userId={contact?.id} name={contact?.name} />

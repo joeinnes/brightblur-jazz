@@ -30,13 +30,6 @@
 	import { getUserHue } from '$lib/utils/userUtils';
 	import NavBar from '$lib/components/NavBar.svelte';
 	import MingcuteUser3Line from '../../../../icons/MingcuteUser3Line.svelte';
-	let sortedFaceSlices = $derived(
-		photo?.current?.faceSlices?.toSorted((a, b) => {
-			if (!a?.person?.name) return 1;
-			if (!b?.person?.name) return -1;
-			return a?.person?.name.localeCompare(b?.person?.name || '');
-		}) || []
-	);
 </script>
 
 <NavBar><h3 class="text-lg font-bold">View Photo</h3></NavBar>
@@ -45,7 +38,7 @@
 	<RenderImage photo={photoProp} />
 
 	<div class="flex gap-1 py-2">
-		{#each sortedFaceSlices as slice}
+		{#each photo?.current?.faceSlices?.sorted || [] as slice}
 			{#if slice?.person?.name}
 				{@const hue = getUserHue(slice.person.id)}
 				<a href="/profile/{slice.person.id}">
