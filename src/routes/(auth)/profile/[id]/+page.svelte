@@ -112,7 +112,7 @@
 	{#if profile.current}
 		<ProfileHeader {profile} {isOwnProfile} {canAdminProfile} />
 
-		<div class="tabs tabs-box mt-4 justify-between">
+		<div class="tabs tabs-box mt-4 justify-around">
 			<!-- Photo Gallery - Uploads Tab -->
 			<label class="tab">
 				<MingcuteGrid2Line size={2} />

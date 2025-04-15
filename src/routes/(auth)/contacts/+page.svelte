@@ -51,10 +51,12 @@
 					<div>
 						<Avatar image={contact?.avatar} userId={contact?.id} name={contact?.name} />
 					</div>
-					<div>
-						<div>{contact?.name}</div>
-						<div class="text-xs font-semibold uppercase opacity-60"></div>
-					</div>
+					<a href="/profile/{contact.id}"
+						><div>
+							<div>{contact?.name}</div>
+							<div class="text-xs font-semibold uppercase opacity-60"></div>
+						</div>
+					</a>
 					{#if me.root.myContacts.some((el) => el?.id === contact?.id)}
 						<button
 							class="btn btn-square btn-ghost"

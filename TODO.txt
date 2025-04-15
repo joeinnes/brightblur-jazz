@@ -25,3 +25,4 @@
 # What's Next?
 - [ ] Remove co_z from all the IDs that are user visible
 - [ ] Single-use invitation links for particular images/FaceSlices
+- [ ] Face suggestions: store labelled face descriptors in each user's root. Don't share these descriptors (or do?) and suggest recognised faces automatically. https://medium.com/@neerajvageele451/build-your-own-face-recognition-web-app-using-face-api-js-7982cd4a8bdb
