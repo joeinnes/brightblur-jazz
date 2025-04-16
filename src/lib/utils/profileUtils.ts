@@ -13,6 +13,7 @@ export function extractAllPeople(globalData: { current?: GlobalData | null }) {
 		for (const [, entries] of Object.entries(globalData.current.people)) {
 			for (const entry of entries.all) {
 				if (entry.value) {
+					if (entry.value.isDeleted) continue;
 					people.push(entry);
 				}
 			}
@@ -32,6 +33,7 @@ export function filterManagedPeople(
 	return allPeople.filter(
 		(person) =>
 			person.value &&
+			!person.value.isDeleted &&
 			person?.value?.id !== myProfileId &&
 			person.value._owner &&
 			person.value._owner.members &&
@@ -49,6 +51,7 @@ export function extractSortedPhotos(photoFeed: FeedOfPhotos | undefined) {
 		? Object.values(photoFeed)
 				.flatMap((entries) => [...(entries?.all || [])])
 				.sort((a, b) => (b.madeAt > a.madeAt ? 1 : -1))
+				.filter((photo) => !photo?.value?.isDeleted)
 		: [];
 }
 

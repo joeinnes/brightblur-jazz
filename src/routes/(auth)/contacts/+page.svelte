@@ -44,16 +44,19 @@
 		><div>Search for contacts</div>
 		<input bind:value={searchTerm} class="input mb-4 w-full" />
 	</label>
-	{#if me && me.root && me.root.myContacts}
+	{#if me?.root?.myContacts}
 		<ul class="list bg-base-100 rounded-box shadow-md">
 			{#each searchResults || me.root.myContacts.sorted as contact, i}
 				<li class="list-row">
 					<div>
 						<Avatar image={contact?.avatar} userId={contact?.id} name={contact?.name} />
 					</div>
-					<a href="/profile/{contact.id}"
+					<a href="/profile/{contact?.id}"
 						><div>
-							<div>{contact?.name}</div>
+							<div>
+								{contact?.name}
+								{#if contact?.id === me?.profile?.id}(me){/if}
+							</div>
 							<div class="text-xs font-semibold uppercase opacity-60"></div>
 						</div>
 					</a>

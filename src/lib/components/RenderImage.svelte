@@ -188,6 +188,7 @@
 								class="btn btn-error btn-sm"
 								onclick={() => {
 									try {
+										if (photo.current) photo.current.isDeleted = true;
 										const owningGroup = photo.current?._owner.castAs(Group);
 										if (!owningGroup)
 											throw new Error("Couldn't work out who owns this. Maybe it was deleted?");

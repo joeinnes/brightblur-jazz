@@ -140,16 +140,33 @@
 			</label>
 		</div>
 
-		<div class="flex flex-grow flex-col gap-2">
+		<div class="flex flex-grow gap-2">
+			{#if !isOwnProfile}
+				{#if !me?.root?.myContacts?.some((el) => el?.id === profile?.current?.id)}<button
+						class="btn"
+						onclick={() => me?.root?.myContacts?.push(profile?.current)}>Add to Contacts</button
+					>{:else}<button
+						class="btn"
+						onclick={() => {
+							const idx = me?.root?.myContacts?.findIndex((el) => el?.id === profile?.current?.id);
+							if (!idx || idx < 0) return;
+							me?.root?.myContacts?.splice(idx, 1);
+						}}>Remove from Contacts</button
+					>{/if}
+			{/if}
 			{#if isOwnProfile || canAdminProfile}
-				<div>
-					<!-- Keep this div to avoid the modal trigger being block-width -->
-					<InviteViewerModal
-						item={profile.current}
-						onInviteSuccess={() => {}}
-						buttonText="Invite a viewer"
-					/>
-				</div>
+				<!-- Keep this div to avoid the modal trigger being block-width -->
+				<InviteViewerModal
+					item={profile.current}
+					onInviteSuccess={() => {}}
+					buttonText="Invite a viewer"
+				/>
+				<button
+					onclick={() => {
+						profile.current.isDeleted = true;
+					}}
+					class="btn btn-error">Delete</button
+				>
 			{:else}
 				<button
 					class="btn btn-primary"
