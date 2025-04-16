@@ -9,7 +9,7 @@
 	import toast from '@natoune/svelte-daisyui-toast';
 	let {
 		canvas = $bindable(),
-		readyState,
+		readyState = $bindable(),
 		faceList = $bindable(),
 		originalCanvas
 	}: {

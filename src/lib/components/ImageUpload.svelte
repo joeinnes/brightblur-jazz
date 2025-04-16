@@ -5,7 +5,7 @@
 	import MingcutePicLine from '../../icons/MingcutePicLine.svelte';
 	import MingcuteMomentLine from '../../icons/MingcuteMomentLine.svelte';
 
-	let { readyState, croppedBlob = $bindable() } = $props();
+	let { readyState = $bindable(), croppedBlob = $bindable() } = $props();
 	let imageAspect: number | undefined = $state();
 	let originalFile: File | undefined = $state();
 	let cropperModal: HTMLDialogElement | undefined = $state();

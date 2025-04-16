@@ -14,7 +14,9 @@ export class BrightBlurAccount extends Account {
 
 	// Create a default profile for every registered user
 	async migrate(this: BrightBlurAccount) {
-		if (!this.profile) {
+		// Removed: this.getRoleOf('everyone');
+
+		if (this.profile === null) {
 			const profileOwnershipGroup = Group.create();
 			profileOwnershipGroup.addMember('everyone', 'reader');
 			const newProfile = BrightBlurProfile.create(
@@ -33,25 +35,35 @@ export class BrightBlurAccount extends Account {
 		if (this.root === undefined) {
 			this.root = BrightBlurAccountRoot.create({
 				myCommunities: ListOfCommunities.create([]),
-				myContacts: ListOfContacts.create([])
+				myContacts: ListOfContacts.create([]),
+				myRecognisedFaces: RecognisedFaces.create({})
 			});
 		}
+
+		// Ensure the root and its lists are loaded before checking/modifying them
 		await this.ensureLoaded({
 			resolve: {
 				root: {
 					myCommunities: true,
-					myContacts: true
+					myContacts: true,
+					myRecognisedFaces: true
 				}
 			}
 		});
-		if (this.root === null) return;
-		if (!this.root.myContacts) {
+
+		// Defensive check: Ensure contacts list exists if somehow it's null after creation/loading
+		if (this.root?.myContacts === null) {
 			this.root.myContacts = ListOfContacts.create([]);
 		}
 
-		if (!this.root.myCommunities || this.root.myCommunities.length === 0) {
-			this.root.myCommunities = ListOfCommunities.create([]);
-			const communityGroup = Group.create();
+		// Defensive check: Ensure contacts list exists if somehow it's null after creation/loading
+		if (this.root?.myRecognisedFaces === null) {
+			this.root.myRecognisedFaces = RecognisedFaces.create({});
+		}
+		// Check if the communities list is empty and add the default community if needed
+		if (this.root?.myCommunities && this.root.myCommunities.length === 0) {
+			// No need to re-create the list, just add the community
+			const communityGroup = Group.create(); // Assuming default group permissions are sufficient
 			const community = Community.create(
 				{
 					name: 'My Community',
@@ -63,12 +75,21 @@ export class BrightBlurAccount extends Account {
 			);
 			this.root.myCommunities.push(community);
 		}
+
+		// Removed redundant ensureLoaded call
 	}
 }
 
+export class RecognisedFaces extends CoMap.Record(
+	co.json<{
+		descriptors: Array<number[]>;
+	}>()
+) {}
+
 export class BrightBlurAccountRoot extends CoMap {
 	myCommunities = co.ref(ListOfCommunities);
-	myContacts = co.ref(ListOfContacts); // This is here so the user can discover what communities they are a part of.
+	myContacts = co.ref(ListOfContacts);
+	myRecognisedFaces = co.ref(RecognisedFaces);
 }
 
 export class Photo extends CoMap {
@@ -126,4 +147,8 @@ export class ListOfFaceSlices extends CoList.Of(co.ref(FaceSlice)) {
 			return a.person?.name.localeCompare(b.person.name);
 		});
 	}
+}
+
+export class RequestToView extends CoMap {
+	state = co.literal('pending', 'accepted', 'rejected');
 }

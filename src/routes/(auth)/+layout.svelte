@@ -2,11 +2,11 @@
 	// @ts-ignore
 	// This is added by VitePWA, so TS can't find it
 	import { pwaInfo } from 'virtual:pwa-info';
-	import { GlobalData, FeedOfProfiles, FeedOfPhotos } from '$lib/schema';
+	import { GlobalData, FeedOfProfiles, FeedOfPhotos, RequestToView } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 	import { useAccount, useCoState } from 'jazz-svelte';
 	import type { ID } from 'jazz-tools';
-	import { Group } from 'jazz-tools';
+	import { Group, Inbox } from 'jazz-tools';
 
 	const { children } = $props();
 

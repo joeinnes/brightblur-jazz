@@ -9,7 +9,8 @@ export type FaceData = {
 	width: number;
 	height: number;
 	originalImageData: ImageData;
-	person: BrightBlurProfile | { id: null };
+	person: BrightBlurProfile | null;
+	descriptor?: Array<number>;
 };
 
 type CanvasSet = {
@@ -37,9 +38,9 @@ export async function processImageForFaces(canvas: Canvas): Promise<FaceData[]> 
 
 	// Extract face data
 	const faceList: FaceData[] = [];
-	console.log(detections);
 	detections.forEach((detection) => {
 		const box = detection.detection.box;
+		const descriptor = detection.descriptor;
 		if (canvas) {
 			// Convert to decimal coordinates (0-1 range)
 			const x = box.x / canvas.width;
@@ -52,9 +53,8 @@ export async function processImageForFaces(canvas: Canvas): Promise<FaceData[]> 
 				width,
 				height,
 				originalImageData: ctx.getImageData(box.x, box.y, box.width, box.height),
-				person: {
-					id: null
-				}
+				person: null,
+				descriptor: Array.from(descriptor)
 			};
 			if (faceData) faceList.push(faceData);
 		}

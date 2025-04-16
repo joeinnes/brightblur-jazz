@@ -150,7 +150,7 @@
 		</div>
 	</div>
 	<textarea
-		class="textarea"
+		class="textarea w-full"
 		onchange={(e) => {
 			community.current.description = e.currentTarget.value;
 		}}>{community.current.description}</textarea

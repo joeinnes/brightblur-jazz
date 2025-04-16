@@ -19,13 +19,15 @@
 
 	// Props
 	let {
-		selectedItem = $bindable(),
+		selectedPerson = null,
 		placeholder = '',
-		imageData
+		imageData,
+		updateSelectedPerson = () => {}
 	}: {
-		selectedItem: ID<BrightBlurProfile> | null;
+		selectedPerson: BrightBlurProfile | null;
 		placeholder: string;
 		imageData: ImageData;
+		updateSelectedPerson: (person: BrightBlurProfile | null) => void;
 	} = $props();
 
 	// Derived State
@@ -70,7 +72,7 @@
 	// Event Handlers
 	function selectOption(item: BrightBlurProfile) {
 		value = item.name;
-		selectedItem = item.id;
+		updateSelectedPerson(item);
 		(document.activeElement as HTMLElement).blur();
 	}
 
@@ -85,8 +87,15 @@
 		);
 		globalData?.current?.people?.push(newProfile);
 		me?.root.myContacts.push(newProfile);
-		selectedItem = newProfile.id;
+		updateSelectedPerson(newProfile);
 	}
+	$effect(() => {
+		if (selectedPerson) {
+			value = selectedPerson.name;
+		} else {
+			value = '';
+		}
+	});
 </script>
 
 <div class="dropdown w-full">
@@ -96,7 +105,7 @@
 		bind:value
 		tabindex="0"
 		onblur={() => {
-			if (!selectedItem) value = '';
+			if (!selectedPerson) value = '';
 		}}
 	/>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Group } from 'jazz-tools';
+	import { Account, Group, Inbox, InboxSender, type ID } from 'jazz-tools';
 
 	import Cropper from 'svelte-easy-crop';
 	import InviteViewerModal from '$lib/components/InviteViewerModal.svelte';
@@ -7,11 +7,14 @@
 	import toast from '@natoune/svelte-daisyui-toast';
 	import { createImage } from 'jazz-browser-media-images';
 	import MingcuteCamera2AiLine from '../../icons/MingcuteCamera2AiLine.svelte';
+	import { useAccount } from 'jazz-svelte';
+	import { RequestToView } from '$lib/schema';
 
 	let avatarCropperModal: HTMLDialogElement | undefined = $state();
 
 	let { profile, isOwnProfile, canAdminProfile } = $props();
 
+	let { me } = $derived(useAccount());
 	let avatarFile: FileList | undefined = $state();
 	let croppedAreaPixels = $state({
 		x: 0,
@@ -147,6 +150,38 @@
 						buttonText="Invite a viewer"
 					/>
 				</div>
+			{:else}
+				<button
+					class="btn btn-primary"
+					onclick={async () => {
+						if (!me) return;
+						const approvers = profile.current._owner
+							.castAs(Group)
+							.members.filter(
+								(member: Account & { role: 'reader' | 'writer' | 'admin' }) =>
+									member.role === 'admin'
+							);
+						const messageOwner = Group.create({ owner: me });
+						const message = RequestToView.create(
+							{
+								state: 'pending'
+							},
+							{
+								owner: messageOwner
+							}
+						);
+
+						await Promise.all(
+							approvers.forEach(async (approver: { account: Account; id: ID<Account> }) => {
+								messageOwner.addMember(approver.account, 'writer');
+								const inboxSender = await InboxSender.load(approver.id, me);
+								await inboxSender.sendMessage(message);
+							})
+						);
+					}}
+				>
+					Request to view
+				</button>
 			{/if}
 		</div>
 	</div>
