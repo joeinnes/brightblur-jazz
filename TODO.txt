@@ -14,13 +14,14 @@
 
 
 # What's blocking MVP?
-- [ ] Deleting CoValues
+- [X] Deleting CoValues
   - MVP can launch with soft-delete/tombstoning.
 - [ ] Request architecture ('request to view' and 'approve/reject' workflow)
   - I wonder if Inboxes can achieve this?
 - [ ] 'Claiming profiles' and inviting by email
   - Requires a mechanism for discarding the default profile created on account creation.
 - [X] Lazy loading of images is broken. Needs fixing.
+- [ ] Community photo gallery
 
 # What's Next?
 - [ ] Remove co_z from all the IDs that are user visible

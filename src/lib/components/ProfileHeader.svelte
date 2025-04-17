@@ -161,12 +161,12 @@
 					onInviteSuccess={() => {}}
 					buttonText="Invite a viewer"
 				/>
-				<button
+				<!--<button
 					onclick={() => {
 						profile.current.isDeleted = true;
 					}}
 					class="btn btn-error">Delete</button
-				>
+				>-->
 			{:else}
 				<button
 					class="btn btn-primary"

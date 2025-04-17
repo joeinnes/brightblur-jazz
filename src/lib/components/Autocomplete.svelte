@@ -91,7 +91,7 @@
 	}
 	$effect(() => {
 		if (selectedPerson) {
-			value = selectedPerson.name;
+			value = selectedPerson?.name || '';
 		} else {
 			value = '';
 		}

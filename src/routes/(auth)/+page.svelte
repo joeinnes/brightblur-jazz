@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { type ID } from 'jazz-tools';
 	import { useCoState } from 'jazz-svelte';
-
-	import Footer from '$lib/components/Footer.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
 
 	import { FeedOfPhotos, GlobalData } from '$lib/schema';
@@ -21,7 +19,7 @@
 <NavBar />
 <!-- mb-24 is needed to ensure the dock doesn't cover the submit button -->
 
-<main class="container mx-auto mb-24 max-w-xl flex-1 px-4">
+<main class="container mx-auto max-w-xl flex-1 px-4">
 	<a
 		href="/new"
 		class="btn btn-primary btn-soft btn-block btn-xl text-base-content hover:text-base-100 mb-4 h-auto justify-start gap-4 rounded-2xl p-4 px-4 transition-colors"
@@ -39,4 +37,3 @@
 		{/each}
 	</div>
 </main>
-<Footer />

@@ -11,6 +11,7 @@
 	const { children } = $props();
 
 	import { extractAllPeople } from '$lib/utils/profileUtils';
+	import Footer from '$lib/components/Footer.svelte';
 
 	const { me } = $derived(useAccount({ resolve: { profile: true } }));
 
@@ -67,6 +68,8 @@
 	{/if}
 </svelte:head>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex min-h-screen flex-col pb-24">
 	{@render children()}
 </div>
+
+<Footer />
