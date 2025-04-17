@@ -8,7 +8,6 @@
 	const {
 		url: { pathname }
 	} = $derived(page);
-	$inspect(pathname);
 </script>
 
 <footer class="dock z-40 text-4xl">
