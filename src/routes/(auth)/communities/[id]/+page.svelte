@@ -108,7 +108,7 @@
 <main class="container mx-auto max-w-xl flex-1 px-4">
 	{#if community.current}
 		<CommunityHeader {community} {canAdminCommunity} />
-		<div class="tabs tabs-border">
+		<div class="tabs tabs-box mt-4 justify-around">
 			<!-- Photo Gallery Tab -->
 			<label class="tab">
 				<MingcuteGrid2Line size={2} />
