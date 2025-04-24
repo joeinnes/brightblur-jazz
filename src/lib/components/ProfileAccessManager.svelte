@@ -23,8 +23,9 @@
 			?.members.filter((member) => member.role === 'admin').length || 0
 	);
 
+	let ownerGroup = $derived(currentlyViewing.current?._owner?.castAs?.(Group));
 	let people = $derived(
-		currentlyViewing.current?._owner?.castAs?.(Group)?.members.map((member) => {
+		ownerGroup?.members.map((member) => {
 			return {
 				...member,
 				person: BrightBlurAccount.load(member.id, { resolve: { profile: { avatar: true } } })
@@ -75,10 +76,9 @@
 											throw new Error("Can't remove last admin");
 										}
 										try {
-											await currentlyViewing.current?._owner
-												?.castAs?.(Group)
-												.removeMember(member.account);
-											console.log(currentlyViewing.current?._owner?.castAs?.(Group)?.members);
+											//await ownerGroup?.addMember(member.account, 'writeOnly');
+											alert('NOT WORKING YET');
+											await currentlyViewing.current?._owner.removeMember(member.account);
 										} catch (e) {
 											console.error(`That didn't work`, e);
 										}

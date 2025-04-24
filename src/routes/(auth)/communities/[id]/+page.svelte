@@ -1,28 +1,20 @@
 <script lang="ts">
 	import { useAccount, useCoState } from 'jazz-svelte';
-	import { type ID } from 'jazz-tools';
+	import { Group, type ID } from 'jazz-tools';
 	import { page } from '$app/state';
-	import { BrightBlurProfile, Photo, Community, BrightBlurAccount } from '$lib/schema';
+	import { BrightBlurProfile, Community, GlobalData } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
-	// Import components
-	import ProfileHeader from '$lib/components/ProfileHeader.svelte';
-	import ProfileAccessManager from '$lib/components/ProfileAccessManager.svelte';
-	import ManagedUsersList from '$lib/components/ManagedUsersList.svelte';
-
 	// Import utility functions
-	import {
-		extractAllPeople,
-		filterManagedPeople,
-		extractSortedPhotos,
-		filterPhotosByUploader,
-		filterPhotosOfPerson
-	} from '$lib/utils/profileUtils';
-	import ProfilePhotoGallery from '$lib/components/ProfilePhotoGallery.svelte';
+	import { extractSortedPhotos } from '$lib/utils/profileUtils';
+	import PhotoGallery from '$lib/components/PhotoGallery.svelte';
 	import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
 	import CommunityHeader from '$lib/components/CommunityHeader.svelte';
 	import CommunityAccessManager from '$lib/components/CommunityAccessManager.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
+	import type { Photo } from '$lib/schema';
+	import MingcuteGrid2Line from '../../../../icons/MingcuteGrid2Line.svelte';
+	import MingcuteUserLockLine from '../../../../icons/MingcuteUserLockLine.svelte';
 
 	const { me } = $derived(
 		useAccount({
@@ -35,7 +27,7 @@
 	);
 
 	// Get profile ID from URL parameter, handle 'me' special case
-	const communityId = $derived(page.params.id) as ID<BrightBlurProfile>;
+	const communityId = $derived(page.params.id) as ID<Community>;
 
 	const community = $derived(useCoState(Community, communityId, {}));
 
@@ -43,26 +35,38 @@
 	const canAdminCommunity = $derived(
 		communityId && community.current && me?.canAdmin(community.current)
 	);
-	/*
-	// Get global data for people
+
 	const globalData = $derived(
 		useCoState(GlobalData, PUBLIC_GLOBAL_DATA as ID<GlobalData>, {
 			resolve: { photos: true, people: true }
 		})
 	);
-
-	// Get all people and filter for managed people
-	let allPeople = $derived(extractAllPeople(globalData));
-	let myManagedPeople = $derived(
-		allPeople && filterManagedPeople(allPeople, me?.id, me?.profile?.id)
-	);
-
 	const photoArray = $derived(extractSortedPhotos(globalData?.current?.photos || undefined));
 
-	 const uploadedPhotos: CoFeedEntry<Photo>[] = $derived(
-		filterPhotosByUploader(photoArray, profile?.current?.user?.id)
-	);
-const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
+	/**
+	 * Filters photos that were shared with a specific community
+	 */
+	function filterPhotosByCommunity(
+		photoArray: CoFeedEntry<Photo>[],
+		communityId: ID<Community> | undefined
+	): CoFeedEntry<Photo>[] {
+		if (!communityId || !photoArray.length) return [];
+
+		return photoArray.filter((photo) => {
+			// Check if the photo exists and has an owner
+			if (!photo?.value?._owner) return false;
+
+			// Get parent groups of the photo's owner group
+			const parentGroups = photo.value._owner.getParentGroups();
+
+			// Check if any of the parent groups match the community's owner group ID
+			return parentGroups.some((group) => group.id === community.current?._owner.id);
+		});
+	}
+
+	// Filter photos for this community
+	const communityPhotos = $derived(filterPhotosByCommunity(photoArray, communityId));
+
 	let communityNameModal: HTMLDialogElement | undefined = $state();
 	let prevName = $state('');
 </script>
@@ -105,9 +109,31 @@ const photosOfProfile = $derived(filterPhotosOfPerson(photoArray, profileId));*/
 	{#if community.current}
 		<CommunityHeader {community} {canAdminCommunity} />
 		<div class="tabs tabs-border">
-			<!-- Photo Gallery - Uploads Tab -->
-			<input type="radio" name="community_tabs" class="tab" aria-label="Members" checked={true} />
+			<!-- Photo Gallery Tab -->
+			<label class="tab">
+				<MingcuteGrid2Line size={2} />
+				<input type="radio" name="community_tabs" checked={true} />
+			</label>
+			<div class="tab-content">
+				<PhotoGallery
+					photos={communityPhotos}
+					emptyHint="No photos have been shared with this community yet."
+				/>
+			</div>
+
+			<!-- Members Tab -->
+			<label class="tab">
+				<MingcuteUserLockLine size={2} />
+				<input type="radio" name="community_tabs" />
+			</label>
 			<CommunityAccessManager {community} admin={canAdminCommunity || false} />
 		</div>
 	{/if}
 </main>
+
+<style lang="postcss">
+	@reference "tailwindcss";
+	.tab {
+		@apply mb-2;
+	}
+</style>

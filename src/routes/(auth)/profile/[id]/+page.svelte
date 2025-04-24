@@ -18,7 +18,7 @@
 		filterPhotosByUploader,
 		filterPhotosOfPerson
 	} from '$lib/utils/profileUtils';
-	import ProfilePhotoGallery from '$lib/components/ProfilePhotoGallery.svelte';
+	import PhotoGallery from '$lib/components/PhotoGallery.svelte';
 	import type { CoFeedEntry } from 'jazz-tools/dist/coValues/coFeed.js';
 	import CommunitiesList from '$lib/components/CommunitiesList.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
@@ -119,7 +119,7 @@
 				<input type="radio" name="profile_tabs" checked={true} />
 			</label>
 			<div class="tab-content">
-				<ProfilePhotoGallery
+				<PhotoGallery
 					photos={uploadedPhotos}
 					emptyHint="{isOwnProfile
 						? `You haven't`
@@ -133,7 +133,7 @@
 				<input type="radio" name="profile_tabs" />
 			</label>
 			<div class="tab-content">
-				<ProfilePhotoGallery
+				<PhotoGallery
 					photos={photosOfProfile}
 					emptyHint="No photos {isOwnProfile
 						? `of you`

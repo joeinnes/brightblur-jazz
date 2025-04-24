@@ -141,10 +141,8 @@
 
 		<div class="flex w-full flex-grow flex-col gap-2 text-left">
 			{#if canAdminCommunity}
-				<div class="badge badge-primary">
-					You're an admin
-					<!-- Keep this div to avoid the modal trigger being block-width -->
-					<!--<InviteViewerModal {profile} onInviteSuccess={() => {}} />-->
+				<div class="py-2">
+					<InviteViewerModal item={community.current} onInviteSuccess={() => {}} />
 				</div>
 			{/if}
 		</div>
@@ -185,6 +183,3 @@
 		</div>
 	</div>
 </dialog>
-<div class="px-4 py-2">
-	<InviteViewerModal item={community.current} onInviteSuccess={() => {}} />
-</div>

@@ -133,21 +133,21 @@
 			offscreenCanvas.height = canvas.height;
 			await renderBlurredCanvas(canvas, offscreenCanvas, faceList);
 
-			const publicGroup = Group.create();
+			const photoGroup = Group.create();
 			if (selectedCommunities.length === 0) {
-				publicGroup.addMember('everyone', 'reader');
+				photoGroup.addMember('everyone', 'reader');
 			} else {
 				for (const community of selectedCommunities) {
-					if (community) publicGroup.extend(community._owner.castAs(Group), 'reader');
+					if (community) photoGroup.extend(community._owner.castAs(Group), 'reader');
 				}
 			}
 			const picaInstance = new pica();
 			const blob = await picaInstance.toBlob(offscreenCanvas, 'image/jpeg', 1);
 			const photoImage = await createImage(blob, {
-				owner: publicGroup
+				owner: photoGroup
 			});
 			// Create list of face slices
-			const listOfFaceSlices = ListOfFaceSlices.create([], publicGroup);
+			const listOfFaceSlices = ListOfFaceSlices.create([], photoGroup);
 			// Process each detected face
 			for (const face of faceList) {
 				if (!face.person) continue;
@@ -215,7 +215,7 @@
 					faceSlices: listOfFaceSlices
 				},
 				{
-					owner: publicGroup
+					owner: photoGroup
 				}
 			);
 

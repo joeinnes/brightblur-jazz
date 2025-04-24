@@ -111,6 +111,7 @@
 				alt="Background"
 				class="absolute -z-10 w-full"
 				class:blur-lg={res === 'placeholder'}
+				class:animate-pulse={res === 'placeholder'}
 				onload={handleImageLoad}
 				loading="lazy"
 			/>
