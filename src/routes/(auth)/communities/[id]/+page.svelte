@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { useAccount, useCoState } from 'jazz-svelte';
-	import { Group, type ID } from 'jazz-tools';
+	import { type ID } from 'jazz-tools';
 	import { page } from '$app/state';
-	import { BrightBlurProfile, Community, GlobalData } from '$lib/schema';
+	import { Community, GlobalData, type Photo } from '$lib/schema';
 	import { PUBLIC_GLOBAL_DATA } from '$env/static/public';
 
 	// Import utility functions
@@ -12,7 +12,6 @@
 	import CommunityHeader from '$lib/components/CommunityHeader.svelte';
 	import CommunityAccessManager from '$lib/components/CommunityAccessManager.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
-	import type { Photo } from '$lib/schema';
 	import MingcuteGrid2Line from '../../../../icons/MingcuteGrid2Line.svelte';
 	import MingcuteUserLockLine from '../../../../icons/MingcuteUserLockLine.svelte';
 
@@ -27,13 +26,13 @@
 	);
 
 	// Get profile ID from URL parameter, handle 'me' special case
-	const communityId = $derived(page.params.id) as ID<Community>;
+	const communityId = $derived(page.params.id || null) as ID<Community>;
 
 	const community = $derived(useCoState(Community, communityId, {}));
 
 	// Check if current user can administer the viewed profile
-	const canAdminCommunity = $derived(
-		communityId && community.current && me?.canAdmin(community.current)
+	const canAdminCommunity: boolean = $derived(
+		(communityId && community.current && me?.canAdmin(community.current)) || false
 	);
 
 	const globalData = $derived(
@@ -47,12 +46,12 @@
 	 * Filters photos that were shared with a specific community
 	 */
 	function filterPhotosByCommunity(
-		photoArray: CoFeedEntry<Photo>[],
+		photos: CoFeedEntry<Photo>[],
 		communityId: ID<Community> | undefined
 	): CoFeedEntry<Photo>[] {
 		if (!communityId || !photoArray.length) return [];
 
-		return photoArray.filter((photo) => {
+		return photos.filter((photo) => {
 			// Check if the photo exists and has an owner
 			if (!photo?.value?._owner) return false;
 

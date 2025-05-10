@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import Avatar from './Avatar.svelte';
 	import { useAccount } from 'jazz-svelte';
 
@@ -19,8 +20,8 @@
 		<div class="navbar-start">
 			<button
 				class="btn btn-circle btn-ghost flex items-center text-2xl font-bold"
-				onclick={() => {
-					window.history.back();
+				onclick={async () => {
+					await goto('/');
 					window.scrollTo(0, 0);
 				}}>&larr;</button
 			>

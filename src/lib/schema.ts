@@ -16,7 +16,7 @@ export class BrightBlurAccount extends Account {
 	async migrate(this: BrightBlurAccount) {
 		// Removed: this.getRoleOf('everyone');
 
-		if (this.profile === null) {
+		if (this.profile === undefined) {
 			const profileOwnershipGroup = Group.create();
 			profileOwnershipGroup.addMember('everyone', 'reader');
 			const newProfile = BrightBlurProfile.create(
@@ -40,30 +40,21 @@ export class BrightBlurAccount extends Account {
 			});
 		}
 
-		// Ensure the root and its lists are loaded before checking/modifying them
-		await this.ensureLoaded({
+		const { root } = await this.ensureLoaded({
 			resolve: {
-				root: {
-					myCommunities: true,
-					myContacts: true,
-					myRecognisedFaces: true
-				}
+				root: true
 			}
 		});
 
-		// Defensive check: Ensure contacts list exists if somehow it's null after creation/loading
-		if (this.root?.myContacts === null) {
-			this.root.myContacts = ListOfContacts.create([]);
+		if (root.myContacts === undefined) {
+			root.myContacts = ListOfContacts.create([]);
+		}
+		if (root.myRecognisedFaces === undefined) {
+			root.myRecognisedFaces = RecognisedFaces.create({});
 		}
 
-		// Defensive check: Ensure contacts list exists if somehow it's null after creation/loading
-		if (this.root?.myRecognisedFaces === null) {
-			this.root.myRecognisedFaces = RecognisedFaces.create({});
-		}
-		// Check if the communities list is empty and add the default community if needed
-		if (this.root?.myCommunities && this.root.myCommunities.length === 0) {
-			// No need to re-create the list, just add the community
-			const communityGroup = Group.create(); // Assuming default group permissions are sufficient
+		if (root?.myCommunities && root.myCommunities.length === 0) {
+			const communityGroup = Group.create();
 			const community = Community.create(
 				{
 					name: 'My Community',
@@ -73,10 +64,8 @@ export class BrightBlurAccount extends Account {
 					owner: communityGroup
 				}
 			);
-			this.root.myCommunities.push(community);
+			root.myCommunities.push(community);
 		}
-
-		// Removed redundant ensureLoaded call
 	}
 }
 

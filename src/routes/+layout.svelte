@@ -7,6 +7,7 @@
 </script>
 
 <script lang="ts">
+	import 'jazz-inspector-element';
 	import { onNavigate } from '$app/navigation';
 
 	import { JazzProvider } from 'jazz-svelte';
@@ -51,6 +52,7 @@
 	</Auth>
 </JazzProvider>
 <Toaster />
+<jazz-inspector> </jazz-inspector>
 
 <style>
 	@keyframes fade-in {
