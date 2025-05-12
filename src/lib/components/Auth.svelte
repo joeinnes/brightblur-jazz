@@ -56,7 +56,7 @@
 </script>
 
 {#if auth.state === 'anonymous' && login}
-	<section class="bg-white">
+	<section>
 		<div class="lg:grid lg:min-h-screen lg:grid-cols-12">
 			<aside
 				class="relative block h-16 overflow-hidden lg:order-last lg:col-span-5 lg:h-full xl:col-span-6"

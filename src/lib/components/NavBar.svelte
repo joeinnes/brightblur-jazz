@@ -40,7 +40,7 @@
 		<div class="flex-none">
 			<div class="dropdown dropdown-end">
 				<div role="button" tabindex="0" class="">
-					<div class="circle avatar w-12 rounded-full">
+					<div class="circle avatar size-12 rounded-full">
 						<Avatar image={me?.profile?.avatar} name={me?.profile?.name} userId={me?.profile?.id} />
 					</div>
 				</div>
