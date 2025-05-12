@@ -81,6 +81,7 @@
 	// Update the face list when the cropped blob changes
 	$effect(() => {
 		const run = async () => {
+			croppedBlob && console.time('Load new cropped blob onto canvas');
 			if (!croppedBlob) {
 				ready.preview = 'no image';
 				canvases.original = undefined;
@@ -91,7 +92,11 @@
 				const canvas = await originalCanvas;
 				ready.preview = 'working';
 				canvases.original = canvas;
+				console.timeEnd('Load new cropped blob onto canvas');
+				console.time('Detect faces');
 				const detectedFaces = await processImageForFaces(canvas);
+				console.timeEnd('Detect faces');
+				console.time('Run facial recognition');
 				if (labelledDescriptors.length) {
 					const faceMatcher = new FaceMatcher(labelledDescriptors, 0.6);
 					for (let i = 0; i < detectedFaces.length; i++) {
@@ -105,10 +110,15 @@
 						}
 					}
 				}
+				console.timeEnd('Run facial recognition');
 				faceList = detectedFaces;
 				if (!canvases.dom) return;
+				console.time('Render blurred canvas');
 				await renderBlurredCanvas(canvas, canvases.dom, faceList);
+				console.timeEnd('Render blurred canvas');
+				console.time('Draw face rectangles');
 				drawFaceRectangles(canvases.dom, faceList);
+				console.timeEnd('Draw face rectangles');
 				ready.preview = 'ready';
 			} catch (error: unknown) {
 				console.error('Error processing image:', error);
