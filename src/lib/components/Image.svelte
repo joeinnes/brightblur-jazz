@@ -73,6 +73,9 @@
 							if (blob) {
 								src = URL.createObjectURL(blob);
 								res = bestRes.res;
+								setTimeout(() => {
+									URL.revokeObjectURL(src);
+								}, 10000); // Catch memory leaks
 							}
 						}
 
@@ -124,19 +127,19 @@
 				loading="lazy"
 			/>
 			{#each fsMap || [] as fs}
-				<div
-					class="border-primary absolute z-0 transition-opacity duration-200 {ready
-						? 'opacity-100'
-						: 'opacity-0'} rounded"
-					class:border-primary={!fs?.src || res === 'placeholder' || fs?.res === 'placeholder'}
-					class:border-2={!fs?.src || fs?.res === 'placeholder' || res === 'placeholder'}
-					style="
+				{#if fs?.src}
+					<div
+						class="border-primary absolute z-0 transition-opacity duration-200 {ready
+							? 'opacity-100'
+							: 'opacity-0'} rounded"
+						class:border-primary={!fs?.src || res === 'placeholder' || fs?.res === 'placeholder'}
+						class:border-2={!fs?.src || fs?.res === 'placeholder' || res === 'placeholder'}
+						style="
 					top: calc({100 * fs.y}% - 0.5px); 
 					left: calc({100 * fs.x}% - 0.5px); 
 					width: calc({100 * fs.width}% + 1px); 
 					height: calc({100 * fs.height}% + 1px);"
-				>
-					{#if fs?.src}
+					>
 						<img
 							src={fs.src}
 							alt="Face"
@@ -144,8 +147,8 @@
 							class="h-full w-full object-cover"
 							onload={() => URL.revokeObjectURL(fs.src)}
 						/>
-					{/if}
-				</div>
+					</div>
+				{/if}
 			{/each}
 		{/if}
 	</div>
