@@ -175,36 +175,34 @@
 					id="newPersonName"
 				/>
 			</div>
-			{#if !definitelyNew}
+			{#if !definitelyNew && searchResults.length}
 				<div>
-					{#if searchResults.length}
-						Before you create a new profile, did you mean any of these people? <ul
-							class="list bg-base-100 rounded-box max-h-52 overflow-y-scroll shadow-md"
-						>
-							{#each searchResults as contact}
-								{#if contact}
-									<li class="list-row">
-										<div>
-											<Avatar image={contact?.avatar} userId={contact?.id} name={contact?.name} />
-										</div>
-										<div>
-											<div>{contact?.name}</div>
-											<div class="text-xs font-semibold uppercase opacity-60"></div>
-										</div>
+					Before you create a new profile, did you mean any of these people? <ul
+						class="list bg-base-100 rounded-box max-h-52 overflow-y-scroll shadow-md"
+					>
+						{#each searchResults as contact}
+							{#if contact}
+								<li class="list-row">
+									<div>
+										<Avatar image={contact?.avatar} userId={contact?.id} name={contact?.name} />
+									</div>
+									<div>
+										<div>{contact?.name}</div>
+										<div class="text-xs font-semibold uppercase opacity-60"></div>
+									</div>
 
-										<button
-											class="btn btn-square btn-ghost"
-											onclick={() => {
-												me?.root?.myContacts?.push(contact);
-											}}
-										>
-											<MingcuteUserAdd2Line size={2} />
-										</button>
-									</li>
-								{/if}
-							{/each}
-						</ul>
-					{/if}
+									<button
+										class="btn btn-square btn-ghost"
+										onclick={() => {
+											me?.root?.myContacts?.push(contact);
+										}}
+									>
+										<MingcuteUserAdd2Line size={2} />
+									</button>
+								</li>
+							{/if}
+						{/each}
+					</ul>
 				</div>
 				<div class="modal-action">
 					<form method="dialog">
